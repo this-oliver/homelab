@@ -1,4 +1,8 @@
-# Handeling Dynamic IP Addresses
+# Dynamic IP Updater
+
+Most internet service providers (ISPs) assign dynamic IP addresses to their customers. This means that the IP address of your home network can change at any time. If you want to access your home network from the internet, you need to know the current IP address of your home network. This can be a problem if you don't have a static IP address.
+
+This is where [in-a-dyn](https://github.com/troglobit/inadyn) comes in as a small and simple Dynamic DNS client. It can be used to update DNS providers (i.e. Cloudflare) with the latest IP address of your home network.
 
 ## Installations
 
@@ -13,7 +17,7 @@ cd inadyn
 docker build -t inadyn:latest .
 ```
 
-## Getting Started
+## Usage
 
 > [!Tip]
 > (Cloudflare 2024) The username is the domain name and the password is the API key.

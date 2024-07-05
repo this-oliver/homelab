@@ -1,4 +1,4 @@
-# Infra
+# Homelab
 
 The purpose of this folder is to configure key components that support this machines services.
 
