@@ -21,6 +21,8 @@ docker build -t inadyn:latest .
 Configure the inadyn.conf file with the following content:
 
 ```bash
+touch inadyn.conf
+
 echo "
 provider cloudflare.com:1 {
     username = example.com
@@ -28,18 +30,26 @@ provider cloudflare.com:1 {
     hostname = dynamic.example.com # the hostname you want to update
     proxied  = true
 }
-" > inadyn.conf
+" >> inadyn.conf
+
+#echo "
+#provider cloudflare.com:1 {
+#    username = oliverrr.net
+#    password = *****
+#    hostname = foobar.oliverrr.net
+#    proxied  = true
+#}
+#" >> inadyn.conf
 ```
 
-Once you have configured the inadyn.conf file and built the inadyn image, you can run the following commands:
+Once you have configured the inadyn.conf file and built the inadyn image, you can run the following command to update the IP address once:
 
 ```bash
-# create a cache file
-mkdir -p cache
+docker run --rm -v '$PWD/inadyn.conf:/etc/inadyn.conf' -v '$PWD/cache:/var/cache/inadyn' inadyn:latest -1 --cache-dir=/var/cache/inadyn > /dev/null 2>&1
+```
 
-# open the crontab editor
-crontab -e
+Alternatively, you can run the following command (see [entrypoint.sh](./entrypoint.sh) for more details) to set a cronjob that updates the IP address every 30 minutes:
 
-# past the output of the following command in the crontab editor
-echo "0 * * * * docker run --rm -v '$PWD/inadyn.conf:/etc/inadyn.conf' -v '$PWD/cache:/var/cache/inadyn' inadyn:latest -1 --cache-dir=/var/cache/inadyn > /dev/null 2>&1"
+```bash
+echo "*/30 * * * * bash $PWD/entrypoint.sh" | crontab -
 ```
