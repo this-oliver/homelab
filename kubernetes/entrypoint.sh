@@ -44,6 +44,23 @@ function install_snap {
   fi
 }
 
+# prompts user for docker credentials and sets up a registry secret in kubernetes
+function configure_docker_credentials {
+  read -p "Do you want to setup docker credentials? [y/N] `echo $'\n> '`" SETUP_DOCKER_CREDENTIALS
+
+  if [[ $SETUP_DOCKER_CREDENTIALS =~ ^[Yy]$ ]]; then
+    read -p "Enter your docker username: `echo $'\n> '`" DOCKER_USERNAME
+    read -s -p "Enter your docker password: `echo $'\n> '`" DOCKER_PASSWORD
+    
+    echo -e "\n==== [MicroK8s Install] Setting up docker credentials for $DOCKER_USERNAME"
+    
+    microk8s kubectl create secret docker-registry dockerhub \
+      --docker-server="https://index.docker.io/v1/" \
+      --docker-username="$DOCKER_USERNAME" \
+      --docker-password="$DOCKER_PASSWORD"
+  fi
+}
+
 # installs microk8s, enables some addons and sets up some aliases
 function install_microk8s {
   # add boot insert to file if not already there
@@ -97,6 +114,7 @@ function setup {
   
   install_snap
   install_microk8s
+  configure_docker_credentials
   echo " ==== [MicroK8s Install] Microk8s installed!"
 }
 
