@@ -1,48 +1,50 @@
 # Private Registry
 
-This directory configures and managaes [distribution](https://distribution.github.io), a private docker registry.
+[DockerHub](https://hub.docker.com) is a great place to store and share docker images, but sometimes you need to store images privately which they limit to 1 private repository. To solve this problem, you can host your own private registry to restrict access to your images (and fully own your data).
+
+The homelab uses [distribution](https://distribution.github.io/distribution/), an open-source docker registry, to store and manage docker images.
 
 ## Getting Started
 
 Pre-requisites:
 
-- docker + docker-compose
-- certs for registry domain
+- Docker
+- (Optional) Domain Name and SSL Certificate
 
-## Usage
-
-At a high level, you'll need to setup:
-
-1. setup registry
-2. setup TLS/SSL
-3. configure nginx
-
-For a basic setup (see the [docker-compose.yaml](docker-compose.yaml) file), you can run the following commands:
+For a basic setup:
 
 ```bash
 docker compose up --detach
 ```
 
-### Setup Reverse-Proxy
+### Adding SSL
 
-> See https://distribution.github.io/distribution/recipes/nginx/
+If you want to expose the registry to the internet, you'll need to setup SSL to encrypt the connection between the client and the registry. To do this, add an SSL certificate and private key to the `./certs` directory.
 
-Once the registry is up and running, you'll need to create a reverse-proxy that redirects all the requests to `registry.oliverr.net` to the port designated to the registry (see [docker-compose.yaml](./docker-compose.yaml)). Assuming that nothing has been changed in the previous steps, the majority of the work has been laid out in [registry.oliverr.net.conf](./registry.oliverr.net.conf).
-
-Pre-reqs:
-
-- install nginx
+> [!WARNING]
+> The docker compose below assumes that the certificate is named `domain.crt` and the private key is named `domain.key`. If you have different names, you'll need to update the [docker-compose.remote.yaml](./docker-compose.remote.yaml) file.
 
 ```bash
-# copy the nginx file to nginx's available sites
-sudo cp registry.oliverr.net.conf /etc/nginx/sites-available/
+docker compose -f docker-compose.ssl.yaml up --detach
+```
 
-# link t
-sudo ln -s /etc/nginx/sites-available/registry.oliverr.net.conf /etc/nginx/sites-enabled/
+### Adding Authentication
 
-# inspect nginx
-sudo nginx -t
+> [!NOTE]
+> You cannot authenticate over an insecure connection (i.e. HTTP). You must use
+> HTTPS to authenticate with the registry which means you'll need to setup SSL first (see [adding ssl](#adding-ssl)).
 
-# if enevrything goes well, reload nginx
-sudo systemctl reload nginx
+By default, anyone can push and pull images from the registry. Authentication can be added to restrict access to the registry and mitigate against unauthorized access or certain denial-of-service attacks (i.e. filling up the registry with junk images).
+
+To add authentication, you'll need to create a htpasswd file with the following command:
+
+```bash
+# create directory that will store the htpasswd file
+mkdir -p ./auth
+
+# create credentials for the registry
+docker run --rm --entrypoint htpasswd httpd:2 -Bbn testuser testpassword > auth/htpasswd
+
+# start the registry with authentication
+docker compose -f docker-compose.ssl-auth.yaml up --detach
 ```

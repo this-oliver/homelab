@@ -1,20 +1,11 @@
 services:
   registry:
     image: registry:2
+    
+    restart: always
 
-    environment:
-      - REGISTRY_HTTP_ADDR=0.0.0.0:443
-      - REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.pem
-      - REGISTRY_HTTP_TLS_KEY=/certs/domain.key
     ports:
-      - "5999:443"
+      - "5999:5000"
+    
     volumes:
-      - /home/cowboy/infra/private-registry/storage:/var/lib/registry
-      - /home/cowboy/infra/private-registry/certs:/certs
-
-  nginx:
-    image: nginx
-    ports:
-      - "443:443"
-    volumes:
-      - /home/cowboy/infra/private-registry/nginx/default.conf:/etc/nginx/nginx.conf
+      - $PWD/storage:/var/lib/registry
