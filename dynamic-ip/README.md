@@ -6,6 +6,10 @@ This is where [in-a-dyn](https://github.com/troglobit/inadyn) comes in as a smal
 
 ## Installations
 
+Pre-requisites:
+
+- Docker
+
 ```bash
 # clone the inadyn repository
 git clone https://github.com/troglobit/inadyn
