@@ -9,9 +9,24 @@ _MODE=$1
 
 BOOT_FILE=/boot/firmware/cmdline.txt
 BOOT_INSERT="cgroup_enable=memory cgroup_memory=1"
+
 ALIAS_MICROK8S="alias micro='microk8s'"
 ALIAS_KUBERNETES="alias k8='microk8s kubectl'"
 ALIAS_HELM="alias helm='microk8s helm3'"
+
+ORIGIN_CA_ISSUER_VERSION="v0.9.0"
+ORIGIN_CA_ISSUER_NAME="prod-issuer"
+ORIGIN_CA_ISSUER_SECRET_NAME="cloudflare-ca-key"
+ORIGIN_CA_ISSUER_RESOURCES=(
+    "crds/cert-manager.k8s.cloudflare.com_clusteroriginissuers.yaml"
+    "crds/cert-manager.k8s.cloudflare.com_originissuers.yaml"
+    "rbac/role-approver.yaml"
+    "rbac/role-binding.yaml"
+    "rbac/role.yaml"
+    "manifests/0-namespace.yaml"
+    "manifests/deployment.yaml"
+    "manifests/serviceaccount.yaml"
+  )
 
 # == FUNCTIONS ================================================================
 
@@ -106,20 +121,80 @@ function uninstall_microk8s {
   sed -i "/$ALIAS_HELM/d" ~/.bashrc
 }
 
+# installs cert-manager with cloudflare's issuer
+function install_cert_manager {
+  ISSUER_TEMP_YAML=$(mktemp)
+  
+  # [!NOTE] see https://cert-manager.io/docs/installation/helm/
+  if [ -z "$(microk8s helm3 repo list | grep jetstack)" ]; then
+    echo " ==== [MicroK8s Install] Installing cert-manager"
+    
+    microk8s helm3 repo add jetstack https://charts.jetstack.io --force-update
+    microk8s helm3 install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.15.1 --set crds.enabled=true
+  fi
+  
+  echo " ==== [MicroK8s Install] Installing cloudflare crds, rbac and manifest"
+
+  # apply each resource
+  for RESOURCE in "${ORIGIN_CA_ISSUER_RESOURCES[@]}"; do
+    microk8s kubectl apply -f https://raw.githubusercontent.com/cloudflare/origin-ca-issuer/${ORIGIN_CA_ISSUER_VERSION}/deploy/$RESOURCE
+  done
+  
+  echo " ==== [MicroK8s Install] Setting up cloudflare origin ca key and origin issuer"
+  read -s -p "Enter your cloudflare origin ca key (see https://dash.cloudflare.com/profile/api-tokens): `echo $'\n> '`" CLOUDFLARE_CA_KEY
+  
+  # prepare origin issuer yaml
+  echo "
+  apiVersion: cert-manager.k8s.cloudflare.com/v1
+  kind: OriginIssuer
+  metadata:
+    name: "$ORIGIN_CA_ISSUER_NAME"
+    namespace: default
+  spec:
+    requestType: OriginECC
+    auth:
+      serviceKeyRef:
+        name: "$ORIGIN_CA_ISSUER_SECRET_NAME"
+        key: key
+  " > $ISSUER_TEMP_YAML
+
+  # remove old secret
+  microk8s kubectl delete secret --ignore-not-found -n default "$ORIGIN_CA_ISSUER_SECRET_NAME"
+
+  # [!NOTE] see https://github.com/cloudflare/origin-ca-issuer
+  microk8s kubectl create secret generic -n default "$ORIGIN_CA_ISSUER_SECRET_NAME" --from-literal key="$CLOUDFLARE_CA_KEY"
+  microk8s kubectl apply -f $ISSUER_TEMP_YAML
+
+  # remove the temporary file
+  rm $ISSUER_TEMP_YAML
+}
+
+function uninstall_cert_manager {
+  echo " ==== [MicroK8s Install] Uninstalling cert-manager"
+  microk8s helm3 uninstall cert-manager -n cert-manager
+
+  for RESOURCE in "${ORIGIN_CA_ISSUER_RESOURCES[@]}"; do
+    microk8s kubectl delete --ignore-not-found -f https://raw.githubusercontent.com/cloudflare/origin-ca-issuer/${ORIGIN_CA_ISSUER_VERSION}/deploy/$RESOURCE
+  done
+
+  microk8s kubectl delete secret --ignore-not-found -n default "$ORIGIN_CA_ISSUER_SECRET_NAME"
+  microk8s kubectl delete originissuer --ignore-not-found -n default "$ORIGIN_CA_ISSUER_NAME"
+}
 
 function setup {
-  # update the system
   echo " ==== [MicroK8s Install] Updating system"
   sudo apt update
   
   install_snap
   install_microk8s
+  install_cert_manager
   configure_docker_credentials
   echo " ==== [MicroK8s Install] Microk8s installed!"
 }
 
 function teardown {
   uninstall_microk8s
+  uninstall_cert_manager
   echo " ==== [MicroK8s Install] Microk8s uninstalled!"
 }
 
