@@ -23,7 +23,8 @@ function usage {
   exit 1
 }
 
-# adds an alias string to the .bashrc file if it is not already there
+# adds an alias string to the .bashrc file if it is not already there,
+# otherwise does nothing
 function add_alias {
   ALIAS=$1
 
@@ -34,18 +35,17 @@ function add_alias {
   fi
 }
 
-# installs microk8s
-function setup {
-  # update the system
-  echo " ==== [MicroK8s Install] Updating system"
-  sudo apt update
-
+# installs snap if not already installed, otherwise does nothing
+function install_snap {
   # install snap if not installed (see https://snapcraft.io/docs/installing-snap-on-ubuntu)
   if [ -z "$(which snap)" ]; then
       echo " ==== [MicroK8s Install] Installing snap"
       sudo apt install snapd -y
   fi
+}
 
+# installs microk8s, enables some addons and sets up some aliases
+function install_microk8s {
   # add boot insert to file if not already there
   if ! grep -q "$BOOT_INSERT" $BOOT_FILE; then
       echo " ==== [MicroK8s Install] Adding '$BOOT_INSERT' to $BOOT_FILE"
@@ -63,18 +63,15 @@ function setup {
 
   # enable some addons
   echo " ==== [MicroK8s Install] Enabling microk8s addons"
-  microk8s enable dns cert-manager helm dashboard
+  microk8s enable dns helm dashboard
 
   # add aliases
   add_alias "$ALIAS_MICROK8S"
   add_alias "$ALIAS_KUBERNETES"
   add_alias "$ALIAS_HELM"
-
-  echo " ==== [MicroK8s Install] Microk8s installed!"
 }
 
-# uninstalls microk8s
-function teardown {
+function uninstall_microk8s {
   # uninstall microk8s
   echo " ==== [MicroK8s Install] Uninstalling microk8s"
   sudo snap remove microk8s
@@ -90,6 +87,22 @@ function teardown {
   sed -i "/$ALIAS_MICROK8S/d" ~/.bashrc
   sed -i "/$ALIAS_KUBERNETES/d" ~/.bashrc
   sed -i "/$ALIAS_HELM/d" ~/.bashrc
+}
+
+
+function setup {
+  # update the system
+  echo " ==== [MicroK8s Install] Updating system"
+  sudo apt update
+  
+  install_snap
+  install_microk8s
+  echo " ==== [MicroK8s Install] Microk8s installed!"
+}
+
+function teardown {
+  uninstall_microk8s
+  echo " ==== [MicroK8s Install] Microk8s uninstalled!"
 }
 
 # == SCRIPTS ==================================================================
