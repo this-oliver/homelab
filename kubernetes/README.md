@@ -9,5 +9,16 @@ Pre-requisites:
 - Ubuntu Operating System
 
 ```bash
+# script that installs microk8s
 bash entrypoint.sh
+```
+
+## Usage
+
+```bash
+# open the dashboard
+microk8s dashboard-proxy
+
+# deploy an application to the cluster
+microk8s kubectl apply -k /path/to/your/kustomization.yaml
 ```
