@@ -2,14 +2,14 @@
 
 This directory configures and managaes [distribution](https://distribution.github.io), a private docker registry.
 
-## Installation
+## Getting Started
 
 Pre-requisites:
 
 - docker + docker-compose
 - certs for registry domain
 
-## Getting Started
+## Usage
 
 At a high level, you'll need to setup:
 

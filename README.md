@@ -1,15 +1,17 @@
 # Homelab
 
-The purpose of this folder is to configure key components that support this machines services.
+This repository contains the infrastructure as code for my homelab. The homelab hosts a number of applications that are managed by the following components:
 
-- dynamic-ip: updates DNS providers (i.e. Cloudflare) with this machines latest ip address
-- remote-registry: configures the private registry hosted on this machine
+1. [kubernetes](./kubernetes/README.md) - orchestrates application deployments
+2. [registry](./registry/README.md) - hosts a private docker registry
+3. [dynamic-ip](./dynamic-ip/README.md) - updates DNS providers with the homelab's latest ip address
+4. [reverse-proxy](./reverse-proxy/README.md) - routes traffic to the appropriate services
 
 ## Getting Started
 
-The infrastructure should be configured in the following order:
+Pre-requisites:
 
-1. k8 (kubernetes)
-2. nginx (reverse-proxy)
-3. dynamic-ip (inadyn)
-4. private-registry (distribution)
+- Docker
+- MicroK8s
+
+Visit each of the directories (in the order listed above) to setup the homelab.

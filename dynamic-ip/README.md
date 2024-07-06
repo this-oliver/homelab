@@ -1,10 +1,10 @@
 # Dynamic IP Updater
 
-Most internet service providers (ISPs) assign dynamic IP addresses to their customers. This means that the IP address of your home network can change at any time. If you want to access your home network from the internet, you need to know the current IP address of your home network. This can be a problem if you don't have a static IP address.
+Most internet service providers (ISPs) assign dynamic IP addresses to their customers which means that the IP address of your home network can change at any time. If you have a domain name pointing to your home network, this can be a problem because the IP address of your home network can become invalid without you knowing - rendering the applications hosted on your home network inaccessible.
 
-This is where [in-a-dyn](https://github.com/troglobit/inadyn) comes in as a small and simple Dynamic DNS client. It can be used to update DNS providers (i.e. Cloudflare) with the latest IP address of your home network.
+To solve this problem, we use [in-a-dyn](https://github.com/troglobit/inadyn), a lightweight Dynamic DNS client, to update DNS providers (i.e. Cloudflare) with the latest IP address of your home network whenever it changes.
 
-## Installations
+## Getting Started
 
 Pre-requisites:
 
