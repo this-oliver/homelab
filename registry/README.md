@@ -22,7 +22,7 @@ docker compose up --detach
 If you want to expose the registry to the internet, you'll need to setup SSL to encrypt the connection between the client and the registry. To do this, add an SSL certificate and private key to the `./certs` directory.
 
 > [!WARNING]
-> The docker compose below assumes that the certificate is named `domain.crt` and the private key is named `domain.key`. If you have different names, you'll need to update the [docker-compose.remote.yaml](./docker-compose.remote.yaml) file.
+> The docker compose below assumes that the certificate is named `domain.crt` and the private key is named `domain.key`. If you have different names, you'll need to update the [docker-compose.ssl.yaml](./docker-compose.ssl.yaml) file.
 
 ```bash
 docker compose -f docker-compose.ssl.yaml up --detach
