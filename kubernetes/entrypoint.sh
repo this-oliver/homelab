@@ -7,14 +7,13 @@ _MODE=$1
 
 # == CONSTANTS ================================================================
 
+ALIAS_HELM="alias helm='microk8s helm3'"
+ALIAS_KUBERNETES="alias k8='microk8s kubectl'"
+ALIAS_MICROK8S="alias micro='microk8s'"
 BOOT_FILE=/boot/firmware/cmdline.txt
 BOOT_INSERT="cgroup_enable=memory cgroup_memory=1"
-
-ALIAS_MICROK8S="alias micro='microk8s'"
-ALIAS_KUBERNETES="alias k8='microk8s kubectl'"
-ALIAS_HELM="alias helm='microk8s helm3'"
-
-ORIGIN_CA_ISSUER_VERSION="v0.9.0"
+CERT_MANAGER_NAME="cert-manager"
+INGRESS_CONTROLLER_NAME="ingress-nginx"
 ORIGIN_CA_ISSUER_NAME="prod-issuer"
 ORIGIN_CA_ISSUER_SECRET_NAME="cloudflare-ca-key"
 ORIGIN_CA_ISSUER_RESOURCES=(
@@ -27,6 +26,7 @@ ORIGIN_CA_ISSUER_RESOURCES=(
     "manifests/deployment.yaml"
     "manifests/serviceaccount.yaml"
   )
+ORIGIN_CA_ISSUER_VERSION="v0.9.0"
 
 # == FUNCTIONS ================================================================
 
@@ -128,7 +128,7 @@ function install_cert_manager {
     echo " ==== [MicroK8s Install] Installing cert-manager"
     
     microk8s helm3 repo add jetstack https://charts.jetstack.io --force-update
-    microk8s helm3 install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.15.1 --set crds.enabled=true
+    microk8s helm3 install cert-manager jetstack/cert-manager --namespace "$CERT_MANAGER_NAME" --create-namespace --version v1.15.1 --set crds.enabled=true
   fi
   
   echo " ==== [MicroK8s Install] Installing cloudflare crds, rbac and manifest"
