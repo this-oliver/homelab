@@ -48,15 +48,6 @@ function add_alias {
   fi
 }
 
-# installs snap if not already installed, otherwise does nothing
-function install_snap {
-  # install snap if not installed (see https://snapcraft.io/docs/installing-snap-on-ubuntu)
-  if [ -z "$(which snap)" ]; then
-      echo " ==== [MicroK8s Install] Installing snap"
-      sudo apt install snapd -y
-  fi
-}
-
 # prompts user for docker credentials and sets up a registry secret in kubernetes
 function configure_docker_credentials {
   read -p "Do you want to setup docker credentials? [y/N] `echo $'\n> '`" SETUP_DOCKER_CREDENTIALS
@@ -74,52 +65,60 @@ function configure_docker_credentials {
   fi
 }
 
-# installs microk8s, enables some addons and sets up some aliases
+# installs snap if not already installed, otherwise does nothing
+function install_snap {
+  # install snap if not installed (see https://snapcraft.io/docs/installing-snap-on-ubuntu)
+  if [ -z "$(which snap)" ]; then
+      echo " ==== [MicroK8s Install] Installing snap"
+      sudo apt install snapd -y
+  fi
+}
+
+# installs microk8s, adds boot insert, enables some addons and sets up some aliases
 function install_microk8s {
-  # add boot insert to file if not already there
   if ! grep -q "$BOOT_INSERT" $BOOT_FILE; then
       echo " ==== [MicroK8s Install] Adding '$BOOT_INSERT' to $BOOT_FILE"
       sed -i "1s/^/$BOOT_INSERT /" $BOOT_FILE
   fi
 
-  # uninstall old versions of microk8s to avoid conflicts
-  echo " ==== [MicroK8s Install] Uninstalling old versions of microk8s"
-  sudo snap remove microk8s
+  if [ -z "$(which microk8s)" ]; then
+    # uninstall old versions of microk8s to avoid conflicts
+    echo " ==== [MicroK8s Install] Uninstalling old versions of microk8s"
+    sudo snap remove microk8s
 
-  # install microk8s (see https://microk8s.io/docs/install-raspberry-pi#installation)
-  echo " ==== [MicroK8s Install] Installing microk8s"
-  sudo apt install linux-modules-extra-raspi -y
-  sudo snap install microk8s --classic --channel=1.30
+    # install microk8s (see https://microk8s.io/docs/install-raspberry-pi#installation)
+    echo " ==== [MicroK8s Install] Installing microk8s"
+    sudo apt install linux-modules-extra-raspi -y
+    sudo snap install microk8s --classic --channel=1.30
 
-  # enable some addons
-  echo " ==== [MicroK8s Install] Enabling microk8s addons"
-  microk8s enable dns helm dashboard
+    # enable some addons
+    echo " ==== [MicroK8s Install] Enabling microk8s addons"
+    microk8s enable dns helm dashboard
 
-  # add aliases
-  add_alias "$ALIAS_MICROK8S"
-  add_alias "$ALIAS_KUBERNETES"
-  add_alias "$ALIAS_HELM"
+    # add aliases
+    add_alias "$ALIAS_MICROK8S"
+    add_alias "$ALIAS_KUBERNETES"
+    add_alias "$ALIAS_HELM"
+  fi
 }
 
 function uninstall_microk8s {
-  # uninstall microk8s
   echo " ==== [MicroK8s Install] Uninstalling microk8s"
   sudo snap remove microk8s
 
-  # remove boot insert from file
   if grep -q "$BOOT_INSERT" $BOOT_FILE; then
       echo " ==== [MicroK8s Install] Removing '$BOOT_INSERT' from $BOOT_FILE"
       sed -i "s/$BOOT_INSERT //" $BOOT_FILE
   fi
 
-  # remove aliases
   echo " ==== [MicroK8s Install] Removing aliases from ~/.bashrc"
   sed -i "/$ALIAS_MICROK8S/d" ~/.bashrc
   sed -i "/$ALIAS_KUBERNETES/d" ~/.bashrc
   sed -i "/$ALIAS_HELM/d" ~/.bashrc
 }
 
-# installs cert-manager with cloudflare's issuer
+# installs cert-manager + cloudflare's issuer for issuing certificates to
+# applications deployed on the cluster via the cloudflare api
 function install_cert_manager {
   ISSUER_TEMP_YAML=$(mktemp)
   
