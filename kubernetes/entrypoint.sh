@@ -31,10 +31,8 @@ ORIGIN_CA_ISSUER_RESOURCES=(
 # == FUNCTIONS ================================================================
 
 function usage {
-  echo "Usage: $0 [options]"
-  echo "Options:"
-  echo "  setup     - installs microk8s (default) "
-  echo "  teardown  - uninstalls microk8s"
+  echo "Usage: $0 <MODE>"
+  echo "  MODE      - setup or teardown (default: setup)"
   exit 1
 }
 
@@ -181,6 +179,21 @@ function uninstall_cert_manager {
   microk8s kubectl delete originissuer --ignore-not-found -n default "$ORIGIN_CA_ISSUER_NAME"
 }
 
+# installs an ingress controller that routes traffic to services in the cluster
+# depending on the host and path of the request (requires cert-manager for tls)
+function install_ingress_controller {
+  echo " ==== [MicroK8s Install] Installing ingress controller"
+
+  microk8s helm3 upgrade --install ingress-nginx ingress-nginx \
+    --repo https://kubernetes.github.io/ingress-nginx \
+    --namespace "$INGRESS_CONTROLLER_NAME" --create-namespace
+}
+
+function uninstall_ingress_controller {
+  echo " ==== [MicroK8s Install] Uninstalling ingress controller"
+  microk8s helm3 uninstall ingress-nginx -n "$INGRESS_CONTROLLER_NAME"
+}
+
 function setup {
   echo " ==== [MicroK8s Install] Updating system"
   sudo apt update
@@ -188,6 +201,7 @@ function setup {
   install_snap
   install_microk8s
   install_cert_manager
+  install_ingress_controller
   configure_docker_credentials
   echo " ==== [MicroK8s Install] Microk8s installed!"
 }
@@ -195,6 +209,7 @@ function setup {
 function teardown {
   uninstall_microk8s
   uninstall_cert_manager
+  uninstall_ingress_controller
   echo " ==== [MicroK8s Install] Microk8s uninstalled!"
 }
 
