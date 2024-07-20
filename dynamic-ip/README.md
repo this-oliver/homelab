@@ -1,4 +1,4 @@
-# Dynamic IP Updater
+# DNS Updater
 
 Most internet service providers (ISPs) assign dynamic IP addresses to their customers which means that the IP address of your home network can change at any time. If you have a domain name pointing to your home network, this can be a problem because the IP address of your home network can become invalid without you knowing - rendering the applications hosted on your home network inaccessible.
 
@@ -9,6 +9,8 @@ To solve this problem, we use [in-a-dyn](https://github.com/troglobit/inadyn), a
 Pre-requisites:
 
 - Docker
+
+Build the inadyn docker image:
 
 ```bash
 # clone the inadyn repository
@@ -21,12 +23,7 @@ cd inadyn
 docker build -t inadyn:latest .
 ```
 
-## Usage
-
-> [!Tip]
-> (Cloudflare 2024) The username is the domain name and the password is the API key.
-
-Configure the inadyn.conf file with the following content:
+Setup a `inadyn.conf` file with the configuration for the DNS provider you want to update
 
 ```bash
 touch inadyn.conf
@@ -50,14 +47,22 @@ provider cloudflare.com:1 {
 #" >> inadyn.conf
 ```
 
-Once you have configured the inadyn.conf file and built the inadyn image, you can run the following command to update the IP address once:
+> [!Tip]
+> As of 2024, the username is the domain name and the password is your Cloudflare Global API Key which you can find in your [Cloudflare account settings](https://dash.cloudflare.com/profile/api-tokens).
+
+## Usage
+
+To update the DNS provider with the latest IP address of your home network, run the following command:
 
 ```bash
-docker run --rm -v '$PWD/inadyn.conf:/etc/inadyn.conf' -v '$PWD/cache:/var/cache/inadyn' inadyn:latest -1 --cache-dir=/var/cache/inadyn > /dev/null 2>&1
+sudo bash entrypoint.sh start
 ```
 
-Alternatively, you can run the following command (see [entrypoint.sh](./entrypoint.sh) for more details) to set a cronjob that updates the IP address every 30 minutes:
+To setup a cron job to run the update every 30 minutes, run the following command:
 
 ```bash
-echo "*/30 * * * * bash $PWD/entrypoint.sh" | crontab -
+sudo bash entrypoint.sh cron
 ```
+
+> [!Tip]
+> You can change the frequency of the cron job by modifying the function `start_crontab` in the `entrypoint.sh` script.
