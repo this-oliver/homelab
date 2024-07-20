@@ -62,3 +62,25 @@ remove_alias() {
     source ~/.bashrc
   fi
 }
+
+prompt() {
+  MESSAGE=$1
+  SECRET=$2
+
+  # if second argument is not empty and is set to '--secret', then prompt for a
+  # secret, if it is not empty and is not set to '--secret', then exit with an
+  # error otherwise, prompt for a regular input
+
+  if [ -n "$SECRET" ]; then
+    if [ "$SECRET" == "--secret" ]; then
+      read -sp "${MESSAGE} `echo $'\n> '`" RESPONSE
+      echo $RESPONSE
+    else
+      log "ERROR: Invalid argument for prompt function"
+      exit 1
+    fi
+  else
+    read -p "${MESSAGE} `echo $'\n> '`" RESPONSE
+    echo $RESPONSE
+  fi
+}

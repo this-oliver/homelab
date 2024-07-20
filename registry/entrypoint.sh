@@ -36,8 +36,8 @@ usage () {
 
 set_auth () {
   log "Setting up authentication"
-  read -p "Username (leave empty for default - admin): " USERNAME
-  read -sp "Password (leave empty for default - admin): " PASSWORD
+  USERNAME="$(prompt "Username (leave empty for default - admin):")"
+  PASSWORD="$(prompt "Password (leave empty for default - admin):" --secret)"
 
   if [[ -z ${USERNAME} ]]; then
     log "No username provided, using default credentials (admin/admin)"
