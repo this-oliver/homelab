@@ -60,8 +60,8 @@ start_dns_update() {
 
 ## MAIN
 
-check_docker_user
 check_deps "docker"
+check_group "docker"
 
 case $1 in
   start)
