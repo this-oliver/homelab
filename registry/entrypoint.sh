@@ -19,7 +19,7 @@ REGISTRY_HTTPS_PORT=443 #5443
 
 HTPASSWD_IMAGE=httpd:2
 
-source ${CURRENT_DIR}/../scripts/utils.sh
+source $CURRENT_DIR/../utils.sh
 
 ## FUNCTIONS
 
