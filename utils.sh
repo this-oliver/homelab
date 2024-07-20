@@ -52,3 +52,13 @@ add_alias() {
     source ~/.bashrc
   fi
 }
+
+remove_alias() {
+  ALIAS=$1
+
+  if ! [ -z "$(alias | grep k8)" ]; then
+    log "Removing '$ALIAS' from ~/.bashrc"
+    sed -i "/$ALIAS/d" ~/.bashrc
+    source ~/.bashrc
+  fi
+}
