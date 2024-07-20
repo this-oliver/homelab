@@ -10,9 +10,9 @@ log() {
   # messages, red for errors, and yellow for warnings
   
   if [[ $MESSAGE == "ERROR"* ]]; then
-    echo -e "\033[0;31m$PREFIX (ERROR) $MESSAGE\033[0m"
+    echo -e "\033[0;31m$PREFIX (ERROR) $2\033[0m"
   elif [[ $MESSAGE == "WARN"* ]]; then
-    echo -e "\033[0;33m$PREFIX (WARNING) $MESSAGE\033[0m"
+    echo -e "\033[0;33m$PREFIX (WARNING) $2\033[0m"
   else
     echo -e "\033[0;32m$PREFIX $MESSAGE\033[0m"
   fi
