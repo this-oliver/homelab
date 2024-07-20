@@ -123,6 +123,7 @@ stop_registry () {
 ## MAIN
 
 check_deps "docker"
+check_group "docker"
 
 case $1 in
   "start")

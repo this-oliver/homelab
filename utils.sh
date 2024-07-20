@@ -36,10 +36,9 @@ check_sudo() {
   fi
 }
 
-check_docker_user() {
-  # exit with zero if current user is not in the docker group
-  if [ -z "$(groups | grep docker)" ]; then
-    log "Please add your user to the docker group (sudo usermod -aG docker $USER) or run as a superuser (sudo bash $0)"
+check_group() {
+  if [ -z "$(groups | grep $1)" ]; then
+    log "Please add your user to the $1 group (sudo usermod -aG docker $USER) or run as a superuser (sudo bash $0)"
     exit 1
   fi
 }
