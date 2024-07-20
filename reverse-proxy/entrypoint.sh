@@ -60,7 +60,7 @@ init_nginx_conf() {
   " > $NGINX_CONF_PATH
 
   # restrict write permissions to owner
-  chmod 400 $NGINX_CONF_PATH
+  chmod 600 $NGINX_CONF_PATH
 }
 
 get_logs() {
