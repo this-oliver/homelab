@@ -42,9 +42,12 @@ source $CURRENT_DIR/../utils.sh
 usage() {
   echo -e "\nUsage: $0 <command>"
   echo -e "\nCommands:"
-  echo "  setup     - setup microk8s"
-  echo "  teardown  - teardown microk8s"
-  exit 1
+  echo "  start <options>     - setup k8 stack"
+  echo "  stop <options>      - remove k8 stack"
+  echo -e "\nOptions:"
+  echo "  --k8                - only setup/remove microk8s"
+  echo "  --cert              - only setup/remove cert-manager"
+  echo "  --ingress           - only setup/remove ingress controller"
 }
 
 # installs snap if not already installed
@@ -109,6 +112,7 @@ uninstall_microk8s() {
 # installs cert-manager + cloudflare's issuer for issuing certificates to
 # applications deployed on the cluster via the cloudflare api
 install_cert_manager() {
+  log "[Kubernetes] Installing cert-manager..."
   ISSUER_TEMP_YAML=$(mktemp)
   
   # [!NOTE] see https://cert-manager.io/docs/installation/helm/
@@ -204,36 +208,73 @@ configure_docker_credentials() {
 
 setup() {
   check_sudo
-  apt update
-  install_snap
-  install_microk8s
-  install_cert_manager
-  install_ingress_controller
-  configure_docker_credentials
-  log "[MicroK8s] Setup complete!"
+
+  case $1 in
+    --k8)
+      install_microk8s
+      ;;
+    --cert)
+      install_cert_manager
+      ;;
+    --ingress)
+      install_ingress_controller
+      ;;
+    *)
+
+      if [ -n "$1" ]; then
+        log ERROR "[Kubernetes] Invalid option: $1"
+        usage
+      else
+        apt update
+        install_snap
+        install_microk8s
+        install_cert_manager
+        install_ingress_controller
+        configure_docker_credentials
+        
+        # run uninstall if setup fails
+        if [ $? -ne 0 ]; then
+          log ERROR "[Kubernetes] Setup failed. Running teardown..."
+          teardown
+        else
+          log "[MicroK8s] Setup complete!"
+        fi
+      fi
+  esac
 }
 
 teardown() {
-  uninstall_microk8s
-  uninstall_cert_manager
-  uninstall_ingress_controller
-  log "[MicroK8s] Teardown complete!"
+  case $1 in
+    --k8)
+      uninstall_microk8s
+      ;;
+    --cert)
+      uninstall_cert_manager
+      ;;
+    --ingress)
+      uninstall_ingress_controller
+      ;;
+    *)
+      if [ -n "$1" ]; then
+        log ERROR "[Kubernetes] Invalid option: $1"
+        usage
+      else
+        uninstall_cert_manager
+        uninstall_ingress_controller
+        uninstall_microk8s
+        log "[MicroK8s] Teardown complete!"
+      fi
+  esac
 }
 
 # == SCRIPTS ==================================================================
 
 case $1 in
-  setup)
-    setup
-
-    # run uninstall if setup fails
-    if [ $? -ne 0 ]; then
-      log ERROR "[Kubernetes] Setup failed. Running teardown..."
-      teardown
-    fi
+  start)
+    setup $2
     ;;
-  teardown)
-    teardown
+  stop)
+    teardown $2
     ;;
   *)
     usage
