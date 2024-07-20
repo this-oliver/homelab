@@ -16,6 +16,7 @@ DOCKER_REGISTRY_SECRET_NAME="dockerhub"
 DOCKER_DEFAULT_REGISTRY="https://index.docker.io/v1/"
 CERT_MANAGER_NAME="cert-manager"
 INGRESS_CONTROLLER_NAME="ingress-nginx"
+INGRESS_CONTROLLER_RESOURCE="https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.11.1/deploy/static/provider/baremetal/deploy.yaml"
 MICROK8S_ADDONS=(
   "dns"
   "helm"
@@ -174,15 +175,12 @@ uninstall_cert_manager() {
 # depending on the host and path of the request (requires cert-manager for tls)
 install_ingress_controller() {
   log "[Kubernetes] Installing ingress controller..."
-
-  microk8s helm3 upgrade --install ingress-nginx ingress-nginx \
-    --repo https://kubernetes.github.io/ingress-nginx \
-    --namespace "$INGRESS_CONTROLLER_NAME" --create-namespace
+  microk8s kubectl apply -f ${INGRESS_CONTROLLER_RESOURCE}
 }
 
 uninstall_ingress_controller() {
   log "[Kubernetes] Uninstalling ingress controller..."
-  microk8s helm3 uninstall ingress-nginx -n "$INGRESS_CONTROLLER_NAME"
+  microk8s kubectl delete -f ${INGRESS_CONTROLLER_RESOURCE}
 }
 
 # prompts user for docker credentials and sets up a registry secret in kubernetes
