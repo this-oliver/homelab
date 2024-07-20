@@ -4,7 +4,7 @@ This repository contains the infrastructure as code for my homelab. The homelab 
 
 1. [kubernetes](./kubernetes/README.md) - orchestrates application deployments
 2. [registry](./registry/README.md) - hosts a private docker registry
-3. [dynamic-ip](./dynamic-ip/README.md) - updates DNS providers with the homelab's latest ip address
+3. [dns-update](./dns-update/README.md) - updates DNS providers with the homelab's latest ip address
 4. [reverse-proxy](./reverse-proxy/README.md) - routes traffic to the appropriate services
 
 ## Getting Started
