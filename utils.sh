@@ -4,7 +4,18 @@
 
 log() {
   MESSAGE=$1
-  echo " ==== [HOMELAB] $MESSAGE"
+  PREFIX="==== [HOMELAB]"
+  
+  # log messages with different colors based on the message type - green for standard
+  # messages, red for errors, and yellow for warnings
+  
+  if [[ $MESSAGE == "ERROR"* ]]; then
+    echo -e "\033[0;31m$PREFIX (ERROR) $MESSAGE\033[0m"
+  elif [[ $MESSAGE == "WARN"* ]]; then
+    echo -e "\033[0;33m$PREFIX (WARNING) $MESSAGE\033[0m"
+  else
+    echo -e "\033[0;32m$PREFIX $MESSAGE\033[0m"
+  fi
 }
 
 check_deps() {
@@ -21,6 +32,14 @@ check_deps() {
 check_sudo() {
   if [ "$EUID" -ne 0 ]; then
     log "Please run as a superuser (sudo)"
+    exit 1
+  fi
+}
+
+check_docker_user() {
+  # exit with zero if current user is not in the docker group
+  if [ -z "$(groups | grep docker)" ]; then
+    log "Please add your user to the docker group (sudo usermod -aG docker $USER) or run as a superuser (sudo bash $0)"
     exit 1
   fi
 }
