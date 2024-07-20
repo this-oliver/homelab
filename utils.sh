@@ -46,8 +46,8 @@ check_group() {
 add_alias() {
   ALIAS=$1
 
-  if ! grep -q "$ALIAS" ~/.bashrc; then
-    log "Adding '$ALIAS' to ~/.bashrc"
+  if [ -z "$(alias | grep k8)" ]; then
+    log "Adding \"$ALIAS\" to ~/.bashrc"
     echo "$ALIAS" >> ~/.bashrc
     source ~/.bashrc
   fi
