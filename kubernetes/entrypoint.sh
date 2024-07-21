@@ -198,6 +198,10 @@ configure_docker_credentials() {
       DOCKER_REGISTRY="${DOCKER_DEFAULT_REGISTRY}"
     fi
 
+    # remove old secret
+    microk8s kubectl delete secret --ignore-not-found ${DOCKER_REGISTRY_SECRET_NAME}
+
+    # create new secret
     microk8s kubectl create secret docker-registry ${DOCKER_REGISTRY_SECRET_NAME} \
       --docker-server="${DOCKER_REGISTRY}" \
       --docker-username="${DOCKER_USERNAME}" \
@@ -272,6 +276,9 @@ case $1 in
   stop)
     teardown $2
     log "(${SERVICE_NAME}) Service stopped!"
+    ;;
+  registry)
+    configure_docker_credentials
     ;;
   *)
     usage
