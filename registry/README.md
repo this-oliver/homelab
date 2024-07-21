@@ -29,6 +29,17 @@ To stop the registry:
 bash entrypoint.sh stop
 ```
 
+### Using an image from the registry in Kubernetes
+
+```yaml
+...
+spec:
+  containers:
+    - name: my-app
+      image: registry.example.net/app:latest
+...
+```
+
 ## Configuration
 
 Most of these configurations are automatically set by the `entrypoint.sh` script, but you can customize them by modifying the `docker-compose.yaml` file.

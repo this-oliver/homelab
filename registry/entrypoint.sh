@@ -32,6 +32,7 @@ usage () {
   echo -e "\nCommands:"
   echo "    start: Start the registry"
   echo "    stop: Stop the registry"
+  echo "    logs: Get the logs of the registry"
   echo -e "\nOptions:"
   echo "      --ssl     Start the registry in SSL mode"
   echo "      --auth    Start the registry in Auth mode (with SSL)"
@@ -72,6 +73,10 @@ is_registry_running () {
   else
     echo "false"
   fi
+}
+
+get_logs() {
+  sudo docker logs --follow ${REGISTRY_CONTAINER_NAME}
 }
 
 init_dirs () {
@@ -159,6 +164,9 @@ case $1 in
   stop)
     stop_registry
     log "(${SERVICE_NAME}) Service stopped!"
+    ;;
+  logs)
+    get_logs
     ;;
   *)
     echo -e "Unknown command: $1"
