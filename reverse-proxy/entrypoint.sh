@@ -14,7 +14,7 @@ NGINX_HTTPS_PORT=443
 LOCALHOST=127.0.0.1
 
 K8_HOST=${LOCALHOST}
-K8_HTTPS_PORT=4443
+K8_DEFAULT_HTTPS_PORT=4443
 
 REGISTRY_REMOTE_HOST=registry.oliverr.net
 REGISTRY_HOST=${LOCALHOST}
@@ -28,14 +28,37 @@ usage() {
   echo -e "\nUsage: $0 <command> <options>"
   echo -e "\nCommands:"
   echo "      start    Start the reverse proxy container"
-  echo "            --log    Immediately follow the logs of the reverse proxy container"
   echo "      stop     Stop the reverse proxy container"
   echo "      restart  Restart the reverse proxy container"
-  echo "            --log    Immediately follow the logs of the reverse proxy container"
   echo "      logs     Follow the logs of the reverse proxy container"
+  echo -e "\nOptions:"
+  echo "      --log    Follow the logs of the reverse proxy container (only with \`start\` and \`restart\` commands)"
+}
+
+get_logs() {
+  docker logs -f ${NGINX_CONTAINER_NAME}
+}
+
+get_k8_https_port() {
+  if ! [ -z "$(which microk8s)" ]; then
+    PORT="$(
+      microk8s kubectl get svc -n ingress-nginx \
+      | grep -P "443:\d+\/TCP" \
+      | grep -oP "(?<=443:)\d+(?=\/TCP)"
+    )"
+
+    echo $PORT
+  fi
 }
 
 init_nginx_conf() {
+  # try to get port for k8 cluster load balancer (nginx-ingress)
+  if [ -n "$(get_k8_https_port)" ]; then
+    K8_HTTPS_PORT=$(get_k8_https_port)
+  else
+    K8_HTTPS_PORT=$K8_DEFAULT_HTTPS_PORT
+  fi
+
   echo "
   events {
     worker_connections 1024;
@@ -60,10 +83,6 @@ init_nginx_conf() {
 
   # restrict write permissions to owner
   chmod 600 $NGINX_CONF_PATH
-}
-
-get_logs() {
-  docker logs -f ${NGINX_CONTAINER_NAME}
 }
 
 start_nginx() {
