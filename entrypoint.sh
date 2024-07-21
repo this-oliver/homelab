@@ -22,21 +22,30 @@ usage() {
 }
 
 start() {
-  log "Starting DNS update..."
-  bash $DNS_UPDATE_SCRIPT_PATH start
-
-  log "Starting registry..."
-  if [[ $1 == "--expose" ]]; then
-    bash $REGISTRY_SCRIPT_PATH start --auth
-  else
+  if [ -z $1 ]; then
+    log "Starting Registry..."
     bash $REGISTRY_SCRIPT_PATH start
+
+    log "Starting kubernetes..."
+    bash $KUBERNETES_SCRIPT_PATH start
+
+  elif [[ $1 == "--expose" ]]; then
+    log "Starting Registry..."
+    bash $REGISTRY_SCRIPT_PATH start --auth
+    
+    log "Starting DNS update..."
+    bash $DNS_UPDATE_SCRIPT_PATH start
+
+    log "Starting kubernetes..."
+    bash $KUBERNETES_SCRIPT_PATH start
+    
+    log "Starting reverse proxy..."
+    bash $REVERSE_PROXY_SCRIPT_PATH start
+
+  else
+    log ERROR "Invalid option provided: $1"
+    usage
   fi
-
-  log "Starting kubernetes..."
-  bash $KUBERNETES_SCRIPT_PATH start
-
-  log "Starting reverse proxy..."
-  bash $REVERSE_PROXY_SCRIPT_PATH start
 }
 
 stop() {
