@@ -15,6 +15,9 @@ REGISRTY_AUTH_PATH=/auth
 REGISRTY_HTTP_PORT=5080
 REGISTRY_HTTPS_PORT=5443
 
+REGISTRY_DEFAULT_USERNAME=admin
+REGISTRY_DEFAULT_PASSWORD=admin
+
 HTPASSWD_IMAGE=httpd:2
 
 SERVICE_NAME="docker-registry"
@@ -36,14 +39,28 @@ usage () {
 
 set_auth () {
   log "(${SERVICE_NAME}) Setting up authentication"
-  USERNAME="$(prompt "Username (leave empty for default - admin):")"
-  PASSWORD="$(prompt "Password (leave empty for default - admin):" --secret)"
+  USERNAME="$(prompt "Username (leave empty for default - ${REGISTRY_DEFAULT_USERNAME}):")"
+  PASSWORD="$(prompt "Password (leave empty for default - ${REGISTRY_DEFAULT_PASSWORD}):" --secret)"
+
+  if [[ -z ${USERNAME} ]] && [[ -z ${PASSWORD} ]]; then
+    log "(${SERVICE_NAME}) No username provided, using default credentials (${REGISTRY_DEFAULT_USERNAME}/${REGISTRY_DEFAULT_PASSWORD})"
+    USERNAME="${REGISTRY_DEFAULT_USERNAME}"
+    PASSWORD="admin"
+  fi
 
   if [[ -z ${USERNAME} ]]; then
-    log "(${SERVICE_NAME}) No username provided, using default credentials (admin/admin)"
-    
-    USERNAME="admin"
+    USERNAME="${REGISTRY_DEFAULT_USERNAME}"
+  fi
+
+  if [[ -z ${PASSWORD} ]]; then
     PASSWORD="admin"
+  else
+    PASSWORD_CONFIRM="$(prompt "Confirm password:" --secret)"
+
+    if [[ "${PASSWORD}" != "${PASSWORD_CONFIRM}" ]]; then
+      log ERROR "Passwords do not match!"
+      exit 1
+    fi
   fi
 
   sudo docker run --rm --entrypoint htpasswd ${HTPASSWD_IMAGE} -Bbn ${USERNAME} ${PASSWORD} > ${AUTH_DIR}/htpasswd
