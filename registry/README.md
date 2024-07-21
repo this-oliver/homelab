@@ -14,19 +14,19 @@ Pre-requisites:
 For a basic setup:
 
 ```bash
-sudo bash entrypoint.sh start
+bash entrypoint.sh start
 
 # with SSL
-sudo bash entrypoint.sh start --ssl
+bash entrypoint.sh start --ssl
 
 # with SSL and authentication
-sudo bash entrypoint.sh start --ssl --auth
+bash entrypoint.sh start --ssl --auth
 ```
 
 To stop the registry:
 
 ```bash
-sudo bash entrypoint.sh stop
+bash entrypoint.sh stop
 ```
 
 ## Configuration

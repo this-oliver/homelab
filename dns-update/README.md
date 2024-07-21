@@ -55,13 +55,13 @@ provider cloudflare.com:1 {
 To update the DNS provider with the latest IP address of your home network, run the following command:
 
 ```bash
-sudo bash entrypoint.sh start
+bash entrypoint.sh start
 ```
 
 To setup a cron job to run the update every 30 minutes, run the following command:
 
 ```bash
-sudo bash entrypoint.sh cron
+bash entrypoint.sh cron
 ```
 
 > [!Tip]

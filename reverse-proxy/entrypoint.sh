@@ -36,7 +36,7 @@ usage() {
 }
 
 get_logs() {
-  docker logs -f ${NGINX_CONTAINER_NAME}
+  sudo docker logs -f ${NGINX_CONTAINER_NAME}
 }
 
 get_k8_https_port() {
@@ -90,7 +90,7 @@ start_nginx() {
 
   init_nginx_conf
 
-  docker run --rm --detach \
+  sudo docker run --rm --detach \
     -v ${NGINX_CONF_PATH}:/etc/nginx/nginx.conf:ro \
     --network host \
     --name ${NGINX_CONTAINER_NAME} \
@@ -108,7 +108,7 @@ start_nginx() {
 }
 
 stop_nginx() {
-  docker stop ${NGINX_CONTAINER_NAME}
+  sudo docker stop ${NGINX_CONTAINER_NAME}
 
   if [ $? -eq 0 ]; then
     log "Successfully stopped reverse proxy container"
@@ -118,13 +118,10 @@ stop_nginx() {
 }
 
 get_logs() {
-  docker logs -f ${NGINX_CONTAINER_NAME}
+  sudo docker logs -f ${NGINX_CONTAINER_NAME}
 }
 
 # == SCRIPTS ==================================================================
-
-check_deps "docker"
-check_group "docker"
 
 case $1 in
   start)

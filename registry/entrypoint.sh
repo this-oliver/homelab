@@ -45,7 +45,7 @@ set_auth () {
     PASSWORD="admin"
   fi
 
-  docker run --rm --entrypoint htpasswd ${HTPASSWD_IMAGE} -Bbn ${USERNAME} ${PASSWORD} > ${AUTH_DIR}/htpasswd
+  sudo docker run --rm --entrypoint htpasswd ${HTPASSWD_IMAGE} -Bbn ${USERNAME} ${PASSWORD} > ${AUTH_DIR}/htpasswd
 }
 
 init_dirs () {
@@ -67,7 +67,7 @@ start_registry () {
   if [[ "$MODE" == "--ssl" ]]; then
     log "Starting the ${APPLICATION_NAME} in SSL mode"
 
-    docker run --detach --rm \
+    sudo docker run --detach --rm \
       -p ${REGISTRY_HTTPS_PORT}:443 \
       -e REGISTRY_HTTP_ADDR="0.0.0.0:443" \
       -e REGISTRY_HTTP_TLS_CERTIFICATE=${REGISRTY_CERT_PATH}/domain.pem \
@@ -84,7 +84,7 @@ start_registry () {
 
     set_auth
 
-    docker run --detach --rm \
+    sudo docker run --detach --rm \
       -p ${REGISTRY_HTTPS_PORT}:443 \
       -e REGISTRY_AUTH=htpasswd \
       -e REGISTRY_AUTH_HTPASSWD_REALM="Registry Realm" \
@@ -103,7 +103,7 @@ start_registry () {
   else
     log "Starting the ${APPLICATION_NAME} in normal mode"
     
-    docker run --detach --rm \
+    sudo docker run --detach --rm \
       -p ${REGISRTY_HTTP_PORT}:5000 \
       -v ${STORAGE_DIR}:${REGISTRY_STORAGE_PATH} \
       --name ${REGISTRY_CONTAINER_NAME} \
@@ -116,13 +116,10 @@ start_registry () {
 
 stop_registry () {
   log "Stopping the ${APPLICATION_NAME}"
-  docker stop ${REGISTRY_CONTAINER_NAME}
+  sudo docker stop ${REGISTRY_CONTAINER_NAME}
 }
 
 ## MAIN
-
-check_deps "docker"
-check_group "docker"
 
 case $1 in
   "start")

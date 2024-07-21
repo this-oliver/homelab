@@ -45,7 +45,7 @@ start_dns_update() {
 
   init_dirs
 
-  docker run --rm --detach \
+  sudo docker run --rm --detach \
     -v ${CONFIG_PATH}:/etc/inadyn.conf \
     -v ${CACHE_PATH}:/var/cache/inadyn \
     $INADYN_IMAGE -1 --cache-dir=/var/cache/inadyn > /dev/null 2>&1
@@ -58,9 +58,6 @@ start_dns_update() {
 }
 
 ## MAIN
-
-check_deps "docker"
-check_group "docker"
 
 case $1 in
   start)

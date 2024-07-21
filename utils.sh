@@ -37,7 +37,7 @@ check_sudo() {
 }
 
 check_group() {
-  if [ -z "$(groups | grep $1)" ]; then
+  if [ -z "$(groups | grep -E "$1|root")" ]; then
     log "Please add your user to the $1 group (sudo usermod -aG docker $USER) or run as a superuser (sudo bash $0)"
     exit 1
   fi

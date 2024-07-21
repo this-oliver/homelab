@@ -56,7 +56,7 @@ install_snap() {
   # install snap if not installed (see https://snapcraft.io/docs/installing-snap-on-ubuntu)
   if [ -z "$(which snap)" ]; then
       log "[Kubernetes] Installing snap..."
-      apt install -y snapd
+      sudo apt install -y snapd
       log "[Kubernetes] Successfully installed snap"
   fi
 }
@@ -65,21 +65,21 @@ install_snap() {
 install_microk8s() {
   if ! grep -q "$BOOT_INSERT" $BOOT_FILE_PATH; then
       log "[Kubernetes] Adding '$BOOT_INSERT' to $BOOT_FILE_PATH (requires reboot)..."
-      sed -i "1s/^/$BOOT_INSERT /" $BOOT_FILE_PATH
+      sudo sed -i "1s/^/$BOOT_INSERT /" $BOOT_FILE_PATH
   fi
 
   if [ -z "$(which microk8s)" ]; then
     # uninstall old versions of microk8s to avoid conflicts
     log "[Kubernetes] Uninstalling old versions of microk8s..."
-    snap remove microk8s
+    sudo snap remove microk8s
 
     # install microk8s (see https://microk8s.io/docs/install-raspberry-pi#installation)
     log "[Kubernetes] Installing microk8s..."
-    apt install -y linux-modules-extra-raspi
-    snap install microk8s --classic --channel=1.30
+    sudo apt install -y linux-modules-extra-raspi
+    sudo snap install microk8s --classic --channel=1.30
   else
     log "[Kubernetes] microk8s already installed. Updating instead..."
-    snap refresh microk8s --classic --channel=1.30
+    sudo snap refresh microk8s --classic --channel=1.30
   fi
 
   # enable some addons
@@ -97,7 +97,7 @@ install_microk8s() {
 
 uninstall_microk8s() {
   log "[Kubernetes] Uninstalling microk8s..."
-  snap remove microk8s
+  sudo snap remove microk8s
 
   if grep -q "$BOOT_INSERT" $BOOT_FILE_PATH; then
       log "[Kubernetes] Removing '$BOOT_INSERT' from $BOOT_FILE_PATH"
@@ -205,8 +205,6 @@ configure_docker_credentials() {
 }
 
 setup() {
-  check_sudo
-
   case $1 in
     --k8)
       install_microk8s
@@ -223,7 +221,7 @@ setup() {
         log ERROR "[Kubernetes] Invalid option: $1"
         usage
       else
-        apt update
+        sudo apt update
         install_snap
         install_microk8s
         install_cert_manager
