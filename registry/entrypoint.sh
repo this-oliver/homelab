@@ -24,13 +24,14 @@ source $CURRENT_DIR/../utils.sh
 ## FUNCTIONS
 
 usage () {
-  echo -e "\nUsage: $0 <command> [options]"
+  echo -e "\nUsage: $0 <command> <options>"
   
   echo -e "\nCommands:"
-  echo "  -> start: Start the registry"
+  echo "    start: Start the registry"
+  echo "    stop: Stop the registry"
+  echo -e "\nOptions:"
   echo "      --ssl     Start the registry in SSL mode"
   echo "      --auth    Start the registry in Auth mode (with SSL)"
-  echo "  -> stop: Stop the registry"
 }
 
 set_auth () {
