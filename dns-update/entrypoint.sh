@@ -18,7 +18,6 @@ usage() {
   echo -e "\nCommands:"
   echo "      start    Run inadyn container for dynamic DNS updates"
   echo "      cron     Setup crontab for dynamic DNS updates"
-  exit 1
 }
 
 init_dirs() {

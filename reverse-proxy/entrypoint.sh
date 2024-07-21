@@ -33,7 +33,6 @@ usage() {
   echo "      restart  Restart the reverse proxy container"
   echo "            --log    Immediately follow the logs of the reverse proxy container"
   echo "      logs     Follow the logs of the reverse proxy container"
-  exit 1
 }
 
 init_nginx_conf() {

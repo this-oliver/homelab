@@ -41,10 +41,10 @@ source $CURRENT_DIR/../utils.sh
 # == FUNCTIONS ================================================================
 
 usage() {
-  echo -e "\nUsage: $0 <command>"
+  echo -e "\nUsage: $0 <command> <options>"
   echo -e "\nCommands:"
-  echo "  start <options>     - setup k8 stack"
-  echo "  stop <options>      - remove k8 stack"
+  echo "  start               - setup k8 stack"
+  echo "  stop                - remove k8 stack"
   echo -e "\nOptions:"
   echo "  --k8                - only setup/remove microk8s"
   echo "  --cert              - only setup/remove cert-manager"

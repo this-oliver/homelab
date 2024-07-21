@@ -31,7 +31,6 @@ usage () {
   echo "      --ssl     Start the registry in SSL mode"
   echo "      --auth    Start the registry in Auth mode (with SSL)"
   echo "  -> stop: Stop the registry"
-  exit 1
 }
 
 set_auth () {
