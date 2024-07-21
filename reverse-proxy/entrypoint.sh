@@ -20,6 +20,8 @@ REGISTRY_REMOTE_HOST=registry.oliverr.net
 REGISTRY_HOST=${LOCALHOST}
 REGISTRY_PORT=5443
 
+SERVICE_NAME="reverse-proxy"
+
 source $CURRENT_DIR/../utils.sh
 
 # == FUNCTIONS ================================================================
@@ -94,22 +96,17 @@ init_nginx_conf() {
 }
 
 stop_nginx() {
+  log "(${SERVICE_NAME}) Stopping container..."
   sudo docker stop ${NGINX_CONTAINER_NAME}
-
-  if [ $? -eq 0 ]; then
-    log "Successfully stopped reverse proxy container"
-  else
-    log ERROR "Failed to stop reverse proxy container"
-  fi
 }
 
 start_nginx() {
-  log "Starting reverse proxy container..."
+  log "(${SERVICE_NAME}) Starting container..."
 
   init_nginx_conf
 
   if [ "$(is_nginx_running)" == "true" ]; then
-    log WARN "Stopping existing reverse proxy container..."
+    log WARN "(${SERVICE_NAME}) Stopping existing container..."
     stop_nginx
   fi
 
@@ -119,14 +116,8 @@ start_nginx() {
     --name ${NGINX_CONTAINER_NAME} \
     ${NGINX_IMAGE}
 
-  if [ $? -eq 0 ]; then
-    log "Successfully started reverse proxy container on ports ${NGINX_HTTP_PORT} and ${NGINX_HTTPS_PORT}"
-
-    if [ "$1" == "--log" ]; then
-      get_logs
-    fi
-  else
-    log ERROR "Failed to start reverse proxy container"
+  if [ "$1" == "--log" ]; then
+    get_logs
   fi
 }
 
@@ -135,13 +126,16 @@ start_nginx() {
 case $1 in
   start)
     start_nginx $2
+    log "(${SERVICE_NAME}) Service started!"
     ;;
   stop)
     stop_nginx
+    log "(${SERVICE_NAME}) Service stopped!"
     ;;
   restart)
     stop_nginx
     start_nginx $2
+    log "(${SERVICE_NAME}) Service restarted!"
     ;;
   logs)
     get_logs

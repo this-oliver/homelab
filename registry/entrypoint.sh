@@ -7,8 +7,6 @@ CERT_DIR=${CURRENT_DIR}/certs
 AUTH_DIR=${CURRENT_DIR}/auth
 STORAGE_DIR=${CURRENT_DIR}/storage
 
-APPLICATION_NAME=registry
-
 REGISRTY_IMAGE=registry:2
 REGISTRY_CONTAINER_NAME=registry
 REGISTRY_STORAGE_PATH=/var/lib/registry
@@ -18,6 +16,8 @@ REGISRTY_HTTP_PORT=5080
 REGISTRY_HTTPS_PORT=5443
 
 HTPASSWD_IMAGE=httpd:2
+
+SERVICE_NAME="docker-registry"
 
 source $CURRENT_DIR/../utils.sh
 
@@ -35,12 +35,12 @@ usage () {
 }
 
 set_auth () {
-  log "Setting up authentication"
+  log "(${SERVICE_NAME}) Setting up authentication"
   USERNAME="$(prompt "Username (leave empty for default - admin):")"
   PASSWORD="$(prompt "Password (leave empty for default - admin):" --secret)"
 
   if [[ -z ${USERNAME} ]]; then
-    log "No username provided, using default credentials (admin/admin)"
+    log "(${SERVICE_NAME}) No username provided, using default credentials (admin/admin)"
     
     USERNAME="admin"
     PASSWORD="admin"
@@ -64,7 +64,7 @@ init_dirs () {
 }
 
 stop_registry () {
-  log "Stopping the ${APPLICATION_NAME}"
+  log "(${SERVICE_NAME}) Stopping the container..."
   sudo docker stop ${REGISTRY_CONTAINER_NAME}
 }
 
@@ -79,11 +79,12 @@ start_registry () {
   fi
 
   if [[ "$(is_registry_running)" == "true" ]]; then
-    log WARN "Stopping the running ${APPLICATION_NAME} container..."
+    log WARN "(${SERVICE_NAME}) Stopping the current container..."
+    stop_registry
   fi
 
   if [[ "$MODE" == "--ssl" ]]; then
-    log "Starting the ${APPLICATION_NAME} in SSL mode..."
+    log "(${SERVICE_NAME}) Starting container in SSL mode..."
 
     sudo docker run --detach --rm \
       -p ${REGISTRY_HTTPS_PORT}:443 \
@@ -94,11 +95,9 @@ start_registry () {
       -v ${STORAGE_DIR}:${REGISTRY_STORAGE_PATH} \
       --name ${REGISTRY_CONTAINER_NAME} \
       ${REGISRTY_IMAGE}
-
-    log "Registry started on port ${REGISTRY_HTTPS_PORT}"
     
   elif [[ "$MODE" == "--auth" ]]; then
-    log "Starting the ${APPLICATION_NAME} in Auth mode..."
+    log "(${SERVICE_NAME}) Starting container in Auth mode..."
 
     set_auth
 
@@ -116,18 +115,14 @@ start_registry () {
       --name ${REGISTRY_CONTAINER_NAME} \
       ${REGISRTY_IMAGE}
 
-    log "Registry started on port ${REGISTRY_HTTPS_PORT}"
-
   else
-    log "Starting the ${APPLICATION_NAME} ..."
+    log "(${SERVICE_NAME}) Starting container ..."
     
     sudo docker run --detach --rm \
       -p ${REGISRTY_HTTP_PORT}:5000 \
       -v ${STORAGE_DIR}:${REGISTRY_STORAGE_PATH} \
       --name ${REGISTRY_CONTAINER_NAME} \
       ${REGISRTY_IMAGE}
-
-    log "Registry started on port ${REGISRTY_HTTP_PORT}"
   fi
 
 }
@@ -135,11 +130,18 @@ start_registry () {
 ## MAIN
 
 case $1 in
-  "start")
+  start)
     start_registry $2
+    
+    if [[ "$2" == "--ssl" ]] || [[ "$2" == "--auth" ]]; then
+      log "(${SERVICE_NAME}) Service started in SSL mode on port ${REGISTRY_HTTPS_PORT}!"
+    else
+      log "(${SERVICE_NAME}) Service started on port ${REGISRTY_HTTP_PORT}!"
+    fi
     ;;
-  "stop")
+  stop)
     stop_registry
+    log "(${SERVICE_NAME}) Service stopped!"
     ;;
   *)
     echo -e "Unknown command: $1"

@@ -8,6 +8,7 @@ CONFIG_PATH="$CURR_DIR/inadyn.conf"
 CACHE_PATH="$CURR_DIR/cache"
 INADYN_IMAGE="inadyn:latest"
 CRONTAB_FREQUENCY="*/30 * * * *"
+SERVICE_NAME="dns-updater"
 
 source $CURR_DIR/../utils.sh
 
@@ -25,23 +26,17 @@ init_dirs() {
 }
 
 start_crontab() {
-  log "Setting up crontab for dynamic DNS updates"
+  log "(${SERVICE_NAME}) Setting up crontab"
 
   # remove existing crontab entries for this script
   crontab -l | grep -v "$CURR_DIR/entrypoint.sh" | crontab -
 
   # add new crontab entry
   echo "${CRONTAB_FREQUENCY} $CURR_DIR/entrypoint.sh start" | crontab -
-
-  if [ $? -eq 0 ]; then
-    log "Crontab setup successful"
-  else
-    log "Crontab setup failed"
-  fi
 }
 
 start_dns_update() {
-  log "Starting inadyn container for dynamic DNS updates"
+  log "(${SERVICE_NAME}) Starting inadyn container..."
 
   init_dirs
 
@@ -50,11 +45,7 @@ start_dns_update() {
     -v ${CACHE_PATH}:/var/cache/inadyn \
     $INADYN_IMAGE -1 --cache-dir=/var/cache/inadyn > /dev/null 2>&1
 
-  if [ $? -eq 0 ]; then
-    log "DNS update successful"
-  else
-    log "DNS update failed"
-  fi
+  start_crontab
 }
 
 ## MAIN
@@ -62,9 +53,11 @@ start_dns_update() {
 case $1 in
   start)
     start_dns_update
+    log "(${SERVICE_NAME}) Service executed!"
     ;;
   cron)
     start_crontab
+    log "(${SERVICE_NAME}) Service cronjob set!"
     ;;
   *)
     usage
