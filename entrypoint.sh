@@ -66,7 +66,7 @@ stop() {
 
 case $1 in
   start)
-    start
+    start $2
     ;;
   stop)
     stop
