@@ -49,6 +49,7 @@ usage() {
   echo "  --k8                - only setup/remove microk8s"
   echo "  --cert              - only setup/remove cert-manager"
   echo "  --ingress           - only setup/remove ingress controller"
+  echo "  --expose            - expose cluster to the internet (install cert-manager and ingress controller)"
 }
 
 # installs snap if not already installed
@@ -217,24 +218,27 @@ setup() {
       ;;
     *)
 
-      if [ -n "$1" ]; then
+      if [ -n "$1" ] && [[ $1 != "--expose" ]]; then
         log ERROR "[Kubernetes] Invalid option: $1"
         usage
-      else
-        sudo apt update
-        install_snap
-        install_microk8s
+      fi
+
+      sudo apt update
+      install_snap
+      install_microk8s
+      configure_docker_credentials
+
+      if [[ $1 == "--expose" ]]; then
         install_cert_manager
         install_ingress_controller
-        configure_docker_credentials
-        
-        # run uninstall if setup fails
-        if [ $? -ne 0 ]; then
-          log ERROR "[Kubernetes] Setup failed. Running teardown..."
-          teardown
-        else
-          log "[MicroK8s] Setup complete!"
-        fi
+      fi
+      
+      # run uninstall if setup fails
+      if [ $? -ne 0 ]; then
+        log ERROR "[Kubernetes] Setup failed. Running teardown..."
+        teardown
+      else
+        log "[MicroK8s] Setup complete!"
       fi
   esac
 }
