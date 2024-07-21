@@ -76,8 +76,8 @@ init_nginx_conf() {
 
   stream {
     upstream services {
-        server ${REGISTRY_HOST}:${REGISTRY_PORT};
-        server ${K8_HOST}:${K8_HTTPS_PORT};
+        server ${K8_HOST}:${K8_HTTPS_PORT} max_fails=3 fail_timeout=30s;
+        server ${REGISTRY_HOST}:${REGISTRY_PORT} max_fails=3 fail_timeout=30s;
     }
 
     server {
@@ -92,7 +92,7 @@ init_nginx_conf() {
   " > $NGINX_CONF_PATH
 
   # restrict write permissions to owner
-  chmod 600 $NGINX_CONF_PATH
+  chmod 644 $NGINX_CONF_PATH
 }
 
 stop_nginx() {
