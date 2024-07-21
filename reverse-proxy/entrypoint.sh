@@ -51,6 +51,14 @@ get_k8_https_port() {
   fi
 }
 
+is_nginx_running() {
+  if [ -n "$(sudo docker ps -q -f name=${NGINX_CONTAINER_NAME})" ]; then
+    echo "true"
+  else
+    echo "false"
+  fi
+}
+
 init_nginx_conf() {
   # try to get port for k8 cluster load balancer (nginx-ingress)
   if [ -n "$(get_k8_https_port)" ]; then
@@ -85,10 +93,25 @@ init_nginx_conf() {
   chmod 600 $NGINX_CONF_PATH
 }
 
+stop_nginx() {
+  sudo docker stop ${NGINX_CONTAINER_NAME}
+
+  if [ $? -eq 0 ]; then
+    log "Successfully stopped reverse proxy container"
+  else
+    log ERROR "Failed to stop reverse proxy container"
+  fi
+}
+
 start_nginx() {
-  log "Starting reverse proxy container"
+  log "Starting reverse proxy container..."
 
   init_nginx_conf
+
+  if [ "$(is_nginx_running)" == "true" ]; then
+    log WARN "Stopping existing reverse proxy container..."
+    stop_nginx
+  fi
 
   sudo docker run --rm --detach \
     -v ${NGINX_CONF_PATH}:/etc/nginx/nginx.conf:ro \
@@ -105,20 +128,6 @@ start_nginx() {
   else
     log ERROR "Failed to start reverse proxy container"
   fi
-}
-
-stop_nginx() {
-  sudo docker stop ${NGINX_CONTAINER_NAME}
-
-  if [ $? -eq 0 ]; then
-    log "Successfully stopped reverse proxy container"
-  else
-    log ERROR "Failed to stop reverse proxy container"
-  fi
-}
-
-get_logs() {
-  sudo docker logs -f ${NGINX_CONTAINER_NAME}
 }
 
 # == SCRIPTS ==================================================================
