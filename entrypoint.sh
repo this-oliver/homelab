@@ -3,10 +3,10 @@
 ## CONSTANTS
 
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-DNS_UPDATE_SCRIPT_PATH=$CURRENT_DIR/dns-update/entrypoint.sh
-REGISTRY_SCRIPT_PATH=$CURRENT_DIR/registry/entrypoint.sh
-KUBERNETES_SCRIPT_PATH=$CURRENT_DIR/kubernetes/entrypoint.sh
-REVERSE_PROXY_SCRIPT_PATH=$CURRENT_DIR/reverse-proxy/entrypoint.sh
+DNS_UPDATE_SCRIPT_PATH="$CURRENT_DIR"/dns-update/entrypoint.sh
+REGISTRY_SCRIPT_PATH="$CURRENT_DIR"/registry/entrypoint.sh
+KUBERNETES_SCRIPT_PATH="$CURRENT_DIR"/kubernetes/entrypoint.sh
+REVERSE_PROXY_SCRIPT_PATH="$CURRENT_DIR"/reverse-proxy/entrypoint.sh
 
 source $CURRENT_DIR/utils.sh
 
@@ -14,34 +14,36 @@ source $CURRENT_DIR/utils.sh
 
 usage() {
   echo -e "\nUsage: $0 <command> <options>"
+  echo -e "\nDescription:"
+  echo "      This script is used to start and stop the homelab services (registry, kubernetes, reverse proxy, and DNS update) in the correct order and configuration."
   echo -e "\nCommands:"
-  echo "      start    Start the reverse proxy container"
-  echo "      stop     Stop the reverse proxy container"
+  echo "      start    Start up the homelab services"
+  echo "      stop     Stop the homelab services"
   echo -e "\nOptions:"
   echo "      --expose        Expose the homelab services to the internet"
 }
 
 start() {
-  
-  if [[ $1 == "--expose" ]]; then
+
+  if [[ "$1" == "--expose" ]]; then
     log "Starting Registry..."
-    bash $REGISTRY_SCRIPT_PATH start --auth
+    bash "$REGISTRY_SCRIPT_PATH" start --auth
 
     log "Starting kubernetes..."
-    bash $KUBERNETES_SCRIPT_PATH start
+    bash "$KUBERNETES_SCRIPT_PATH" start
     
     log "Starting reverse proxy..."
-    bash $REVERSE_PROXY_SCRIPT_PATH start
+    bash "$REVERSE_PROXY_SCRIPT_PATH" start
 
     log "Starting DNS update..."
-    bash $DNS_UPDATE_SCRIPT_PATH start
+    bash "$DNS_UPDATE_SCRIPT_PATH" start
 
-  elif [ -z $1 ]; then
+  elif [ -z "$1" ]; then
     log "Starting Registry..."
-    bash $REGISTRY_SCRIPT_PATH start
+    bash "$REGISTRY_SCRIPT_PATH" start
 
     log "Starting kubernetes..."
-    bash $KUBERNETES_SCRIPT_PATH start
+    bash "$KUBERNETES_SCRIPT_PATH" start
 
   else
     log ERROR "Invalid option provided: $1"
@@ -51,23 +53,23 @@ start() {
 
 stop() {
   log "Stopping DNS update..."
-  bash $DNS_UPDATE_SCRIPT_PATH stop
+  bash "$DNS_UPDATE_SCRIPT_PATH" stop
 
   log "Stopping registry..."
-  bash $REGISTRY_SCRIPT_PATH stop
+  bash "$REGISTRY_SCRIPT_PATH" stop
 
   log "Stopping kubernetes..."
-  bash $KUBERNETES_SCRIPT_PATH stop
+  bash "$KUBERNETES_SCRIPT_PATH" stop
 
   log "Stopping reverse proxy..."
-  bash $REVERSE_PROXY_SCRIPT_PATH stop
+  bash "$REVERSE_PROXY_SCRIPT_PATH" stop
 }
 
 ## MAIN
 
-case $1 in
+case "$1" in
   start)
-    start $2
+    start "$2"
     ;;
   stop)
     stop
