@@ -1,0 +1,6 @@
+{
+  "ssl": true,
+  "auth": true,
+  "username": "username",
+  "password": "password"
+}

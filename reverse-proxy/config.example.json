@@ -1,0 +1,7 @@
+{
+  "kubernetes_local_host": "127.0.0.1",
+  "kubernetes_local_port": 6443,
+  "registry_local_host": "127.0.0.1",
+  "registry_local_port": 5000,
+  "registry_remote_host": "registry.example.com"
+}

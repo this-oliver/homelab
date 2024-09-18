@@ -1,0 +1,11 @@
+{
+  "cloudflare_ca_key": "cloudflare_ca_key",
+  "registries": [
+    {
+      "registry": "docker_registry",
+      "registry_host": "docker_registry",
+      "registry_username": "docker_username",
+      "registry_password": "docker_password"
+    }
+  ]
+}

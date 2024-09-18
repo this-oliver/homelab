@@ -1,0 +1,12 @@
+{
+  "cron": "*/30 * * * *",
+  "domains": [
+    {
+      "type": "cloudflare.com",
+      "username": "example.com",
+      "password": "password",
+      "hostname": "www.example.com",
+      "proxied": true
+    }
+  ]
+}
