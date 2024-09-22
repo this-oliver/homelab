@@ -37,6 +37,13 @@ usage() {
   echo "      --log    Follow the logs of the reverse proxy container (only with \`start\` and \`restart\` commands)"
 }
 
+check_requirements() {
+  log "Checking permissions and dependencies..."
+  check_sudo
+  check_deps "docker"
+  check_group "docker"
+}
+
 get_logs() {
   sudo docker logs -f ${NGINX_CONTAINER_NAME}
 }
@@ -122,6 +129,8 @@ start_nginx() {
 }
 
 # == SCRIPTS ==================================================================
+
+check_requirements
 
 case $1 in
   start)

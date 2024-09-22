@@ -53,6 +53,13 @@ usage() {
   echo "  --expose            - expose cluster to the internet (install cert-manager and ingress controller)"
 }
 
+check_requirements() {
+  log "Checking permissions and dependencies..."
+  check_sudo
+  check_deps "docker"
+  check_group "docker"
+}
+
 # installs snap if not already installed
 install_snap() {
   # install snap if not installed (see https://snapcraft.io/docs/installing-snap-on-ubuntu)
@@ -270,10 +277,12 @@ teardown() {
 
 case $1 in
   start)
+    check_requirements
     setup $2
     log "(${SERVICE_NAME}) Service started!"
     ;;
   stop)
+    check_requirements
     teardown $2
     log "(${SERVICE_NAME}) Service stopped!"
     ;;

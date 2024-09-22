@@ -38,6 +38,13 @@ usage () {
   echo "      --auth    Start the registry in Auth mode (with SSL)"
 }
 
+check_requirements() {
+  log "Checking permissions and dependencies..."
+  check_sudo
+  check_deps "docker"
+  check_group "docker"
+}
+
 set_auth () {
   log "(${SERVICE_NAME}) Setting up authentication"
   USERNAME="$(prompt "Username (leave empty for default - ${REGISTRY_DEFAULT_USERNAME}):")"
@@ -153,6 +160,7 @@ start_registry () {
 
 case $1 in
   start)
+    check_requirements
     start_registry $2
     
     if [[ "$2" == "--ssl" ]] || [[ "$2" == "--auth" ]]; then
@@ -162,6 +170,7 @@ case $1 in
     fi
     ;;
   stop)
+    check_requirements
     stop_registry
     log "(${SERVICE_NAME}) Service stopped!"
     ;;

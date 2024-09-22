@@ -23,7 +23,7 @@ check_deps() {
 
   for DEP in $DEPS; do
     if [ -z "$(which $DEP)" ]; then
-      log "Please install $DEP to continue"
+      log ERROR "Please install $DEP to continue"
       exit 1
     fi
   done
@@ -31,14 +31,14 @@ check_deps() {
 
 check_sudo() {
   if [ "$EUID" -ne 0 ]; then
-    log "Please run as a superuser (sudo)"
+    log ERROR "Please run as a superuser (sudo)"
     exit 1
   fi
 }
 
 check_group() {
   if [ -z "$(groups | grep -E "$1|root")" ]; then
-    log "Please add your user to the $1 group (sudo usermod -aG docker $USER) or run as a superuser (sudo bash $0)"
+    log ERROR "Please add your user to the $1 group (sudo usermod -aG docker $USER) or run as a superuser (sudo bash $0)"
     exit 1
   fi
 }
