@@ -21,58 +21,87 @@ usage() {
   echo "      stop     Stop the homelab services"
   echo -e "\nOptions:"
   echo "      --expose        Expose the homelab services to the internet"
+  echo "      --no-fail       Setup the next service even if the previous one fails"
+}
+
+handle_failure() {
+  _MESSAGE=$1
+  _NO_FAIL=$2
+
+  log ERROR "$_MESSAGE"
+
+  if [[ "$_NO_FAIL" = true ]]; then
+    log WARN "Continuing to the next service..."
+  else
+    exit 1
+  fi
 }
 
 start() {
+  _EXPOSE=false
+  _NO_FAIL=false
 
-  if [[ "$1" == "--expose" ]]; then
+  # check if the user wants to expose the services
+  if [[ "$@" =~ "--expose" ]]; then
+    _EXPOSE=true
+  fi
+
+  # check if the user wants to continue even if a service fails
+  if [[ "$@" =~ "--no-fail" ]]; then
+    _NO_FAIL=true
+  fi
+
+  if [[ "$_EXPOSE" = true ]]; then
     log "Starting Registry..."
-    bash "$REGISTRY_SCRIPT_PATH" start --auth
+    bash "$REGISTRY_SCRIPT_PATH" start --auth || handle_failure "Failed to start Registry." "$_NO_FAIL"
 
     log "Starting kubernetes..."
-    bash "$KUBERNETES_SCRIPT_PATH" start
+    bash "$KUBERNETES_SCRIPT_PATH" start || handle_failure "Failed to start kubernetes." "$_NO_FAIL"
     
     log "Starting reverse proxy..."
-    bash "$REVERSE_PROXY_SCRIPT_PATH" start
+    bash "$REVERSE_PROXY_SCRIPT_PATH" start || handle_failure "Failed to start reverse proxy." "$_NO_FAIL"
 
     log "Starting DNS update..."
-    bash "$DNS_UPDATE_SCRIPT_PATH" start
-
-  elif [ -z "$1" ]; then
-    log "Starting Registry..."
-    bash "$REGISTRY_SCRIPT_PATH" start
-
-    log "Starting kubernetes..."
-    bash "$KUBERNETES_SCRIPT_PATH" start
+    bash "$DNS_UPDATE_SCRIPT_PATH" start || handle_failure "Failed to start DNS update." "$_NO_FAIL"
 
   else
-    log ERROR "Invalid option provided: $1"
-    usage
+    log "Starting Registry..."
+    bash "$REGISTRY_SCRIPT_PATH" start || handle_failure "Failed to start Registry." "$_NO_FAIL"
+
+    log "Starting kubernetes..."
+    bash "$KUBERNETES_SCRIPT_PATH" start || handle_failure "Failed to start kubernetes." "$_NO_FAIL"
   fi
 }
 
 stop() {
+  _NO_FAIL=false
+
+  # check if the user wants to continue even if a service fails
+  if [[ "$@" =~ "--no-fail" ]]; then
+    _NO_FAIL=true
+  fi
+
   log "Stopping DNS update..."
-  bash "$DNS_UPDATE_SCRIPT_PATH" stop
+  bash "$DNS_UPDATE_SCRIPT_PATH" stop || handle_failure "Failed to stop DNS update." "$_NO_FAIL"
 
   log "Stopping registry..."
-  bash "$REGISTRY_SCRIPT_PATH" stop
+  bash "$REGISTRY_SCRIPT_PATH" stop || handle_failure "Failed to stop registry." "$_NO_FAIL"
 
   log "Stopping kubernetes..."
-  bash "$KUBERNETES_SCRIPT_PATH" stop
+  bash "$KUBERNETES_SCRIPT_PATH" stop || handle_failure "Failed to stop kubernetes." "$_NO_FAIL"
 
   log "Stopping reverse proxy..."
-  bash "$REVERSE_PROXY_SCRIPT_PATH" stop
+  bash "$REVERSE_PROXY_SCRIPT_PATH" stop || handle_failure "Failed to stop reverse proxy." "$_NO_FAIL"
 }
 
 ## MAIN
 
 case "$1" in
   start)
-    start "$2"
+    start "$@"
     ;;
   stop)
-    stop
+    stop "$@"
     ;;
   *)
     usage
