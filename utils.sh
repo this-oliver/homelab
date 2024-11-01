@@ -2,6 +2,7 @@
 
 # This script is a collection of utility functions that can be used in other scripts
 
+# log messages with different colors based on the message type (ERROR, WARN, normal)
 log() {
   MESSAGE=$1
   PREFIX="==== [HOMELAB]"
@@ -18,31 +19,35 @@ log() {
   fi
 }
 
+# check if the required dependencies are installed
 check_deps() {
   DEPS=$1
 
   for DEP in $DEPS; do
     if [ -z "$(which $DEP)" ]; then
-      log "Please install $DEP to continue"
+      log ERROR "Please install $DEP to continue"
       exit 1
     fi
   done
 }
 
+# check if the user is a superuser
 check_sudo() {
   if [ "$EUID" -ne 0 ]; then
-    log "Please run as a superuser (sudo)"
+    log ERROR "Please run as a superuser (sudo)"
     exit 1
   fi
 }
 
+# check if the user is in a specific group
 check_group() {
   if [ -z "$(groups | grep -E "$1|root")" ]; then
-    log "Please add your user to the $1 group (sudo usermod -aG docker $USER) or run as a superuser (sudo bash $0)"
+    log ERROR "Please add your user to the $1 group (sudo usermod -aG docker $USER) or run as a superuser (sudo bash $0)"
     exit 1
   fi
 }
 
+# add an alias to the bashrc file
 add_alias() {
   ALIAS=$1
 
@@ -53,6 +58,7 @@ add_alias() {
   fi
 }
 
+# remove an alias from the bashrc file
 remove_alias() {
   ALIAS=$1
 
@@ -63,6 +69,7 @@ remove_alias() {
   fi
 }
 
+# prompt for user input with a message and an optional secret flag (to hide the input)
 prompt() {
   MESSAGE=$1
   SECRET=$2

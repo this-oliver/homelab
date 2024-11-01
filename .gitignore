@@ -1,0 +1,9 @@
+*.conf
+
+dns-update/cache/
+dns-update/inadyn/
+
+registry/auth/
+registry/certs/
+registry/nginx/
+registry/storage/

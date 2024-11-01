@@ -21,6 +21,13 @@ usage() {
   echo "      cron     Setup crontab for dynamic DNS updates"
 }
 
+check_requirements() {
+  log "Checking permissions and dependencies..."
+  check_sudo
+  check_deps "docker"
+  check_group "docker"
+}
+
 init_dirs() {
   mkdir -p $CACHE_PATH
 }
@@ -52,10 +59,12 @@ start_dns_update() {
 
 case $1 in
   start)
+    check_requirements
     start_dns_update
     log "(${SERVICE_NAME}) Service executed!"
     ;;
   cron)
+    check_requirements
     start_crontab
     log "(${SERVICE_NAME}) Service cronjob set!"
     ;;
