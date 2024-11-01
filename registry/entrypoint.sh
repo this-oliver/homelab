@@ -45,6 +45,19 @@ check_requirements() {
   check_group "docker"
 }
 
+is_registry_running () {
+  if [ -n "$(sudo docker ps -q -f name=${REGISTRY_CONTAINER_NAME})" ]; then
+    echo "true"
+  else
+    echo "false"
+  fi
+}
+
+get_logs() {
+  sudo docker logs --follow ${REGISTRY_CONTAINER_NAME}
+}
+
+# Sets up credentials for the registry
 set_auth () {
   log "(${SERVICE_NAME}) Setting up authentication"
   USERNAME="$(prompt "Username (leave empty for default - ${REGISTRY_DEFAULT_USERNAME}):")"
@@ -74,29 +87,15 @@ set_auth () {
   sudo docker run --rm --entrypoint htpasswd ${HTPASSWD_IMAGE} -Bbn ${USERNAME} ${PASSWORD} > ${AUTH_DIR}/htpasswd
 }
 
-is_registry_running () {
-  if [ -n "$(sudo docker ps -q -f name=${REGISTRY_CONTAINER_NAME})" ]; then
-    echo "true"
-  else
-    echo "false"
-  fi
-}
-
-get_logs() {
-  sudo docker logs --follow ${REGISTRY_CONTAINER_NAME}
-}
-
+# Creates necessary directories for the registry, if they don't exist already
 init_dirs () {
   mkdir -p ${CERT_DIR}
   mkdir -p ${AUTH_DIR}
   mkdir -p ${STORAGE_DIR}
 }
 
-stop_registry () {
-  log "(${SERVICE_NAME}) Stopping the container..."
-  sudo docker stop ${REGISTRY_CONTAINER_NAME}
-}
-
+# sets up the registry with the given mode (ssl for https, auth for 
+# authentication + https or none for http)
 start_registry () {
   MODE=$1
   
@@ -154,6 +153,12 @@ start_registry () {
       ${REGISRTY_IMAGE}
   fi
 
+}
+
+# Stops the registry
+stop_registry () {
+  log "Stopping the ${APPLICATION_NAME}"
+  sudo docker stop ${REGISTRY_CONTAINER_NAME}
 }
 
 ## MAIN

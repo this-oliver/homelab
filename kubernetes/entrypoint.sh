@@ -1,7 +1,6 @@
 #!/bin/env bash
 
-# This script updates some firmware settings and installs microk8s on a
-# raspberry pi.
+# This script updates some firmware settings and installs microk8s.
 
 # == CONSTANTS ================================================================
 
@@ -60,16 +59,17 @@ check_requirements() {
   check_group "docker"
 }
 
-# installs snap if not already installed
+# installs snap if not already installed (for more info, see 
+# https://snapcraft.io/docs/installing-snap-on-ubuntu)
 install_snap() {
-  # install snap if not installed (see https://snapcraft.io/docs/installing-snap-on-ubuntu)
   if [ -z "$(which snap)" ]; then
       log "(${SERVICE_NAME}) Installing snap..."
       sudo apt install -y snapd
   fi
 }
 
-# installs microk8s, adds boot insert, enables some addons and sets up some aliases
+# installs microk8s, adds boot insert, enables some addons and sets up some
+# aliases
 install_microk8s() {
   if ! grep -q "$BOOT_INSERT" $BOOT_FILE_PATH; then
       log "(${SERVICE_NAME}) Adding '$BOOT_INSERT' to $BOOT_FILE_PATH (requires reboot)..."
@@ -103,6 +103,7 @@ install_microk8s() {
   add_alias "$ALIAS_HELM"
 }
 
+# uninstalls microk8s, removes boot insert and aliases
 uninstall_microk8s() {
   log "(${SERVICE_NAME}) Uninstalling microk8s..."
   sudo snap remove microk8s
@@ -186,6 +187,7 @@ install_ingress_controller() {
   microk8s kubectl apply -f ${INGRESS_CONTROLLER_RESOURCE}
 }
 
+# uninstalls the ingress controller
 uninstall_ingress_controller() {
   log "(${SERVICE_NAME}) Uninstalling ingress controller..."
   microk8s kubectl delete -f ${INGRESS_CONTROLLER_RESOURCE}

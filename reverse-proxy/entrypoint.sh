@@ -44,10 +44,7 @@ check_requirements() {
   check_group "docker"
 }
 
-get_logs() {
-  sudo docker logs -f ${NGINX_CONTAINER_NAME}
-}
-
+# get the port of the k8 cluster load balancer (nginx-ingress)
 get_k8_https_port() {
   if ! [ -z "$(which microk8s)" ]; then
     PORT="$(
@@ -60,6 +57,7 @@ get_k8_https_port() {
   fi
 }
 
+# check if the reverse proxy container is running
 is_nginx_running() {
   if [ -n "$(sudo docker ps -q -f name=${NGINX_CONTAINER_NAME})" ]; then
     echo "true"
@@ -68,6 +66,7 @@ is_nginx_running() {
   fi
 }
 
+# create a nginx configuration file for the reverse proxy
 init_nginx_conf() {
   # try to get port for k8 cluster load balancer (nginx-ingress)
   if [ -n "$(get_k8_https_port)" ]; then
@@ -102,11 +101,7 @@ init_nginx_conf() {
   chmod 644 $NGINX_CONF_PATH
 }
 
-stop_nginx() {
-  log "(${SERVICE_NAME}) Stopping container..."
-  sudo docker stop ${NGINX_CONTAINER_NAME}
-}
-
+# start the reverse proxy container
 start_nginx() {
   log "(${SERVICE_NAME}) Starting container..."
 
@@ -126,6 +121,21 @@ start_nginx() {
   if [ "$1" == "--log" ]; then
     get_logs
   fi
+}
+
+stop_nginx() {
+  sudo docker stop ${NGINX_CONTAINER_NAME}
+
+  if [ $? -eq 0 ]; then
+    log "Successfully stopped reverse proxy container"
+  else
+    log ERROR "Failed to stop reverse proxy container"
+  fi
+}
+
+# get the logs of the reverse proxy container
+get_logs() {
+  sudo docker logs -f ${NGINX_CONTAINER_NAME}
 }
 
 # == SCRIPTS ==================================================================

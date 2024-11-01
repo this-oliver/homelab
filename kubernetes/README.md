@@ -30,6 +30,9 @@ microk8s kubectl apply -k /path/to/your/kustomization.yaml
 
 The cluster employs a `cert-manager` that is implemented with a Cloudflare certificate issuer to automatically issue SSL certificates for the applications hosted on the cluster. All you need is a domain name hosted with Cloudflare and the Origin CA Key to leverage this feature. The `entrypoint.sh` script prompts you to enter the key which is then stored as a secret on the K8 Cluster.
 
+> [!Note]
+> The homelab supports Cloudflare as the DNS provider. If you are using a different provider, you'll need to get your hands dirty and setup a different issuer for the `cert-manager` in the `kubernetes` cluster. Some alternatives include [Let's Encrypt](https://letsencrypt.org/) and [Venafi](https://www.venafi.com/).
+
 You can leverage the `cert-manager` to issue SSL certificates for your applications by creating a `Ingress` resource with the following annotations:
 
 ```yaml
