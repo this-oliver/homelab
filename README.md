@@ -1,21 +1,6 @@
 # Homelab
 
-This repository contains the infrastructure as code for my homelab. The homelab hosts a number of applications that are managed by the following components:
+This repository sets up a lightweight and self-hosted infrastructure for my homelab where I deploy a number of applications and projects. The homelab includes a variety of services, such as:
 
-1. [kubernetes](./kubernetes/README.md) - orchestrates application deployments
-2. [registry](./registry/README.md) - hosts a private docker registry
-3. [dns-update](./dns-update/README.md) - updates DNS providers with the homelab's latest ip address
-4. [reverse-proxy](./reverse-proxy/README.md) - routes traffic to the appropriate services
-
-## Getting Started
-
-> [!TIP]
-> Many of the scripts in this repository require superuser privileges (sudo) to run, mainly, the docker commands. If you don't want to use sudo, you can add your user to the docker group by running `sudo usermod -aG docker $USER` and then logging out and back in or running `newgrp docker`.
-
-Pre-requisites:
-
-- Docker
-- MicroK8s
-
-Visit each of the directories (in the order listed above) to setup the homelab infrastructure.
-
+1. [container orchestration with `microk8s`](/docs/container-orchestration.md) - orchestrates application deployments
+2. [dynamic dns updates with `dynamic-dns`](/docs/dynamic-dns-update.md) - updates DNS providers with the homelab's latest ip address
