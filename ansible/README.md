@@ -16,3 +16,16 @@ This Ansible setup is designed to prepare a server(s) for web hosting by install
 - [ ] `microk8s` for container orchestration
   - [ ] `cert-manager` in the microk8s instance for SSL certificate management
   - [ ] `ingress-nginx` in the microk8s instance for reverse proxying
+
+## Getting Started
+
+Pre-requisites on machine running Ansible (control machine):
+
+- install python3
+- install ansible
+
+Pre-requisites on target machine(s):
+
+- install python3
+- install openssh-server
+- add the Ansible control machine's public SSH key to the target machine's `~/.ssh/authorized_keys` file for passwordless SSH access

@@ -1,0 +1,17 @@
+- name: Install welcome file
+  become: true
+  ansible.builtin.template:
+    src: ../templates/welcome.txt.j2
+    dest: /home/{{ansible_user}}/welcome.txt
+    owner: root
+    group: root
+    mode: 644
+
+- name: Install basic tools
+  become: true
+  ansible.builtin.apt:
+    pkg:
+      - vim
+      - curl
+      - podman
+    update_cache: yes

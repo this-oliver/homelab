@@ -1,0 +1,5 @@
+---
+- name: Setup Homelab
+  hosts: all
+  roles:
+    - ../roles/common
