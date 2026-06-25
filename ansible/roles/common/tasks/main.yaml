@@ -14,4 +14,3 @@
       - vim
       - curl
       - podman
-    update_cache: yes
