@@ -20,6 +20,16 @@ To install a homelab, run:
 ansible-playbook -i ansible/inventory.yaml ansible/playbooks/homelab.yaml
 ```
 
+- `-i <PATH>`: ansible inventory path
+
+To install with a loadbalancer, run:
+
+```bash
+ansible-playbook -i ansible/inventory.yaml -e metallb_ip_pool=123.123.123.180-123.123.123.190 ansible/playbooks/homelab.yaml
+```
+
+- `-e <VAR>`: ansible variables
+
 To uninstall, run:
 
 ```bash

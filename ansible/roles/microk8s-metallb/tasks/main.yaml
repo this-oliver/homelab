@@ -1,0 +1,34 @@
+# Objective: Setup MetalLB, a baremetal loadbalanacer, for
+# microk8s.
+#
+# Requirements:
+# - Ensure that the microk8s snap is installed on the system
+#
+# Supported variables:
+# - uninstall: <boolean> - true causes task to uninstall microk8s
+# - metallb_ip_pool: <string> - IP address pool for MetalLB to use
+
+- name: Check if microk8s snap is installed
+  command: snap list microk8s
+  register: microk8s_check
+  failed_when: false
+  changed_when: false
+  check_mode: false
+
+- name: Install MetalLB
+  when: uninstall is false and microk8s_check.rc == 0
+  block:
+    - name: Fail if "metallb_ip_pool" is undefined
+      ansible.builtin.fail: msg="Bailing out. This task requires 'metallb_ip_pool'"
+      when: metallb_ip_pool is undefined
+
+    - name: Enable MetalLB
+      become: true
+      command: microk8s enable "metallb:{{metallb_ip_pool}}"
+
+- name: Uninstall MetalLB
+  when: uninstall is true and microk8s_check.rc == 0
+  block:
+    - name: Disable MetalLB
+      become: true
+      command: microk8s disable metallb

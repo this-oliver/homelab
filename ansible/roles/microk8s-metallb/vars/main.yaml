@@ -1,0 +1,7 @@
+# IP Addresses for MetalLB. `ip` supports one of
+# the following formats:
+# - single: 123.123.123.180
+# - range: 123.123.123.180-123.123.123.190
+# - comma separated range: 123.123.123.180,123.123.123.181,123.123.123.183
+
+# metallb_ip_pool: <IP_ADDRESS_POOL>

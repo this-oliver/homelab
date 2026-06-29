@@ -7,3 +7,4 @@
     - role: ../roles/common
       when: not uninstall
     - role: ../roles/microk8s
+    - role: ../roles/microk8s-metallb
