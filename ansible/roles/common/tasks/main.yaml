@@ -14,3 +14,24 @@
       - vim
       - curl
       - podman
+
+- name: Setup homelab group
+  become: true
+  ansible.builtin.group:
+    name: homelab
+    state: present
+
+- name: Add user to homelab group
+  become: true
+  ansible.builtin.user:
+    name: "{{ ansible_facts['user_id'] }}"
+    groups: homelab
+    append: true
+
+- name: Create a homelab dir
+  become: true
+  ansible.builtin.file:
+    path: "/homelab"
+    state: directory
+    group: homelab
+    mode: 740
