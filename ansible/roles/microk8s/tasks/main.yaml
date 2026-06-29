@@ -19,38 +19,40 @@
 - name: Install microk8s
   when: uninstall is false
   block:
-    - name: Install snap
+    - name: Install Snap
       become: true
       ansible.builtin.apt:
         state: present
         pkg:
           - snapd
 
-    - name: Install microk8s with snap
+    - name: Install Microk8s
       become: true
       community.general.snap:
         classic: true
         channel: "{{ '1.30' if raspi | default(false) else '1.35' }}"
-        name:
-          - microk8s
+        name: microk8s
 
-    - name: Setup microk8s group
+    - name: Create microk8s group
+      become: true
       ansible.builtin.group:
         name: microk8s
         state: present
 
-    - name: Add user to microk8s group
+    - name: Add "{{ ansible_facts['user_id'] }}" user to microk8s group
+      become: true
       ansible.builtin.user:
         name: "{{ ansible_facts['user_id'] }}"
         groups: microk8s
         append: true
 
-    - name: Add microk8s group to .kube dir
+    - name: Add microk8s group to "/home/{{ ansible_facts['user_id'] }}/.kube"
       become: true
       ansible.builtin.file:
         path: "/home/{{ ansible_facts['user_id'] }}/.kube"
         group: microk8s
-        mode: 770
+        state: directory
+        mode: 2750
         recurse: true
 
     - name: Start microk8s
@@ -110,7 +112,7 @@
 
     - name: Enable microk8s common modules
       become: true
-      command: microk8s enable "{{ item }}"
+      command: microk8s enable {{ item }}
       loop: "{{ addon }}"
 
 - name: Uninstall microk8s
