@@ -1,8 +1,11 @@
 ---
-- name: Manage Homelab
+- name: Homelab
   hosts: all
   vars:
-    uninstall: false
+    uninstall: false                    # uninstall almost everything
+    cloud: false                        # host is running in cloud provider environement
+    raspi: false                        # host is running on Raspberry Pi
+
   roles:
     - role: ../roles/common
       when: not uninstall

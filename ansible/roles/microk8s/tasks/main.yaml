@@ -4,16 +4,6 @@
 # Supported variables:
 # - uninstall <boolean> - true causes task to uninstall microk8s
 
-# see https://canonical.com/microk8s/docs/install-raspberry-pi
-- name: Check if host is running on a Raspberry Pi
-  shell: uname -a
-  register: uname_scan
-
-- name: Set raspi_hardware fact
-  when: uname_scan.stdout.find('raspi') is not false
-  set_fact:
-    raspi_hardware: true
-
 - name: Check if microk8s snap is installed
   command: snap list microk8s
   register: microk8s_check
@@ -40,7 +30,7 @@
       become: true
       community.general.snap:
         classic: true
-        channel: "{{ '1.30' if raspi_hardware | default(false) else '1.35' }}"
+        channel: "{{ '1.30' if raspi | default(false) else '1.35' }}"
         name:
           - microk8s
 
@@ -71,6 +61,7 @@
       become: true
       command: microk8s status --wait-ready
 
+    # see https://canonical.com/microk8s/docs/install-raspberry-pi
     - name: Install Raspberry Pi deps (Raspi Only)
       become: true
       ansible.builtin.apt:
@@ -78,7 +69,7 @@
         pkg:
           - linux-modules-extra-raspi
       when:
-        - raspi_hardware | default(false) is true
+        - raspi | default(false) is true
         - ansible_facts["distribution"] == 'Ubuntu'
         - ansible_facts["distribution_version"] is version('24.04', '<')
 
@@ -89,13 +80,14 @@
         - /boot/firmware/cmdline.txt
         - /boot/firmware/nobtcmd.txt
       register: cmdline_stat
-      when: raspi_hardware | default(false) is true
+      when: raspi | default(false) is true
 
     - name: Set list of existing cmdline files (Raspi Only)
       ansible.builtin.set_fact:
         cmdline_files: "{{ cmdline_stat.results | selectattr('stat.exists') | map(attribute='item') | list }}"
-      when: raspi_hardware | default(false) is true
+      when: raspi | default(false) is true
 
+    # see https://canonical.com/microk8s/docs/install-raspberry-pi
     - name: Ensure cgroup memory kernel params are present in boot cmdline (Raspi Only)
       become: true
       ansible.builtin.lineinfile:
@@ -105,7 +97,7 @@
         backrefs: true
         backup: true
       loop: "{{ cmdline_files }}"
-      when: raspi_hardware | default(false) is true and cmdline_files | length > 0
+      when: raspi | default(false) is true and cmdline_files | length > 0
       register: cmdline_updated
 
     - name: Reboot to apply kernel cgroup params (Raspi Only)
@@ -113,23 +105,13 @@
       ansible.builtin.reboot:
         reboot_timeout: 120
       when:
-        - raspi_hardware | default(false) is true
+        - raspi | default(false) is true
         - cmdline_updated is changed
 
     - name: Enable microk8s common modules
       become: true
       command: microk8s enable "{{ item }}"
       loop: "{{ addon }}"
-
-    - name: Add `kubectl=microk8s kubectl` alias
-      become: true
-      ansible.builtin.lineinfile:
-        path: /etc/profile.d/microk8s.sh
-        regexp: '^(?!.*kubectl=)(.*)$'
-        line: '\1 kubectl=microk8s kubectl'
-        backrefs: true
-        backup: true
-        create: true
 
 - name: Uninstall microk8s
   when: uninstall is true
