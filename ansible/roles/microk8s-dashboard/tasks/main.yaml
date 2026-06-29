@@ -1,0 +1,46 @@
+# Objective: Setup dashboard for microk8s.
+#
+# Requirements:
+# - Ensure that the microk8s snap is installed on the system
+#
+# Supported variables:
+# - uninstall: <boolean> - true causes task to uninstall microk8s
+
+- name: Check if microk8s snap is installed
+  command: snap list microk8s
+  register: microk8s_check
+  failed_when: false
+  changed_when: false
+  check_mode: false
+
+- name: Install Dashboard
+  when: uninstall is false and microk8s_check.rc == 0
+  block:
+    - name: Enable rbac
+      become: true
+      command: microk8s enable rbac
+
+    - name: Remove old headlamp deployment files
+      become: true
+      command: rm -rf /homelab/microk8s/headlamp
+
+    # NOTE: Assumes that microk8s group has been created and
+    # user is part of the group
+    - name: Copy headlamp deployment files
+      become: true
+      ansible.builtin.copy:
+        src: headlamp/
+        dest: /homelab/microk8s/headlamp/
+        group: homelab
+        mode: '0644'
+
+    - name: Install headlamp
+      become: true
+      command: microk8s kubectl apply -k /homelab/microk8s/headlamp/
+
+- name: Uninstall Dashboard
+  when: uninstall is true and microk8s_check.rc == 0
+  block:
+    - name: Info
+      ansible.builtin.debug:
+        msg: Uninstall microk8s dashboard not supported
