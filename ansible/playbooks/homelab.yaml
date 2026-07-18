@@ -1,14 +1,30 @@
 ---
-- name: Homelab
-  hosts: all
+- hosts: all
   vars:
     uninstall: false                    # uninstall almost everything
     cloud: false                        # host is running in cloud provider environement
     raspi: false                        # host is running on Raspberry Pi
+  tasks:
+    - name: Install Homelab
+      when: uninstall is false
+      block:
+        - ansible.builtin.include_role:
+            name: "{{ item }}"
+          loop:
+            - ../roles/common
+            - ../roles/k8s-base-kubectl
+            - ../roles/k8s-base-microk8s
+            - ../roles/k8s-extension-metallb
+            - ../roles/k8s-extension-dashboard
 
-  roles:
-    - role: ../roles/common
-    - role: ../roles/k8s-base-kubectl
-    - role: ../roles/k8s-base-microk8s
-    - role: ../roles/k8s-extension-metallb
-    - role: ../roles/k8s-extension-dashboard
+    - name: Uninstall Homelab
+      when: uninstall is true
+      block:
+        - ansible.builtin.include_role:
+            name: "{{ item }}"
+          loop:
+            - ../roles/k8s-extension-dashboard
+            - ../roles/k8s-extension-metallb
+            - ../roles/k8s-base-microk8s
+            - ../roles/k8s-base-kubectl
+            - ../roles/common
