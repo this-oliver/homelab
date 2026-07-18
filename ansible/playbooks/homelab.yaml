@@ -9,6 +9,7 @@
   roles:
     - role: ../roles/common
       when: not uninstall
+    - role: ../roles/k8s-base-kubectl
     - role: ../roles/k8s-base-microk8s
     - role: ../roles/k8s-extension-metallb
     - role: ../roles/k8s-extension-dashboard

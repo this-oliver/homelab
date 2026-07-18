@@ -5,3 +5,5 @@ addon:
   - helm3
   - cis-hardening
   - hostpath-storage
+
+kubeconfig_path: /var/snap/microk8s/current/config.yaml
