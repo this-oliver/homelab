@@ -1,0 +1,40 @@
+# Objective: Setup Traefik.
+#
+# Supported variables:
+# - uninstall: <boolean> - true causes task to uninstall Traefik
+
+- name: Check if kubectl is installed
+  ansible.builtin.command: which kubectl
+  register: kubectl_check
+  failed_when: false
+  changed_when: false
+  check_mode: false
+
+- name: Set kubectl_installed fact
+  when: kubectl_check.rc == 0
+  set_fact:
+    kubectl_installed: true
+
+- name: Install Traefik
+  when: uninstall is false and kubectl_installed is true
+  block:
+    - name: Install Traefik via Kubectl
+      become: true
+      ansible.builtin.command: |
+        kubectl apply \
+          -f "https://raw.githubusercontent.com/traefik/traefik/v{{ traefik_version }}/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml"
+
+    - name: Install Traefik RBAC via Kubectl
+      become: true
+      ansible.builtin.command: |
+        kubectl apply \
+          -f "https://raw.githubusercontent.com/traefik/traefik/v{{ traefik_version }}/docs/content/reference/dynamic-configuration/kubernetes-crd-rbac.yml"
+
+- name: Uninstall Traefik
+  when: uninstall is true and kubectl_installed is true
+  block:
+    - name: Delete all Traefik resources
+      become: true
+      ansible.builtin.command: |
+        kubectl delete \
+          -f "https://github.com/cert-manager/cert-manager/releases/download/v{{cert_manager_version}}/cert-manager.yaml"

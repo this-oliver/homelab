@@ -1,0 +1,34 @@
+# Objective: Setup Cert Manager.
+#
+# Supported variables:
+# - uninstall: <boolean> - true causes task to uninstall Cert Manager
+
+- name: Check if kubectl is installed
+  ansible.builtin.command: which kubectl
+  register: kubectl_check
+  failed_when: false
+  changed_when: false
+  check_mode: false
+
+- name: Set kubectl_installed fact
+  when: kubectl_check.rc == 0
+  set_fact:
+    kubectl_installed: true
+
+- name: Install Cert Manager
+  when: uninstall is false and kubectl_installed is true
+  block:
+    - name: Install Cert Manager via Kubectl
+      become: true
+      ansible.builtin.command: |
+        kubectl apply \
+          -f "https://github.com/cert-manager/cert-manager/releases/download/v{{cert_manager_version}}/cert-manager.yaml"
+
+- name: Uninstall Cert Manager
+  when: uninstall is true and kubectl_installed is true
+  block:
+    - name: Delete all cert manager resources
+      become: true
+      ansible.builtin.command: |
+        kubectl delete \
+          -f "https://github.com/cert-manager/cert-manager/releases/download/v{{cert_manager_version}}/cert-manager.yaml"

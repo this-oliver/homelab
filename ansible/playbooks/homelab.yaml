@@ -16,6 +16,8 @@
             - ../roles/k8s-base-microk8s
             - ../roles/k8s-extension-metallb
             - ../roles/k8s-extension-dashboard
+            - ../roles/k8s-extension-traefik
+            - ../roles/k8s-extension-cert-manager
 
     - name: Uninstall Homelab
       when: uninstall is true
@@ -23,6 +25,8 @@
         - ansible.builtin.include_role:
             name: "{{ item }}"
           loop:
+            - ../roles/k8s-extension-cert-manager
+            - ../roles/k8s-extension-traefik
             - ../roles/k8s-extension-dashboard
             - ../roles/k8s-extension-metallb
             - ../roles/k8s-base-microk8s
