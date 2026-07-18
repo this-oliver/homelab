@@ -9,7 +9,7 @@
 # - metallb_ip_pool: <string> - IP address pool for MetalLB to use
 
 - name: Check if microk8s snap is installed
-  command: snap list microk8s
+  ansible.builtin.command: snap list microk8s
   register: microk8s_check
   failed_when: false
   changed_when: false
@@ -24,11 +24,11 @@
 
     - name: Enable MetalLB
       become: true
-      command: microk8s enable "metallb:{{metallb_ip_pool}}"
+      ansible.builtin.command: microk8s enable "metallb:{{metallb_ip_pool}}"
 
 - name: Uninstall MetalLB
   when: uninstall is true and microk8s_check.rc == 0
   block:
     - name: Disable MetalLB
       become: true
-      command: microk8s disable metallb
+      ansible.builtin.command: microk8s disable metallb
