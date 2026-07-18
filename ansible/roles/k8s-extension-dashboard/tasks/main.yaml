@@ -41,6 +41,11 @@
 - name: Uninstall Dashboard
   when: uninstall is true and microk8s_check.rc == 0
   block:
-    - name: Info
-      ansible.builtin.debug:
-        msg: Uninstall microk8s dashboard not supported
+    - name: Ensure that headlamp kustomize file exists
+      ansible.builtin.file:
+        path: /homelab/microk8s/headlamp/kustomization.yaml
+        state: file
+
+    - name: Delete all services
+      become: true
+      ansible.builtin.command: kubectl delete -k /homelab/microk8s/headlamp/
