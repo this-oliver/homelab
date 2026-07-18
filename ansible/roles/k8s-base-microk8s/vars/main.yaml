@@ -1,9 +1,9 @@
 addon:
+  - cis-hardening
   - dns
-  - rbac
   - helm
   - helm3
-  - cis-hardening
   - hostpath-storage
+  - rbac
 
 kubeconfig_path: /var/snap/microk8s/current/config.yaml
