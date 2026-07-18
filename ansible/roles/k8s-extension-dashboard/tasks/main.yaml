@@ -46,6 +46,6 @@
         path: /homelab/microk8s/headlamp/kustomization.yaml
         state: file
 
-    - name: Delete all services
+    - name: Delete all headlamp resources
       become: true
       ansible.builtin.command: kubectl delete -k /homelab/microk8s/headlamp/

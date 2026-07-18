@@ -29,7 +29,7 @@
   deb822_repository:
     name: kubernetes
     types: deb
-    uris: https://pkgs.k8s.io/core:/stable:/v{{ k8s_version }}/deb/
+    uris: "https://pkgs.k8s.io/core:/stable:/v{{ k8s_version }}/deb/"
     suites: "{{ ansible_facts['distribution_release'] }}"
     components: stable
     signed_by: /etc/apt/keyrings/kubernetes-apt-keyring.gpg

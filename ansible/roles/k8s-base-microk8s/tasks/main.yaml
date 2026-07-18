@@ -57,59 +57,61 @@
       become: true
       ansible.builtin.command: microk8s status --wait-ready
 
-    # see https://canonical.com/microk8s/docs/install-raspberry-pi
-    - name: Install Raspberry Pi deps (Raspi Only)
-      become: true
-      ansible.builtin.apt:
-        state: present
-        pkg:
-          - linux-modules-extra-raspi
-      when:
-        - raspi | default(false) is true
-        - ansible_facts["distribution"] == 'Ubuntu'
-        - ansible_facts["distribution_version"] is version('24.04', '<')
+    - name: Configure for Raspberry Pi
+      block:
+        # see https://canonical.com/microk8s/docs/install-raspberry-pi
+        - name: Install Raspberry Pi deps (Raspi Only)
+          become: true
+          ansible.builtin.apt:
+            state: present
+            pkg:
+              - linux-modules-extra-raspi
+          when:
+            - raspi | default(false) is true
+            - ansible_facts["distribution"] == 'Ubuntu'
+            - ansible_facts["distribution_version"] is version('24.04', '<')
 
-    - name: Stat boot cmdline locations for cgroup params (Raspi Only)
-      ansible.builtin.stat:
-        path: "{{ item }}"
-      loop:
-        - /boot/firmware/cmdline.txt
-        - /boot/firmware/nobtcmd.txt
-      register: cmdline_stat
-      when: raspi | default(false) is true
+        - name: Stat boot cmdline locations for cgroup params (Raspi Only)
+          ansible.builtin.stat:
+            path: "{{ item }}"
+          loop:
+            - /boot/firmware/cmdline.txt
+            - /boot/firmware/nobtcmd.txt
+          register: cmdline_stat
+          when: raspi | default(false) is true
 
-    - name: Set list of existing cmdline files (Raspi Only)
-      ansible.builtin.set_fact:
-        cmdline_files: "{{ cmdline_stat.results | selectattr('stat.exists') | map(attribute='item') | list }}"
-      when: raspi | default(false) is true
+        - name: Set list of existing cmdline files (Raspi Only)
+          ansible.builtin.set_fact:
+            cmdline_files: "{{ cmdline_stat.results | selectattr('stat.exists') | map(attribute='item') | list }}"
+          when: raspi | default(false) is true
 
-    # see https://canonical.com/microk8s/docs/install-raspberry-pi
-    - name: Ensure cgroup memory kernel params are present in boot cmdline (Raspi Only)
-      become: true
-      ansible.builtin.lineinfile:
-        path: "{{ item }}"
-        regexp: '^(?!.*cgroup_enable=memory)(.*)$'
-        line: '\1 cgroup_enable=memory cgroup_memory=1'
-        backrefs: true
-        backup: true
-      loop: "{{ cmdline_files }}"
-      when: raspi | default(false) is true and cmdline_files | length > 0
-      register: cmdline_updated
+        # see https://canonical.com/microk8s/docs/install-raspberry-pi
+        - name: Ensure cgroup memory kernel params are present in boot cmdline (Raspi Only)
+          become: true
+          ansible.builtin.lineinfile:
+            path: "{{ item }}"
+            regexp: '^(?!.*cgroup_enable=memory)(.*)$'
+            line: '\1 cgroup_enable=memory cgroup_memory=1'
+            backrefs: true
+            backup: true
+          loop: "{{ cmdline_files }}"
+          when: raspi | default(false) is true and cmdline_files | length > 0
+          register: cmdline_updated
 
-    - name: Reboot to apply kernel cgroup params (Raspi Only)
-      become: true
-      ansible.builtin.reboot:
-        reboot_timeout: 120
-      when:
-        - raspi | default(false) is true
-        - cmdline_updated is changed
+        - name: Reboot to apply kernel cgroup params (Raspi Only)
+          become: true
+          ansible.builtin.reboot:
+            reboot_timeout: 120
+          when:
+            - raspi | default(false) is true
+            - cmdline_updated is changed
 
     - name: Enable microk8s common modules
       become: true
       ansible.builtin.command: microk8s enable {{ item }}
       loop: "{{ addon }}"
 
-    - name: Configure Kubectl CLI for Microk8s
+    - name: Configure for Kubectl CLI
       block:
         - name: Check if kubectl is installed
           ansible.builtin.command: which kubectl
