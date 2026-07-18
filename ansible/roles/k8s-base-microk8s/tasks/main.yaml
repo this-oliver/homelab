@@ -33,12 +33,6 @@
         channel: "{{ '1.30' if raspi | default(false) else '1.35' }}"
         name: microk8s
 
-    - name: Create microk8s group
-      become: true
-      ansible.builtin.group:
-        name: microk8s
-        state: present
-
     - name: Add "{{ ansible_facts['user_id'] }}" user to microk8s group
       become: true
       ansible.builtin.user:
