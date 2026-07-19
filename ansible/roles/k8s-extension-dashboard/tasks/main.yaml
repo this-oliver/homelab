@@ -48,4 +48,4 @@
 
     - name: Delete all headlamp resources
       become: true
-      ansible.builtin.command: kubectl delete -k /homelab/microk8s/headlamp/
+      ansible.builtin.command: kubectl delete --ignore-not-found=true -k /homelab/microk8s/headlamp/

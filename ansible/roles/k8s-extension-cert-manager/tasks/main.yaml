@@ -31,4 +31,5 @@
       become: true
       ansible.builtin.command: |
         kubectl delete \
+          --ignore-not-found=true \
           -f "https://github.com/cert-manager/cert-manager/releases/download/v{{cert_manager_version}}/cert-manager.yaml"

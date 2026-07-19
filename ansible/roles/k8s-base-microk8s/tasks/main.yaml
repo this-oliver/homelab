@@ -60,7 +60,7 @@
     - name: Configure for Raspberry Pi
       block:
         # see https://canonical.com/microk8s/docs/install-raspberry-pi
-        - name: Install Raspberry Pi deps (Raspi Only)
+        - name: Install Raspberry Pi deps
           become: true
           ansible.builtin.apt:
             state: present
@@ -71,7 +71,7 @@
             - ansible_facts["distribution"] == 'Ubuntu'
             - ansible_facts["distribution_version"] is version('24.04', '<')
 
-        - name: Stat boot cmdline locations for cgroup params (Raspi Only)
+        - name: Stat boot cmdline locations for cgroup params
           ansible.builtin.stat:
             path: "{{ item }}"
           loop:
@@ -80,13 +80,13 @@
           register: cmdline_stat
           when: raspi | default(false) is true
 
-        - name: Set list of existing cmdline files (Raspi Only)
+        - name: Set list of existing cmdline files
           ansible.builtin.set_fact:
             cmdline_files: "{{ cmdline_stat.results | selectattr('stat.exists') | map(attribute='item') | list }}"
           when: raspi | default(false) is true
 
         # see https://canonical.com/microk8s/docs/install-raspberry-pi
-        - name: Ensure cgroup memory kernel params are present in boot cmdline (Raspi Only)
+        - name: Ensure cgroup memory kernel params are present in boot cmdline
           become: true
           ansible.builtin.lineinfile:
             path: "{{ item }}"
@@ -98,7 +98,7 @@
           when: raspi | default(false) is true and cmdline_files | length > 0
           register: cmdline_updated
 
-        - name: Reboot to apply kernel cgroup params (Raspi Only)
+        - name: Reboot to apply kernel cgroup params
           become: true
           ansible.builtin.reboot:
             reboot_timeout: 120

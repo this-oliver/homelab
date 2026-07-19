@@ -5,10 +5,10 @@
     cloud: false                        # host is running in cloud provider environement
     raspi: false                        # host is running on Raspberry Pi
   tasks:
-    - name: Install Homelab
-      when: uninstall is false
+    - when: uninstall is false
       block:
-        - ansible.builtin.include_role:
+        - name: Install Homelab
+          ansible.builtin.include_role:
             name: "{{ item }}"
           loop:
             - ../roles/common
@@ -19,18 +19,3 @@
             - ../roles/k8s-extension-dashboard
             - ../roles/k8s-extension-traefik
             - ../roles/k8s-extension-cert-manager
-
-    - name: Uninstall Homelab
-      when: uninstall is true
-      block:
-        - ansible.builtin.include_role:
-            name: "{{ item }}"
-          loop:
-            - ../roles/k8s-extension-cert-manager
-            - ../roles/k8s-extension-traefik
-            - ../roles/k8s-extension-dashboard
-            - ../roles/k8s-extension-metallb
-            - ../roles/k8s-base-microk8s
-            - ../roles/k8s-base-helm
-            - ../roles/k8s-base-kubectl
-            - ../roles/common

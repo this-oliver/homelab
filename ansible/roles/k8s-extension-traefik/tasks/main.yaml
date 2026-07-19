@@ -33,8 +33,16 @@
 - name: Uninstall Traefik
   when: uninstall is true and kubectl_installed is true
   block:
-    - name: Delete all Traefik resources
+    - name: Delete Traefik resources
       become: true
       ansible.builtin.command: |
         kubectl delete \
-          -f "https://github.com/cert-manager/cert-manager/releases/download/v{{cert_manager_version}}/cert-manager.yaml"
+          --ignore-not-found=true \
+          -f "https://raw.githubusercontent.com/traefik/traefik/v{{ traefik_version }}/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml"
+
+    - name: Delete Traefik RBAC
+      become: true
+      ansible.builtin.command: |
+        kubectl delete \
+          --ignore-not-found=true \
+          -f "https://raw.githubusercontent.com/traefik/traefik/v{{ traefik_version }}/docs/content/reference/dynamic-configuration/kubernetes-crd-rbac.yml"
