@@ -1,0 +1,23 @@
+- name: Install Helm
+  when: uninstall is false
+  block:
+    - name: Install packages needed to setup Helm apt repository
+      become: true
+      ansible.builtin.apt:
+        pkg:
+          - apt-transport-https
+          - curl
+          - gpg
+
+    - name: Install Helm
+      ansible.builtin.script:
+        cmd: script.sh --version "{{ helm_version }}"
+
+- name: Uninstall Helm
+  when: uninstall is true
+  block:
+    - name: Uninstall Helm
+      become: true
+      ansible.builtin.file:
+        path: /usr/local/bin/helm
+        state: absent

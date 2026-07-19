@@ -13,6 +13,7 @@
           loop:
             - ../roles/common
             - ../roles/k8s-base-kubectl
+            - ../roles/k8s-base-helm
             - ../roles/k8s-base-microk8s
             - ../roles/k8s-extension-metallb
             - ../roles/k8s-extension-dashboard
@@ -30,5 +31,6 @@
             - ../roles/k8s-extension-dashboard
             - ../roles/k8s-extension-metallb
             - ../roles/k8s-base-microk8s
+            - ../roles/k8s-base-helm
             - ../roles/k8s-base-kubectl
             - ../roles/common
