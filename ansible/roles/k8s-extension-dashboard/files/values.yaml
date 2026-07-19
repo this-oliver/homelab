@@ -1,0 +1,137 @@
+# Default values for headlamp.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+# See: https://github.com/kubernetes-sigs/headlamp/blob/main/charts/headlamp/values.yaml
+
+# -- Number of desired pods
+replicaCount: 1
+
+automountServiceAccountToken: true
+
+serviceAccount:
+  # -- Specifies whether a service account should be created
+  create: true
+  # -- Annotations to add to the service account
+  annotations: {}
+  # -- The name of the service account to use.(If not set and create is true, a name is generated using the fullname template)
+  name: "headlamp-admin"
+
+clusterRoleBinding:
+  # -- Specified whether a cluster role binding should be created
+  create: true
+  # -- Set name of the Cluster Role with limited permissions from you cluster
+  # for example - clusterRoleName: user-ro
+  clusterRoleName: cluster-admin
+
+# -- Headlamp containers Security Context
+# When readOnlyRootFilesystem: true is set, the chart automatically adds a
+# writable emptyDir volume named "headlamp-tmp" mounted at /tmp so the
+# application can write temporary files.
+# You can override this behavior in two ways:
+#   1. Supply your own volumeMount with mountPath: /tmp — the chart will skip
+#      adding both the automatic mount and the automatic volume.
+#   2. Supply your own volume named "headlamp-tmp" (e.g. to set sizeLimit) —
+#      the chart will skip creating the volume but will still add the /tmp mount
+#      pointing to your volume.
+securityContext:
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  privileged: false
+  runAsUser: 100
+  runAsGroup: 101
+
+service:
+  # -- Annotations to add to the service
+  annotations: {}
+  # -- Kubernetes Service type
+  type: LoadBalancer
+  # -- Kubernetes Service port
+  port: 80
+  # -- Kubernetes Service port appProtocol (for the main http port)
+  appProtocol: null
+  # -- Kubernetes Service clusterIP
+  clusterIP: ""
+  # -- Kubernetes Service loadBalancerIP
+  loadBalancerIP: ""
+  # -- Kubernetes Service loadBalancerSourceRanges
+  loadBalancerSourceRanges: []
+
+ingress:
+  # -- Enable ingress controller resource
+  enabled: false
+  # -- Annotations for Ingress resource
+  annotations:
+    {}
+    # kubernetes.io/tls-acme: "true"
+
+  # -- Additional labels to add to the Ingress resource
+  labels: {}
+    # app.kubernetes.io/part-of: traefik
+    # environment: prod
+
+  # -- Ingress class name. replacement for the deprecated "kubernetes.io/ingress.class" annotation
+  ingressClassName: ""
+
+# HTTPRoute configuration for Gateway API
+# Please refer to https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.HTTPRoute
+httpRoute:
+  # -- Enable HTTPRoute resource for Gateway API
+  enabled: false
+  # -- Annotations for HTTPRoute resource
+  annotations: {}
+  # -- Additional labels for HTTPRoute resource
+  labels: {}
+  # -- Parent references (REQUIRED when enabled - HTTPRoute will not work without this)
+  # Example:
+  # parentRefs:
+  #   - name: my-gateway
+  #     namespace: gateway-namespace
+  parentRefs: []
+  # -- Hostnames for the HTTPRoute
+  # Example:
+  # hostnames:
+  #   - headlamp.example.com
+  hostnames: []
+  # -- Custom routing rules (optional, defaults to path prefix /)
+  # If not specified, a default rule routing all traffic to the service is used
+  rules: []
+  # Example custom rules:
+  # rules:
+  #   - matches:
+  #       - path:
+  #           type: PathPrefix
+  #           value: /headlamp
+  #     backendRefs:
+  #       - name: "{{ .Release.Name }}-headlamp"
+  #         port: 80
+
+# Probe configuration for liveness and readiness checks
+probes:
+  # -- Scheme to use for liveness and readiness probes (HTTP or HTTPS).
+  # Set to HTTPS when TLS is enabled at the backend server.
+  scheme: HTTP
+  livenessProbe:
+    # -- Initial delay in seconds before starting liveness probe
+    initialDelaySeconds: 0
+    # -- Period in seconds between liveness probe checks
+    periodSeconds: 10
+    # -- Timeout in seconds for liveness probe
+    timeoutSeconds: 1
+    # -- Minimum consecutive successes for the probe to be considered successful (must be 1 for liveness probes per Kubernetes API)
+    successThreshold: 1
+    # -- Minimum consecutive failures for the probe to be considered failed
+    failureThreshold: 3
+  readinessProbe:
+    # -- Initial delay in seconds before starting readiness probe
+    initialDelaySeconds: 0
+    # -- Period in seconds between readiness probe checks
+    periodSeconds: 10
+    # -- Timeout in seconds for readiness probe
+    timeoutSeconds: 1
+    # -- Minimum consecutive successes for the probe to be considered successful
+    successThreshold: 1
+    # -- Minimum consecutive failures for the probe to be considered failed
+    failureThreshold: 3

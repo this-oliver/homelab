@@ -7,6 +7,11 @@ This role sets up a dashboard for the Kubernetes (k8s) instance using [Headlamp]
 > [!NOTE]
 > A ServiceAccount called `headlamp-admin` is created in the `kube-system` namespace with the necessary role to access the dashboard. Find out more at [/files/headlamp/auth.yaml](./files/headlamp/auth.yaml)
 
+PrerequisiteS:
+
+- [Microk8s (Kubernetes)](../k8s-base-microk8s) installed
+- [Helm](../k8s-base-helm) installed
+
 1. Generate a token
 
 ```bash

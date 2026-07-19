@@ -4,6 +4,9 @@ This role sets up [Traefik](https://doc.traefik.io/traefik/getting-started/kuber
 
 ## Getting Started
 
+PrerequisiteS:
+
+- [Microk8s (Kubernetes)](../k8s-base-microk8s) installed
 
 ## Usage
 

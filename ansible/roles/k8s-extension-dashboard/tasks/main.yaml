@@ -20,32 +20,41 @@
       become: true
       ansible.builtin.command: microk8s enable rbac
 
-    - name: Remove old headlamp deployment files
-      become: true
-      ansible.builtin.command: rm -rf /homelab/microk8s/headlamp
-
-    # NOTE: Assumes that microk8s group has been created and
-    # user is part of the group
-    - name: Copy headlamp deployment files
-      become: true
+    - name: Copy config file
       ansible.builtin.copy:
-        src: headlamp/
-        dest: /homelab/microk8s/headlamp/
-        group: homelab
-        mode: '0644'
+        src: values.yaml
+        dest: /tmp/values.yaml
+        mode: '0400'
 
-    - name: Install headlamp
+    - name: Install Repo via Helm
       become: true
-      ansible.builtin.command: kubectl apply -k /homelab/microk8s/headlamp/
+      kubernetes.core.helm_repository:
+        name: headlamp
+        repo_url: https://kubernetes-sigs.github.io/headlamp/
+
+    - name: Install Release via Helm
+      become: true
+      kubernetes.core.helm:
+        chart_ref: headlamp/headlamp
+        chart_version: "{{ headlamp_version }}"
+        release_name: headlamp
+        release_namespace: kube-system
+        release_state: present
+        create_namespace: true
+        update_repo_cache: true
+        wait: true
+        values_files:
+          - /tmp/values.yaml
+
+    - name: Remove config file
+      become: true
+      ansible.builtin.file:
+        path: /tmp/values.yaml
+        state: absent
 
 - name: Uninstall Dashboard
   when: uninstall is true and microk8s_check.rc == 0
   block:
-    - name: Ensure that headlamp kustomize file exists
-      ansible.builtin.file:
-        path: /homelab/microk8s/headlamp/kustomization.yaml
-        state: file
-
-    - name: Delete all headlamp resources
+    - name: Uninstall Release via Helm
       become: true
-      ansible.builtin.command: kubectl delete --ignore-not-found=true -k /homelab/microk8s/headlamp/
+      ansible.builtin.command: helm uninstall headlamp
