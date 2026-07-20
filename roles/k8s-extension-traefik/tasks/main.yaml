@@ -4,7 +4,7 @@
 # - uninstall <boolean> - (Optional) Uninstalls Traefik if set to true.
 
 - name: Install Traefik
-  when: uninstall is false
+  when: not (uninstall | bool)
   block:
     - name: Enable Community addons for Microk8s
       become: true
@@ -15,7 +15,7 @@
       ansible.builtin.command: microk8s enable traefik
 
 - name: Uninstall Traefik
-  when: uninstall is true
+  when: uninstall | bool
   block:
     - name: Disable Traefik via Microk8s
       become: true

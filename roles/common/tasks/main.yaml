@@ -1,5 +1,5 @@
 - name: Setting up homelab basics
-  when: uninstall is false
+  when: not (uninstall | bool)
   block:
     - name: Install welcome file
       become: true

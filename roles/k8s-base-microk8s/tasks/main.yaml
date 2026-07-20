@@ -17,7 +17,7 @@
     microk8s_installed: true
 
 - name: Install microk8s
-  when: uninstall is false
+  when: not (uninstall | bool)
   block:
     - name: Install Snap
       become: true
@@ -165,7 +165,7 @@
           when: kubectl_installed is true
 
 - name: Uninstall microk8s
-  when: uninstall is true
+  when: uninstall | bool
   block:
     - name: Uninstall microk8s snap
       become: true

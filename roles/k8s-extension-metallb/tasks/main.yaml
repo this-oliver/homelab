@@ -16,7 +16,7 @@
   check_mode: false
 
 - name: Install MetalLB
-  when: uninstall is false and microk8s_check.rc == 0 and cloud is false
+  when: not (uninstall | bool) and microk8s_check.rc == 0 and not (cloud | bool)
   block:
     - name: Fail if "metallb_ip_pool" is undefined
       ansible.builtin.fail: msg="Bailing out. This task requires 'metallb_ip_pool'"
@@ -27,7 +27,7 @@
       ansible.builtin.command: microk8s enable "metallb:{{metallb_ip_pool}}"
 
 - name: Uninstall MetalLB
-  when: uninstall is true and microk8s_check.rc == 0
+  when: uninstall | bool and microk8s_check.rc == 0
   block:
     - name: Disable MetalLB
       become: true

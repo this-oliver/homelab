@@ -22,7 +22,7 @@
     repo_installed: "{{ repo.rc == 0 and repo.stdout.find(repo_name) != -1 and repo.stdout.find(repo_url) != -1}}"
 
 - name: Install {{release_name}} Release
-  when: uninstall is false
+  when: not (uninstall | bool)
   block:
     - name: Install {{repo_name}} repository via Helm
       become: true
@@ -47,7 +47,7 @@
       when: release_installed is false or release_version_match is true
 
 - name: Uninstall {{ release_name }}
-  when: uninstall is true
+  when: uninstall | bool
   block:
     - name: Uninstall {{ release_name }} release via Helm
       become: true

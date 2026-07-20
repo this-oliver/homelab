@@ -1,5 +1,5 @@
 - name: Install Kubectl
-  when: uninstall is false
+  when: not (uninstall | bool)
   block:
     - name: Install packages needed to use kubernetes apt repository
       become: true
@@ -43,7 +43,7 @@
         name: kubectl
 
 - name: Uninstall Kubectl
-  when: uninstall is true
+  when: uninstall | bool
   block:
     - name: Uninstall kubectl
       become: true
