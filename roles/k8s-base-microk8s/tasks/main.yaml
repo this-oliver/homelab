@@ -1,8 +1,4 @@
-# Objective: This task installs microk8s. It also supports
-# uninstalling microk8s and installing specific addons.
-#
-# Supported variables:
-# - uninstall <boolean> - true causes task to uninstall microk8s
+# See vars/main.yaml (top-level) and this role's vars/main.yaml for configuration.
 
 - name: Check if microk8s snap is installed
   ansible.builtin.command: snap list microk8s

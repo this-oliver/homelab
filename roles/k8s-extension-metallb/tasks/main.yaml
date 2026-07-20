@@ -1,12 +1,4 @@
-# Objective: Setup MetalLB, a baremetal loadbalanacer, for
-# microk8s.
-#
-# Requirements:
-# - Ensure that the microk8s snap is installed on the system
-#
-# Supported variables:
-# - uninstall: <boolean> - true causes task to uninstall microk8s
-# - metallb_ip_pool: <string> - IP address pool for MetalLB to use
+# See vars/main.yaml (top-level) and this role's vars/main.yaml for configuration.
 
 - name: Check if microk8s snap is installed
   ansible.builtin.command: snap list microk8s

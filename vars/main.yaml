@@ -1,0 +1,58 @@
+# ── General ─────────────────────────────────────────────────────────
+
+# (optional) Uninstall all components instead of installing them.
+# Default: false
+uninstall: false
+
+# (optional) Set to true if running in a cloud provider environment.
+# Skips MetalLB installation (cloud providers supply their own load balancers).
+# Default: false
+cloud: false
+
+# (optional) Set to true if running on a Raspberry Pi.
+# Uses an older microk8s channel and configures Pi-specific kernel modules.
+# Default: false
+raspi: false
+
+# ── Kubernetes ──────────────────────────────────────────────────────
+
+# (optional) Kubernetes version for the APT repository.
+# Default: 1.36
+k8s_version: 1.36
+
+# (optional) Helm version to install.
+# Default: 3.21.1
+helm_version: 3.21.1
+
+# ── MicroK8s ────────────────────────────────────────────────────────
+
+# (optional) List of microk8s addons to enable.
+# Default: [cis-hardening, dns, helm, helm3, hostpath-storage, rbac]
+addons:
+  - cis-hardening
+  - dns
+  - helm
+  - helm3
+  - hostpath-storage
+  - rbac
+
+# ── MetalLB ─────────────────────────────────────────────────────────
+
+# REQUIRED. IP address pool for MetalLB load balancing.
+# Accepted formats:
+#   Single IP:   10.0.0.100
+#   IP range:    10.0.0.100-10.0.0.200
+#   Comma list:  10.0.0.100,10.0.0.101,10.0.0.102
+metallb_ip_pool: 123.123.123.123
+
+# ── Cert Manager ────────────────────────────────────────────────────
+
+# (optional) Cert Manager Helm chart version.
+# Default: v1.21.0
+cert_manager_chart_version: v1.21.0
+
+# ── Dashboard ───────────────────────────────────────────────────────
+
+# (optional) Headlamp dashboard Helm chart version.
+# Default: 0.43.0
+dashboard_chart_version: 0.43.0

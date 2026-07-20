@@ -1,0 +1,23 @@
+---
+- hosts: all
+  vars_files:
+    - ../vars/main.yaml
+  tasks:
+    - name: Set role order
+      ansible.builtin.set_fact:
+        homelab_roles:
+          - ../roles/common
+          - ../roles/k8s-base-kubectl
+          - ../roles/k8s-base-helm
+          - ../roles/k8s-base-microk8s
+          - ../roles/k8s-extension-metallb
+          - ../roles/k8s-extension-traefik
+          - ../roles/k8s-extension-cert-manager
+          - ../roles/k8s-extension-dashboard
+
+    - name: Execute roles
+      ansible.builtin.include_role:
+        name: "{{ role }}"
+      loop: "{{ homelab_roles | reverse if uninstall | bool else homelab_roles }}"
+      loop_control:
+        loop_var: role

@@ -1,9 +1,4 @@
-# Objective: Setup Cert Manager.
-#
-# Supported variables:
-# - uninstall <boolean> - (Optional) Uninstalls Cert Manager if set to true.
-# - cert_manager_version <string> - (Optional) Version of Cert Manager to install.
-# - cert_manager_pk_path <string> - (Optional) Path where the public key for Cert Manager is stored.
+# See vars/main.yaml (top-level) and this role's vars/main.yaml for configuration.
 
 - name: Check if {{ repo_name }} repository exists
   become: true

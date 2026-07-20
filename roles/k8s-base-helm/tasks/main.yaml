@@ -9,9 +9,11 @@
           - curl
           - gpg
 
-    - name: Install Helm
-      ansible.builtin.script:
-        cmd: script.sh --version "{{ helm_version }}"
+# See vars/main.yaml (top-level) and this role's vars/main.yaml for configuration.
+
+- name: Install Helm
+  ansible.builtin.script:
+    cmd: script.sh --version "{{ helm_version }}"
 
 - name: Uninstall Helm
   when: uninstall | bool
