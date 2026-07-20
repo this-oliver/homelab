@@ -1,4 +1,4 @@
-addon:
+addons:
   - cis-hardening
   - dns
   - helm
