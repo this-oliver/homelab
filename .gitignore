@@ -1,2 +1,2 @@
-ansible/**/inventory.yaml
-ansible/**/inventory.yml
+**/inventory.yaml
+**/inventory.yml
