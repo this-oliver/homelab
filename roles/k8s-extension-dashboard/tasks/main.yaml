@@ -6,55 +6,64 @@
 # Supported variables:
 # - uninstall: <boolean> - true causes task to uninstall microk8s
 
-- name: Check if microk8s snap is installed
-  command: snap list microk8s
-  register: microk8s_check
-  failed_when: false
-  changed_when: false
-  check_mode: false
+- name: Check if {{ repo_name }} repository exists
+  become: true
+  ansible.builtin.command: helm repo list
+  register: repo
 
-- name: Install Dashboard
-  when: uninstall is false and microk8s_check.rc == 0
+- name: Check if {{ release_name}} release exists
+  become: true
+  ansible.builtin.command: "helm --namespace {{ release_namespace }} list --filter {{ release_name }} --no-headers"
+  register: release
+
+- name: Set facts
+  ansible.builtin.set_fact:
+    release_installed: "{{ release.rc == 0 and release.stdout != '' }}"
+    release_version_match: "{{ release.rc == 0 and release.stdout.find(chart_version) != -1}}"
+    repo_installed: "{{ repo.rc == 0 and repo.stdout.find(repo_name) != -1 and repo.stdout.find(repo_url) != -1}}"
+
+- name: Install {{release_name}} Release
+  when: uninstall is false
   block:
-    - name: Enable rbac
-      become: true
-      ansible.builtin.command: microk8s enable rbac
-
     - name: Copy config file
       ansible.builtin.copy:
         src: values.yaml
         dest: /tmp/values.yaml
         mode: '0400'
+      when: release_installed is false or release_version_match is true
 
-    - name: Install Repo via Helm
+    - name: Install {{repo_name}} repository via Helm
       become: true
       kubernetes.core.helm_repository:
-        name: headlamp
-        repo_url: https://kubernetes-sigs.github.io/headlamp/
+        name: "{{ repo_name }}"
+        repo_url: "{{ repo_url }}"
+      when: repo_installed is false
 
-    - name: Install Release via Helm
+    - name: Install {{release_name}} release via Helm
       become: true
       kubernetes.core.helm:
-        chart_ref: headlamp/headlamp
-        chart_version: "{{ headlamp_version }}"
-        release_name: headlamp
-        release_namespace: kube-system
+        chart_ref: "{{ chart_ref }}"
+        chart_version: "{{ chart_version }}"
+        release_name: "{{ release_name }}"
+        release_namespace: "{{ release_namespace }}"
         release_state: present
         create_namespace: true
         update_repo_cache: true
         wait: true
         values_files:
           - /tmp/values.yaml
+      when: release_installed is false or release_version_match is true
 
     - name: Remove config file
       become: true
       ansible.builtin.file:
         path: /tmp/values.yaml
         state: absent
+      when: release_installed is false or release_version_match is true
 
-- name: Uninstall Dashboard
-  when: uninstall is true and microk8s_check.rc == 0
+- name: Uninstall {{ release_name }}
+  when: uninstall is true
   block:
-    - name: Uninstall Release via Helm
+    - name: Uninstall {{ release_name }} release via Helm
       become: true
-      ansible.builtin.command: helm uninstall headlamp
+      ansible.builtin.command: "helm --namespace {{ release_namespace }} uninstall {{ release_name }}"

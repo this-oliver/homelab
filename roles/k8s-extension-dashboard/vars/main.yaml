@@ -1,1 +1,6 @@
-headlamp_version: 0.43.0
+chart_ref: headlamp/headlamp
+chart_version: 0.43.0
+release_name: headlamp
+release_namespace: kube-system
+repo_name: headlamp
+repo_url: https://kubernetes-sigs.github.io/headlamp/
