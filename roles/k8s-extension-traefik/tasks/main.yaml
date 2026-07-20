@@ -41,7 +41,7 @@
 #     repo_installed: "{{ repo.rc == 0 and repo.stdout.find(repo_name) != -1 and repo.stdout.find(repo_url) != -1}}"
 
 # - name: Install {{release_name}} Release
-#   when: uninstall is false
+#   when: not (uninstall | bool)
 #   block:
 #     - name: Copy config file
 #       ansible.builtin.copy:
@@ -88,7 +88,7 @@
 #       ansible.builtin.command: microk8s enable traefik
 
 # - name: Uninstall {{ release_name }}
-#   when: uninstall is true
+#   when: uninstall | bool and release_installed | bool
 #   block:
 #     - name: Uninstall {{ release_name }} release via Helm
 #       become: true

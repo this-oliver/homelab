@@ -62,7 +62,7 @@
       when: release_installed is false or release_version_match is true
 
 - name: Uninstall {{ release_name }}
-  when: uninstall | bool
+  when: uninstall | bool and release_installed | bool
   block:
     - name: Uninstall {{ release_name }} release via Helm
       become: true
