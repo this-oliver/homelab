@@ -1,6 +1,5 @@
 # Structural vars. User-configurable vars are in vars/main.yaml (top-level).
 chart_ref: headlamp/headlamp
-chart_version: 0.43.0
 release_name: headlamp
 release_namespace: kube-system
 repo_name: headlamp

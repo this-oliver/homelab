@@ -1,63 +1,7 @@
 # See vars/main.yaml (top-level) and this role's vars/main.yaml for configuration.
 
-- name: Check if {{ repo_name }} repository exists
-  become: true
-  ansible.builtin.command: helm repo list
-  register: repo
-
-- name: Check if {{ release_name}} release exists
-  become: true
-  ansible.builtin.command: "helm --namespace {{ release_namespace }} list --filter {{ release_name }} --no-headers"
-  register: release
-
-- name: Set facts
-  ansible.builtin.set_fact:
-    release_installed: "{{ release.rc == 0 and release.stdout != '' }}"
-    release_version_match: "{{ release.rc == 0 and release.stdout.find(chart_version) != -1}}"
-    repo_installed: "{{ repo.rc == 0 and repo.stdout.find(repo_name) != -1 and repo.stdout.find(repo_url) != -1}}"
-
-- name: Install {{release_name}} Release
-  when: not (uninstall | bool)
-  block:
-    - name: Copy config file
-      ansible.builtin.copy:
-        src: values.yaml
-        dest: /tmp/values.yaml
-        mode: '0400'
-      when: release_installed is false or release_version_match is true
-
-    - name: Install {{repo_name}} repository via Helm
-      become: true
-      kubernetes.core.helm_repository:
-        name: "{{ repo_name }}"
-        repo_url: "{{ repo_url }}"
-      when: repo_installed is false
-
-    - name: Install {{release_name}} release via Helm
-      become: true
-      kubernetes.core.helm:
-        chart_ref: "{{ chart_ref }}"
-        chart_version: "{{ chart_version }}"
-        release_name: "{{ release_name }}"
-        release_namespace: "{{ release_namespace }}"
-        release_state: present
-        create_namespace: true
-        update_repo_cache: true
-        wait: true
-        values_files:
-          - /tmp/values.yaml
-      when: release_installed is false or release_version_match is true
-
-    - name: Remove config file
-      become: true
-      ansible.builtin.file:
-        path: /tmp/values.yaml
-        state: absent
-      when: release_installed is false or release_version_match is true
-
-- name: Uninstall {{ release_name }}
-  when: uninstall | bool and release_installed | bool
-  block:
-    - name: Uninstall {{ release_name }} release via Helm
-      become: true
-      ansible.builtin.command: "helm --namespace {{ release_namespace }} uninstall {{ release_name }}"
+- name: Install {{ release_name }}
+  ansible.builtin.include_tasks: ../../k8s-base-helm/tasks/install.yaml
+  vars:
+    chart_version: "{{ dashboard_chart_version }}"
+    values_file: values.yaml
