@@ -88,7 +88,7 @@
 
         - name: Set list of existing cmdline files
           ansible.builtin.set_fact:
-            cmdline_files: "{{ cmdline_stat.results | selectattr('stat.exists') | map(attribute='item') | list }}"
+            cmdline_files: "{{ cmdline_stat.results | default([]) | selectattr('stat.exists') | map(attribute='cmdline') | list }}"
           when: is_raspi | default(false) is true
 
         # see https://canonical.com/microk8s/docs/install-raspberry-pi
