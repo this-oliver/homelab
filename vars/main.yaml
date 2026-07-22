@@ -9,11 +9,6 @@ uninstall: false
 # Default: false
 cloud: false
 
-# (optional) Set to true if running on a Raspberry Pi.
-# Uses an older microk8s channel and configures Pi-specific kernel modules.
-# Default: false
-raspi: false
-
 # ── Kubernetes ──────────────────────────────────────────────────────
 
 # (optional) Kubernetes version for the APT repository.

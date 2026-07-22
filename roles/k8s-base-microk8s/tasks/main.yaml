@@ -1,5 +1,13 @@
 # See vars/main.yaml (top-level) and this role's vars/main.yaml for configuration.
 
+- name: Check if host runs on Raspberry Pi
+  ansible.builtin.slurp:
+    src: /sys/firmware/devicetree/base/model
+  register: pi_model
+  failed_when: false
+  changed_when: false
+  check_mode: false
+
 - name: Check if microk8s snap is installed
   ansible.builtin.command: snap list microk8s
   register: microk8s_check
@@ -7,10 +15,10 @@
   changed_when: false
   check_mode: false
 
-- name: Set microk8s_installed fact
-  when: microk8s_check.rc == 0
+- name: Set facts
   set_fact:
-    microk8s_installed: true
+    is_raspi: "{{ (pi_model.content | default('') | b64decode) is search('Raspberry Pi') }}"
+    has_microk8s: "{{ microk8s_check.rc == 0 }}"
 
 - name: Install microk8s
   when: not (uninstall | bool)
@@ -26,7 +34,7 @@
       become: true
       community.general.snap:
         classic: true
-        channel: "{{ '1.30' if raspi | default(false) else '1.35' }}"
+        channel: "{{ '1.30' if is_raspi | default(false) else '1.35' }}"
         name: microk8s
 
     - name: Add "{{ ansible_facts['user_id'] }}" user to microk8s group
@@ -63,7 +71,7 @@
             pkg:
               - linux-modules-extra-raspi
           when:
-            - raspi | default(false) is true
+            - is_raspi | default(false) is true
             - ansible_facts["distribution"] == 'Ubuntu'
             - ansible_facts["distribution_version"] is version('24.04', '<')
 
@@ -76,12 +84,12 @@
           loop_control:
             loop_var: cmdline
           register: cmdline_stat
-          when: raspi | default(false) is true
+          when: is_raspi | default(false) is true
 
         - name: Set list of existing cmdline files
           ansible.builtin.set_fact:
             cmdline_files: "{{ cmdline_stat.results | selectattr('stat.exists') | map(attribute='item') | list }}"
-          when: raspi | default(false) is true
+          when: is_raspi | default(false) is true
 
         # see https://canonical.com/microk8s/docs/install-raspberry-pi
         - name: Ensure cgroup memory kernel params are present in boot cmdline
@@ -95,7 +103,7 @@
           loop: "{{ cmdline_files }}"
           loop_control:
             loop_var: cmdline_file
-          when: raspi | default(false) is true and cmdline_files | length > 0
+          when: is_raspi | default(false) is true and cmdline_files | length > 0
           register: cmdline_updated
 
         - name: Reboot to apply kernel cgroup params
@@ -103,7 +111,7 @@
           ansible.builtin.reboot:
             reboot_timeout: 120
           when:
-            - raspi | default(false) is true
+            - is_raspi | default(false) is true
             - cmdline_updated is changed
 
     - name: Enable microk8s common modules
