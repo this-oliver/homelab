@@ -23,4 +23,4 @@ workers:
       ansible_user: foobar
       ansible_ssh_private_key_file: /path/to/key
   vars:
-    node_type: "workers"
+    node_type: "controller"

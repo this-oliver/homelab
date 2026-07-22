@@ -2,3 +2,5 @@
 .venv
 **/inventory.yaml
 **/inventory.yml
+/vars/*.yaml
+!/vars/main.example.yaml
