@@ -13,7 +13,7 @@
           - ../roles/k8s-extension-metallb
           - ../roles/k8s-extension-traefik
           - ../roles/k8s-extension-cert-manager
-          - ../roles/k8s-extension-dashboard
+          - ../roles/k8s-extension-headlamp
 
     - name: Execute roles
       ansible.builtin.include_role:

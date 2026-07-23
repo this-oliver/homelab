@@ -59,8 +59,8 @@ traefik_chart_version: 41.0.2
 # Default: v1.21.0
 cert_manager_chart_version: v1.21.0
 
-# ── Dashboard ───────────────────────────────────────────────────────
+# ── Headlamp ───────────────────────────────────────────────────────
 
 # (optional) Headlamp dashboard Helm chart version.
 # Default: 0.43.0
-dashboard_chart_version: 0.43.0
+headlamp_chart_version: 0.43.0

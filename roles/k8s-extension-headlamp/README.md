@@ -1,6 +1,6 @@
-# Dashboard
+# Headlamp
 
-This role sets up a dashboard for the Kubernetes (k8s) instance using [Headlamp](https://headlamp.dev/).
+This role sets up [Headlamp](https://headlamp.dev/), a user-interface/dashboard for the Kubernetes (k8s) instance.
 
 ## Getting Started
 
@@ -21,7 +21,7 @@ kubectl create token headlamp-admin -n kube-system
 2. Get the IP address and port for the dashboard
 
 ```bash
-microk8s kubectl get services/headlamp-lb -n kube-system
+kubectl get services/headlamp-lb -n kube-system
 
 # NAME          TYPE           CLUSTER-IP      EXTERNAL-IP      PORT(S)          AGE
 # headlamp-lb   LoadBalancer   10.152.183.19   192.168.50.180   8080:32023/TCP   125m
@@ -34,7 +34,7 @@ In the example above, you can access the dashboard at [http://192.168.50.180:808
 To access the dashboard, you'll need to find the service that is serving the dashboard:
 
 ```bash
-microk8s kubectl get services/headlamp-lb -n kube-system
+kubectl get services/headlamp-lb -n kube-system
 
 # NAME          TYPE           CLUSTER-IP      EXTERNAL-IP      PORT(S)          AGE
 # headlamp-lb   LoadBalancer   10.152.183.19   192.168.50.180   8080:32023/TCP   125m
