@@ -1,0 +1,20 @@
+Welcome to Homelab!
+
+This is a light weight {{ node_type | mandatory }} server running just enough
+stuff (microk8s, nginx, certbot, etc.) to self-host applications.
+
+For more information, checkout `/homelab` and visit https://github.com/this-oliver/homelab
+
+========================================================
+Overview
+========================================================
+
+MetalLB
+  IP Pool: {{ metallb_ip_pool }}
+
+Kubernetes
+  API Server: {{ kube_api_url | default('not available') }}
+
+Dashboards
+  Headlamp: {{ headlamp_url | default('not installed') }}
+  Traefik:  {{ traefik_url | default('not installed') }}

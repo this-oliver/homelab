@@ -3,15 +3,6 @@
 - name: Setting up homelab basics
   when: not (uninstall | bool)
   block:
-    - name: Install welcome file
-      become: true
-      ansible.builtin.template:
-        src: ../templates/welcome.txt.j2
-        dest: /home/{{ansible_user}}/welcome.txt
-        owner: root
-        group: root
-        mode: 644
-
     - name: Create homelab group
       become: true
       ansible.builtin.group:

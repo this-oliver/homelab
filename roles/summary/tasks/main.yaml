@@ -1,0 +1,113 @@
+# See vars/main.yaml (top-level) and this role's vars/main.yaml for configuration.
+
+- name: Check if kubectl is installed
+  ansible.builtin.command: which kubectl
+  register: kubectl_check
+  failed_when: false
+  changed_when: false
+  check_mode: false
+
+- name: Set kubectl installed fact
+  ansible.builtin.set_fact:
+    kubectl_installed: "{{ kubectl_check.rc == 0 }}"
+
+# ── Kubernetes API ─────────────────────────────────────────────────
+
+- name: Get API server endpoint
+  when: kubectl_installed
+  block:
+    - name: Query API server URL
+      become: true
+      ansible.builtin.command: kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}'
+      register: api_server_output
+      failed_when: false
+      changed_when: false
+      check_mode: false
+
+    - name: Extract API server port
+      ansible.builtin.set_fact:
+        kube_api_url: "{{ api_server_output.stdout }}"
+        kube_api_port: "{{ api_server_output.stdout | regex_search(':([0-9]+)$', '\\1') | first }}"
+      when: api_server_output.rc == 0
+
+# ── Headlamp ───────────────────────────────────────────────────────
+
+- name: Get headlamp service info
+  when: kubectl_installed
+  block:
+    - name: Query headlamp url
+      become: true
+      ansible.builtin.command: kubectl get svc headlamp -n kube-system -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+      register: headlamp_svc_url
+      failed_when: false
+      changed_when: false
+      check_mode: false
+
+    - name: Query headlamp port
+      become: true
+      ansible.builtin.command: kubectl get svc headlamp -n kube-system -o jsonpath='{.spec.ports[0].port}'
+      register: headlamp_svc_port
+      failed_when: false
+      changed_when: false
+      check_mode: false
+
+    - name: Set headlamp URL
+      ansible.builtin.set_fact:
+        headlamp_url: "http://{{ headlamp_svc_url.stdout }}:{{ headlamp_svc_port.stdout }}"
+      when: headlamp_svc_url.rc == 0 and headlamp_svc_port.rc == 0
+
+# ── Traefik ────────────────────────────────────────────────────────
+
+- name: Get traefik service info
+  when: kubectl_installed
+  block:
+    - name: Query traefik service
+      become: true
+      ansible.builtin.command: kubectl get svc traefik -n traefik -o json
+      register: traefik_svc
+      failed_when: false
+      changed_when: false
+      check_mode: false
+
+    - name: Query traefik url
+      become: true
+      ansible.builtin.command: kubectl get svc traefik -n traefik -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+      register: traefik_svc_url
+      failed_when: false
+      changed_when: false
+      check_mode: false
+
+    - name: Query traefik port
+      become: true
+      ansible.builtin.command: kubectl get svc traefik -n traefik -o jsonpath='{.spec.ports[0].port}'
+      register: traefik_svc_port
+      failed_when: false
+      changed_when: false
+      check_mode: false
+
+    - name: Set traefik URL (domain mode)
+      ansible.builtin.set_fact:
+        traefik_url: "https://traefik.{{ traefik_domain }}"
+      when:
+        - traefik_svc.rc == 0
+        - traefik_domain is defined
+        - traefik_domain | length > 0
+
+    - name: Set traefik URL (local mode)
+      ansible.builtin.set_fact:
+        traefik_url: "http://{{ traefik_svc_url.stdout }}:{{ traefik_svc_port.stdout }}"
+      when:
+        - headlamp_svc_url.rc == 0
+        - headlamp_svc_port.rc == 0
+
+# ── Summary ────────────────────────────────────────────────────────
+
+- name: Write homelab summary to welcome file
+  become: true
+  ansible.builtin.template:
+    src: "{{ role_path }}/templates/welcome.txt.j2"
+    dest: "{{ ansible_facts['user_dir'] }}/welcome.txt"
+    owner: root
+    group: homelab
+    mode: '0644'
+  when: kubectl_installed
