@@ -22,9 +22,11 @@
   when: not (uninstall | bool)
   block:
     - name: Copy values file
+      become: true
       ansible.builtin.copy:
         src: "{{ values_file }}"
         dest: "/tmp/{{ release_name }}-values.yaml"
+        remote_src: "{{ values_file_remote | default(false) }}"
         mode: '0400'
       when: values_file is defined and (release_installed is false or release_version_match is true)
 
@@ -50,6 +52,7 @@
       when: release_installed is false or release_version_match is true
 
     - name: Remove values file
+      become: true
       ansible.builtin.file:
         path: "/tmp/{{ release_name }}-values.yaml"
         state: absent

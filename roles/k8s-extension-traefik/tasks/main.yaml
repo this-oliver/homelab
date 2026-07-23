@@ -1,19 +1,16 @@
 # See vars/main.yaml (top-level) and this role's vars/main.yaml for configuration.
 
-- name: Install Traefik
+- name: Render {{ release_name }} values
+  become: true
+  ansible.builtin.template:
+    src: values.yaml.j2
+    dest: "/tmp/{{ release_name }}-values-rendered.yaml"
+    mode: '0644'
   when: not (uninstall | bool)
-  block:
-    - name: Enable Community addons for MicroK8s
-      become: true
-      ansible.builtin.command: microk8s enable community
 
-    - name: Enable Traefik via MicroK8s
-      become: true
-      ansible.builtin.command: microk8s enable traefik
-
-- name: Uninstall Traefik
-  when: uninstall | bool
-  block:
-    - name: Disable Traefik via MicroK8s
-      become: true
-      ansible.builtin.command: microk8s disable traefik
+- name: Install {{ release_name }}
+  ansible.builtin.include_tasks: ../../k8s-base-helm/tasks/install.yaml
+  vars:
+    chart_version: "{{ traefik_chart_version }}"
+    values_file: "/tmp/{{ release_name }}-values-rendered.yaml"
+    values_file_remote: true

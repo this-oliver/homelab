@@ -40,6 +40,19 @@ addons:
 #   Comma list:  10.0.0.100,10.0.0.101,10.0.0.102
 metallb_ip_pool: 0.0.0.0
 
+# ── Traefik ─────────────────────────────────────────────────────────
+
+# (optional) Traefik Helm chart version.
+# Default: 41.0.2
+traefik_chart_version: 41.0.2
+
+# (optional) Domain for TLS. Leave empty for local-only access (e.g. traefik.local).
+# When set, enables Let's Encrypt ACME and HTTP→HTTPS redirect.
+# traefik_domain: homelab.example.com
+
+# (required when traefik_domain is set) Let's Encrypt email for ACME.
+# traefik_acme_email: you@example.com
+
 # ── Cert Manager ────────────────────────────────────────────────────
 
 # (optional) Cert Manager Helm chart version.

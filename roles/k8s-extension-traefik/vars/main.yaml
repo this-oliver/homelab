@@ -1,0 +1,6 @@
+# Structural vars. User-configurable vars are in vars/main.yaml (top-level).
+chart_ref: traefik/traefik
+release_name: traefik
+release_namespace: traefik
+repo_name: traefik
+repo_url: https://traefik.github.io/charts

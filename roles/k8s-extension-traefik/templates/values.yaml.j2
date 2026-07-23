@@ -1,0 +1,63 @@
+# Traefik Helm values.
+# See https://github.com/traefik/traefik-helm-chart/blob/master/traefik/values.yaml
+
+{% set domain = traefik_domain | default('') %}
+{% set is_local = domain | length == 0 %}
+
+# ── Dashboard ───────────────────────────────────────────────────────
+ingressRoute:
+  dashboard:
+    enabled: true
+{% if is_local %}
+    matchRule: Host(`traefik.{{ traefik_local_suffix | default('local') }}`)
+{% else %}
+    matchRule: Host(`traefik.{{ domain }}`)
+{% endif %}
+    entryPoints:
+      - web
+
+# ── Entry points ────────────────────────────────────────────────────
+ports:
+  web:
+    port: 8000
+    exposedPort: 80
+{% if not is_local %}
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+{% endif %}
+  websecure:
+    port: 8443
+    exposedPort: 443
+
+{% if not is_local %}
+# ── TLS (Let's Encrypt via ACME) ───────────────────────────────────
+additionalArguments:
+  - "--certificatesresolvers.letsencrypt.acme.email={{ traefik_acme_email }}"
+  - "--certificatesresolvers.letsencrypt.acme.storage=/data/acme.json"
+  - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+{% endif %}
+
+# ── Logging ─────────────────────────────────────────────────────────
+log:
+  level: INFO
+  format: json
+
+# ── Metrics ─────────────────────────────────────────────────────────
+metrics:
+  prometheus:
+    entryPoint: metrics
+    addEntryPointsLabels: true
+    addServicesLabels: true
+
+# ── Providers ───────────────────────────────────────────────────────
+providers:
+  kubernetesCRD:
+    enabled: true
+  kubernetesIngress:
+    enabled: true
+    publishedService:
+      enabled: true
