@@ -1,67 +1,77 @@
 # Homelab
 
-This repository sets up a **homelab** or self-hosted Kubernetes (k8s) instance for hosting variety of projects (web applications, automations etc).
+This repository provisions a self-hosted Kubernetes cluster for running web applications, automations, and other services on your own hardware.
 
-Why? This homelab is not a new idea. The internet used to be peer-to-peer, individuals used to run ISP services, websites used to be hosted on PCs and servers in garages and basements. What was once a decentralized internet is now very centralized and federated by an oligach of large tech corporations. *The homelab is an attempt to return to the days of self-soverignety.*
+The internet was once a peer-to-peer network — individuals ran ISPs, websites lived on PCs in garages, and infrastructure was decentralized. Today, most of that is concentrated behind a handful of large tech corporations. The homelab is a step back toward self-sovereignty: owning your infrastructure, your data, and your stack.
+
+```mermaid
+graph LR
+    AppA["www.app-a.com"] --> DNS["DNS<br/>(Cloudflare)"]
+    AppB["www.app-b.com"] --> DNS
+    AppC["www.app-c.com"] --> DNS
+    DNS --> Traefik["Traefik<br/>(reverse proxy :80/:443)"]
+    Traefik --> MetalLB["MetalLB<br/>(load balancer)"]
+    MetalLB --> K8s["MicroK8s<br/>(Kubernetes cluster)"]
+    K8s --> Pods["Pods<br/>(your apps)"]
+```
+
+## Tech Stack
+
+| Component | Role | Purpose |
+|---|---|---|
+| [Ansible](https://github.com/ansible/ansible) | Automation | Infrastructure as Code — provisions the cluster from a control node |
+| [MicroK8s](https://canonical.com/microk8s) | Compute | Lightweight Kubernetes distribution for edge and IoT |
+| [Helm](https://helm.sh) | Package Management | Kubernetes package manager — installs and manages cluster extensions |
+| [MetalLB](https://metallb.universe.tf) | Load Balancing | Exposes services on your local network with real IP addresses |
+| [Traefik](https://traefik.io) | Reverse Proxy / Ingress | Routes external traffic (HTTP/HTTPS) to the right services |
+| [Cert Manager](https://cert-manager.io) | TLS | Automates TLS certificate issuance and renewal (Let's Encrypt) |
+| [Headlamp](https://headlamp.dev) | Dashboard | Web UI for managing and inspecting the Kubernetes cluster |
+
+For a deeper explanation of how these components connect, see [Architecture](docs/architecture.md).
 
 ## Getting Started
 
 > [!NOTE]
-> A **control node** is the host that triggers Ansible and a **target node** is the host where we that will run the homelab.
-
-For consistency, the homelab is setup with Infrastructure as Code (IaC) thanks to [Ansible](github.com/ansible/ansible), an open-source automation tool. The intended host machine is a Raspberry Pi running Ubuntu 24.
-
-```mermaid
-graph TD
-  ControlNode --> TargetNodeA;
-  ControlNode --> TargetNodeB;
-  ControlNode --> TargetNodeC;
-```
-
-The way Ansibe works is that:
-
-1. the **control node** gets a set of instructions
-2. the **control node** connects to one or more **target nodes** (usually with SSH)
-3. the **control node** executes the instructions on the **target nodes**
+> A **control node** is the machine that runs Ansible. A **target node** is the machine where the homelab runs.
 
 ### Pre-requisites
 
-**General** pre-requisites:
+**General:**
 
-- access to personal network (wifi)
-- a control node (i.e. a computer)
-- a target node (i.e. a secondary computer, Raspberry Pi)
+- access to your local network (Wi-Fi or Ethernet)
+- a control node (any computer with Python 3 and SSH)
+- a target node (e.g. a Raspberry Pi running Ubuntu 24)
 
-**Control node** pre-requisites:
+**Control node:**
 
-- Python3
-- Private and Public Key for passwordless SSH access
+- Python 3
+- SSH key pair for passwordless access to the target node
 
-**Target node** pre-requisites:
+**Target node:**
 
 - Ubuntu 24
-- Python3
-- Openssh-server
-- Include the **control node**'s Public Key in the **target node**'s `~/.ssh/authorized_keys` for passwordless SSH access
+- Python 3
+- `openssh-server` installed and running
+- the control node's public key in `~/.ssh/authorized_keys`
 
 ### Configuration
 
-You will need to configure two files. Both are gitignored so your real values are never committed:
+Two files control your setup. Both are gitignored so real values are never committed:
 
 ```bash
 cp inventory.example.yaml inventory.yaml
 cp vars/main.example.yaml vars/main.yaml
 ```
 
-1. `inventory.yaml` — define your target nodes (hosts, SSH details). See [inventory.example.yaml](./inventory.example.yaml) for the structure.
-2. `vars/main.yaml` — set your site-specific values (MetalLB IP pool, versions, addons). See [vars/main.example.yaml](./vars/main.example.yaml) for all options.
+1. **`inventory.yaml`** — target node definitions (hosts, SSH details). See [inventory.example.yaml](./inventory.example.yaml) for the structure.
+2. **`vars/main.yaml`** — site-specific values (MetalLB IP pool, Traefik domain, component versions). See [vars/main.example.yaml](./vars/main.example.yaml) for all options.
 
 ### Installation
 
 > [!TIP]
-> The configuration happens on the **control node**.
+> Run these commands on the **control node**.
 
-Install depenendcies:
+Install dependencies:
 
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
@@ -74,7 +84,21 @@ Create the homelab:
 ansible-playbook -i inventory.yaml playbooks/homelab.yaml
 ```
 
-What the command does:
-- `ansible-playbook`: calls the ansible CLI
-- `-i inventory.yaml`: the inventory of **target nodes**
-- `playbooks/homelab.yaml`: the playbook for installing the homelab
+| Flag | Purpose |
+|---|---|
+| `ansible-playbook` | the Ansible CLI entry point |
+| `-i inventory.yaml` | the inventory of target nodes |
+| `playbooks/homelab.yaml` | the playbook that orchestrates the installation |
+
+To tear down the homelab, run with the uninstall flag:
+
+```bash
+ansible-playbook -i inventory.yaml playbooks/homelab.yaml -e "uninstall=true"
+```
+
+## Further Reading
+
+- [Architecture](docs/architecture.md) — how the components fit together
+- [Container Orchestration](docs/container-orchestration.md) — Kubernetes and MicroK8s
+- [Load Balancing](docs/load-balancing.md) — MetalLB and IP allocation
+- [Reverse Proxy](docs/reverse-proxy.md) — Traefik and traffic routing

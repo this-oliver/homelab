@@ -8,7 +8,7 @@ There is a lot of magic that goes into setting up the IP addresses and hooking t
 
 ## Getting Started
 
-PrerequisiteS:
+Prerequisites:
 
 - [Microk8s (Kubernetes)](../k8s-base-microk8s) installed
 - IP Address range (at least one IP address)

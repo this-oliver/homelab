@@ -1,6 +1,6 @@
 # Common Role
 
-This role is used to create conistsnecy among all inventory hosts. It install keys dependencies among other things such as:
+This role is used to create consistency among all inventory hosts. It installs key dependencies among other things such as:
 
 - setting up a welcome message
 - creating a homelab group

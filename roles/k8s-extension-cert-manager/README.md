@@ -4,7 +4,7 @@ This role sets up [Cert Manager](https://cert-manager.io/docs/), a certificate m
 
 ## Getting Started
 
-PrerequisiteS:
+Prerequisites:
 
 - [Microk8s (Kubernetes)](../k8s-base-microk8s) installed
 - [Helm](../k8s-base-helm) installed
