@@ -15,6 +15,10 @@ cloud: false
 
 # ── Kubernetes ──────────────────────────────────────────────────────
 
+# (optional) Path for the Kubernetes config file.
+# Default: ~/.kube/config.yaml
+kubeconfig_path: "~/.kube/config.yaml"
+
 # (optional) Kubernetes version for the APT repository.
 # Default: 1.36
 k8s_version: 1.36

@@ -23,6 +23,36 @@
 - name: Install microk8s
   when: not (uninstall | bool)
   block:
+    - name: Ensure .kube directory exists
+      ansible.builtin.file:
+        path:  "{{ ansible_facts['user_dir'] }}/.kube"
+        owner: "{{ ansible_facts['user_id'] }}"
+        group: microk8s
+        state: directory
+
+    - name: Ensure KubeConfig file exists
+      ansible.builtin.file:
+        path: "{{ kubeconfig_path }}"
+        owner: "{{ ansible_facts['user_id'] }}"
+        group: microk8s
+        state: touch
+        mode: 0640
+
+    - name: Add KUBECONFIG env
+      ansible.builtin.lineinfile:
+        path: /etc/environment
+        regexp: 'KUBECONFIG='
+        line: "KUBECONFIG=\"{{ kubeconfig_path | regex_replace('^~', ansible_facts['user_dir']) }}\""
+        create: yes
+
+    - name: Add "{{ ansible_facts['user_id'] }}" user to microk8s group
+      become: true
+      ansible.builtin.user:
+        name: "{{ ansible_facts['user_id'] }}"
+        groups: microk8s
+        append: true
+      register: microk8s_group
+
     - name: Install Snap
       become: true
       ansible.builtin.apt:
@@ -37,22 +67,6 @@
         channel: "{{ '1.30' if is_raspi | default(false) else '1.35' }}"
         name: microk8s
 
-    - name: Add "{{ ansible_facts['user_id'] }}" user to microk8s group
-      become: true
-      ansible.builtin.user:
-        name: "{{ ansible_facts['user_id'] }}"
-        groups: microk8s
-        append: true
-
-    - name: Add microk8s group to "/home/{{ ansible_facts['user_id'] }}/.kube"
-      become: true
-      ansible.builtin.file:
-        path: "/home/{{ ansible_facts['user_id'] }}/.kube"
-        group: microk8s
-        state: directory
-        mode: 2750
-        recurse: true
-
     - name: Start microk8s
       become: true
       ansible.builtin.command: microk8s start
@@ -60,6 +74,29 @@
     - name: Wait for microk8s
       become: true
       ansible.builtin.command: microk8s status --wait-ready
+
+    - name: Enable microk8s common modules
+      become: true
+      ansible.builtin.command: "microk8s enable {{ addon }}"
+      loop: "{{ addons }}"
+      loop_control:
+        loop_var: addon
+
+    - name: Update {{ kubeconfig_path }} with MicroK8s Kubectl Config
+      block:
+        - name: Extract MicroK8s Kubectl Config
+          become: true
+          ansible.builtin.command: microk8s config
+          register: kubeconfig_output
+
+        - name: Write KubeConfig to file
+          ansible.builtin.copy:
+            content: "{{ kubeconfig_output.stdout }}"
+            dest: "{{ kubeconfig_path }}"
+            remote_src: true
+            owner: "{{ ansible_facts['user_id'] }}"
+            group: microk8s
+          register: kubeconfig_updated
 
     - name: Configure for Raspberry Pi
       block:
@@ -106,67 +143,13 @@
           when: is_raspi | default(false) is true and cmdline_files | length > 0
           register: cmdline_updated
 
-        - name: Reboot to apply kernel cgroup params
+        - name: Reboot to apply Microk8s changes
           become: true
           ansible.builtin.reboot:
             reboot_timeout: 120
           when:
             - is_raspi | default(false) is true
             - cmdline_updated is changed
-
-    - name: Enable microk8s common modules
-      become: true
-      ansible.builtin.command: "microk8s enable {{ addon }}"
-      loop: "{{ addons }}"
-      loop_control:
-        loop_var: addon
-
-    - name: Configure for Kubectl CLI
-      block:
-        - name: Check if kubectl is installed
-          ansible.builtin.command: which kubectl
-          register: kubectl_check
-          failed_when: false
-          changed_when: false
-          check_mode: false
-
-        - name: Set kubectl_installed fact
-          when: kubectl_check.rc == 0
-          set_fact:
-            kubectl_installed: true
-
-        - name: Ensure KubeConfig file exists
-          become: true
-          ansible.builtin.file:
-            path: "{{ kubeconfig_path }}"
-            state: touch
-            group: microk8s
-            mode: 640
-
-        - name: Extract MicroK8s Kubectl Config
-          become: true
-          ansible.builtin.command: microk8s config
-          register: kubeconfig_output
-          when: kubectl_installed is true
-
-        - name: Write KubeConfig to file
-          become: true
-          ansible.builtin.copy:
-            content: "{{ kubeconfig_output.stdout }}"
-            dest: "{{ kubeconfig_path }}"
-            group: microk8s
-            mode: 640
-            remote_src: true
-          when: kubectl_installed is true
-
-        - name: Add KUBECONFIG env to system
-          become: true
-          ansible.builtin.lineinfile:
-            path: /etc/environment
-            regexp: 'KUBECONFIG="?(\/[a-zA-Z0-9\.]+)+"?'
-            line: KUBECONFIG="{{ kubeconfig_path }}"
-            create: yes
-          when: kubectl_installed is true
 
 - name: Uninstall microk8s
   when: uninstall | bool
@@ -177,3 +160,9 @@
         state: absent
         name:
           - microk8s
+          -
+    - name: Delete ~/.kube
+      become: true
+      ansible.builtin.file:
+        path:  "~/.kube"
+        state: absent

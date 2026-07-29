@@ -3,14 +3,18 @@
 # See roles/k8s-base-helm-chart/README.md for the contract.
 
 - name: Check if {{ repo_name }} repository exists
-  become: true
   ansible.builtin.command: helm repo list
   register: repo
+  failed_when: false
+  changed_when: false
+  check_mode: false
 
 - name: Check if {{ release_name }} release exists
-  become: true
   ansible.builtin.command: "helm --namespace {{ release_namespace }} list --filter {{ release_name }} --no-headers"
   register: release
+  failed_when: false
+  changed_when: false
+  check_mode: false
 
 - name: Set facts
   ansible.builtin.set_fact:
@@ -22,7 +26,6 @@
   when: not (uninstall | bool)
   block:
     - name: Copy values file
-      become: true
       ansible.builtin.copy:
         src: "{{ values_file }}"
         dest: "/tmp/{{ release_name }}-values.yaml"
@@ -31,14 +34,12 @@
       when: values_file is defined and (release_installed is false or release_version_match is true)
 
     - name: Install {{ repo_name }} repository via Helm
-      become: true
       kubernetes.core.helm_repository:
         name: "{{ repo_name }}"
         repo_url: "{{ repo_url }}"
       when: repo_installed is false
 
     - name: Install {{ release_name }} release via Helm
-      become: true
       kubernetes.core.helm:
         chart_ref: "{{ chart_ref }}"
         chart_version: "{{ chart_version }}"
@@ -52,7 +53,6 @@
       when: release_installed is false or release_version_match is true
 
     - name: Remove values file
-      become: true
       ansible.builtin.file:
         path: "/tmp/{{ release_name }}-values.yaml"
         state: absent
@@ -62,5 +62,4 @@
   when: uninstall | bool and release_installed | bool
   block:
     - name: Uninstall {{ release_name }} release via Helm
-      become: true
       ansible.builtin.command: "helm --namespace {{ release_namespace }} uninstall {{ release_name }}"

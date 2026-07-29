@@ -1,2 +1,0 @@
-# Structural vars. User-configurable vars are in vars/main.yaml (top-level).
-kubeconfig_path: /var/snap/microk8s/current/config.yaml
