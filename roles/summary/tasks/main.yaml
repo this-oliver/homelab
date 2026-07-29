@@ -99,8 +99,8 @@
 - name: Write homelab summary to welcome file
   become: true
   ansible.builtin.template:
-    src: "{{ role_path }}/templates/welcome.txt.j2"
-    dest: "{{ ansible_facts['user_dir'] }}/welcome.txt"
+    src: "{{ role_path }}/templates/README.md.j2"
+    dest: "{{ homelab_dir | regex_replace('^~', ansible_facts['user_dir']) }}/README.md"
     owner: "{{ ansible_facts['user_id'] }}"
     group: homelab
     mode: '0644'

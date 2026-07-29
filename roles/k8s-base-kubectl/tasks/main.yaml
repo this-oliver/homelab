@@ -3,7 +3,7 @@
 - name: Install Kubectl
   when: not (uninstall | bool)
   block:
-    - name: Install packages needed to use kubernetes apt repository
+    - name: Install Kubectl dependencies
       become: true
       ansible.builtin.apt:
         pkg:

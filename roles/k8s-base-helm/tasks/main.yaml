@@ -1,7 +1,7 @@
 - name: Install Helm
   when: not (uninstall | bool)
   block:
-    - name: Install packages needed to setup Helm apt repository
+    - name: Install Helm dependnencies
       become: true
       ansible.builtin.apt:
         pkg:
