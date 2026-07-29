@@ -1,5 +1,9 @@
 # ── General ─────────────────────────────────────────────────────────
 
+# (optional) Path for the homelab directory.
+# Default: ~/homelab
+homelab_dir: "~/homelab"
+
 # (optional) Uninstall all components instead of installing them.
 # Default: false
 uninstall: false

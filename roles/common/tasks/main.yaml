@@ -3,26 +3,10 @@
 - name: Setting up homelab basics
   when: not (uninstall | bool)
   block:
-    - name: Create homelab group
-      become: true
-      ansible.builtin.group:
-        name: homelab
-        state: present
-
-    - name: Add "{{ ansible_facts['user_id'] }}" user to homelab group
-      become: true
-      ansible.builtin.user:
-        name: "{{ ansible_facts['user_id'] }}"
-        groups: homelab
-        append: true
-
-    - name: Create /homelab directory
-      become: true
+    - name: Ensure homelab directory exists
       ansible.builtin.file:
-        path: /homelab
+        path: "{{ homelab_dir | regex_replace('^~', ansible_facts['user_dir']) }}"
         state: directory
-        group: homelab
-        mode: 2750
 
     - name: Install basic tools
       become: true
