@@ -1,5 +1,5 @@
 # Structural vars. User-configurable vars are in vars/main.yaml (top-level).
-chart_ref: jetstack/cert-manager
+chart_ref: cert-manager/cert-manager
 release_name: cert-manager
 release_namespace: cert-manager
 repo_name: cert-manager
