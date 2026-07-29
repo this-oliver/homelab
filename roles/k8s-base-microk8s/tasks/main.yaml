@@ -99,6 +99,7 @@
           register: kubeconfig_updated
 
     - name: Configure for Raspberry Pi
+      when: is_raspi | default(false) is true
       block:
         # see https://canonical.com/microk8s/docs/install-raspberry-pi
         - name: Install Raspberry Pi deps
@@ -108,7 +109,6 @@
             pkg:
               - linux-modules-extra-raspi
           when:
-            - is_raspi | default(false) is true
             - ansible_facts["distribution"] == 'Ubuntu'
             - ansible_facts["distribution_version"] is version('24.04', '<')
 
@@ -121,12 +121,10 @@
           loop_control:
             loop_var: cmdline
           register: cmdline_stat
-          when: is_raspi | default(false) is true
 
         - name: Set list of existing cmdline files
           ansible.builtin.set_fact:
             cmdline_files: "{{ cmdline_stat.results | default([]) | selectattr('stat.exists') | map(attribute='cmdline') | list }}"
-          when: is_raspi | default(false) is true
 
         # see https://canonical.com/microk8s/docs/install-raspberry-pi
         - name: Ensure cgroup memory kernel params are present in boot cmdline
@@ -140,16 +138,14 @@
           loop: "{{ cmdline_files }}"
           loop_control:
             loop_var: cmdline_file
-          when: is_raspi | default(false) is true and cmdline_files | length > 0
+          when: cmdline_files | length > 0
           register: cmdline_updated
 
         - name: Reboot to apply Microk8s changes
           become: true
           ansible.builtin.reboot:
             reboot_timeout: 120
-          when:
-            - is_raspi | default(false) is true
-            - cmdline_updated is changed
+          when: cmdline_updated is changed
 
 - name: Uninstall microk8s
   when: uninstall | bool
