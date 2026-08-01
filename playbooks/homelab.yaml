@@ -3,10 +3,17 @@
   vars_files:
     - ../vars/main.yaml
   tasks:
+    - name: Basic
+      ansible.builtin.include_role:
+        name: ../roles/common
+
+- hosts: controllers
+  vars_files:
+    - ../vars/main.yaml
+  tasks:
     - name: Prepare installation roles
       ansible.builtin.set_fact:
         homelab_roles:
-          - ../roles/common
           - ../roles/k8s-base-kubectl
           - ../roles/k8s-base-helm
           - ../roles/k8s-base-microk8s
@@ -14,7 +21,7 @@
           - ../roles/k8s-extension-traefik
           - ../roles/k8s-extension-cert-manager
           - ../roles/k8s-extension-headlamp
-          - ../roles/summary
+          - ../roles/k8s-summary
       when: not (uninstall | bool)
 
     - name: Prepare uninstall roles
@@ -24,7 +31,6 @@
           - ../roles/k8s-base-microk8s
           - ../roles/k8s-base-helm
           - ../roles/k8s-base-kubectl
-          - ../roles/common
       when: uninstall | bool
 
     - name: Execute roles

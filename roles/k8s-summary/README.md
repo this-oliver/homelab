@@ -1,6 +1,6 @@
-# Summary
+# Summary Role
 
-This role provides a post-installation summary of the homelab. It detects
+This role generates a post-installation summary of the homelab. It detects
 which services are installed and prints their access information to the
 console and to `/home/<user>/welcome.txt`.
 
