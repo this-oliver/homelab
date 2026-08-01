@@ -9,7 +9,7 @@ ingressRoute:
   dashboard:
     enabled: true
 {% if is_local %}
-    matchRule: Host(`traefik.{{ traefik_local_suffix | default('local') }}`)
+    matchRule: ClientIP(`{{ ansible_facts['default_ipv4']['network'] }}/24`)
 {% else %}
     matchRule: Host(`traefik.{{ domain }}`)
 {% endif %}
