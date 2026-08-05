@@ -39,3 +39,31 @@
       loop: "{{ homelab_roles }}"
       loop_control:
         loop_var: role
+
+- hosts: reverse_proxy
+  vars_files:
+    - ../vars/main.yaml
+  tasks:
+    - name: Ensure homelab/reverse_proxy directory exists
+      ansible.builtin.file:
+        path: "{{ homelab_dir | regex_replace('^~', ansible_facts['user_dir']) }}/reverse-proxy"
+        state: directory
+
+    - name: Prepare installation roles
+      ansible.builtin.set_fact:
+        homelab_roles:
+          - ../roles/tool-podman
+      when: not (uninstall | bool)
+
+    - name: Prepare uninstall roles
+      ansible.builtin.set_fact:
+        homelab_roles:
+          - ../roles/tool-podman
+      when: uninstall | bool
+
+    - name: Execute roles
+      ansible.builtin.include_role:
+        name: "{{ role }}"
+      loop: "{{ homelab_roles }}"
+      loop_control:
+        loop_var: role

@@ -24,3 +24,12 @@ workers:
       ansible_ssh_private_key_file: /path/to/key
   vars:
     node_type: "controller"
+
+reverse_proxy:
+  vars:
+    node_type: reverse-proxy"
+  hosts:
+    reverse-proxy.com:
+      ansible_port: 22
+      ansible_user: foobar
+      ansible_ssh_private_key_file: /path/to/key
