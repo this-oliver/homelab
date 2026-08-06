@@ -72,3 +72,9 @@ cert_manager_chart_version: v1.21.0
 # (optional) Headlamp dashboard Helm chart version.
 # Default: 0.43.0
 headlamp_chart_version: 0.43.0
+
+# ── Gateway API ───────────────────────────────────────────────────────
+
+# (optional) Gateway API version.
+# Default: v1.5.1
+gateway_api_version: v1.5.1

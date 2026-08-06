@@ -4,18 +4,6 @@
 {% set domain = traefik_domain | default('') %}
 {% set is_local = domain | length == 0 %}
 
-# ── Dashboard ───────────────────────────────────────────────────────
-ingressRoute:
-  dashboard:
-    enabled: true
-{% if is_local %}
-    matchRule: ClientIP(`{{ ansible_facts['default_ipv4']['network'] }}/24`)
-{% else %}
-    matchRule: Host(`traefik.{{ domain }}`)
-{% endif %}
-    entryPoints:
-      - web
-
 # ── Entry points ────────────────────────────────────────────────────
 ports:
   web:
@@ -41,10 +29,26 @@ additionalArguments:
   - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
 {% endif %}
 
+# ── Dashboard ───────────────────────────────────────────────────────
+ingressRoute:
+  dashboard:
+    enabled: true
+{% if is_local %}
+    matchRule: ClientIP(`{{ ansible_facts['default_ipv4']['network'] }}/24`)
+{% else %}
+    matchRule: Host(`traefik.{{ domain }}`)
+{% endif %}
+    entryPoints:
+      - web
+
 # ── Logging ─────────────────────────────────────────────────────────
 log:
   level: INFO
   format: json
+
+accessLog:
+  format: json
+  addinternals: true
 
 # ── Metrics ─────────────────────────────────────────────────────────
 metrics:
@@ -54,10 +58,18 @@ metrics:
     addServicesLabels: true
 
 # ── Providers ───────────────────────────────────────────────────────
+ingressClass:
+  enabled: false
+
 providers:
-  kubernetesCRD:
-    enabled: true
   kubernetesIngress:
+    enabled: false
+  kubernetesGateway:
     enabled: true
-    publishedService:
-      enabled: true
+
+# ── Gateway ─────────────────────────────────────────────────────────
+gateway:
+  listeners:
+    web:
+      namespacePolicy:
+        from: All

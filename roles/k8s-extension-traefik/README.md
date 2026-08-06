@@ -8,6 +8,7 @@ Prerequisites:
 
 - [Kubernetes](../k8s-base-microk8s) installed
 - [Helm](../k8s-base-helm) installed
+- [Gateway API](../k8s-extension-gateway) installed
 
 ## Configuration
 
