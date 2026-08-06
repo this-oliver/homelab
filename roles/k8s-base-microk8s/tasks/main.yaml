@@ -56,15 +56,14 @@
     - name: Install Snap
       become: true
       ansible.builtin.apt:
+        name: snapd
         state: present
-        pkg:
-          - snapd
 
     - name: Install Microk8s
       become: true
       community.general.snap:
         classic: true
-        channel: "{{ '1.30' if is_raspi | default(false) else '1.35' }}"
+        channel: "{{ k8s_version }}"
         name: microk8s
 
     - name: Start microk8s
@@ -82,14 +81,14 @@
       loop_control:
         loop_var: addon
 
-    - name: Update {{ kubeconfig_path }} with MicroK8s Kubectl Config
+    - name: Update Kubernetes Config file with MicroK8s Kubectl Config
       block:
         - name: Extract MicroK8s Kubectl Config
           become: true
           ansible.builtin.command: microk8s config
           register: kubeconfig_output
 
-        - name: Write KubeConfig to file
+        - name: Update Kubernetes Config file
           ansible.builtin.copy:
             content: "{{ kubeconfig_output.stdout }}"
             dest: "{{ kubeconfig_path }}"
@@ -156,9 +155,9 @@
         state: absent
         name:
           - microk8s
-          -
-    - name: Delete ~/.kube
+
+    - name: Delete Kubernetes Config file
       become: true
       ansible.builtin.file:
-        path:  "~/.kube"
+        path:  "{{ kubeconfig_path }}"
         state: absent
