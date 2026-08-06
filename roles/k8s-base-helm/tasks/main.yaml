@@ -1,5 +1,16 @@
+# See vars/main.yaml (top-level) and this role's vars/main.yaml for configuration.
+
+- name: Check if helm is installed
+  ansible.builtin.command: which helm
+  register: helm_check
+  failed_when: false
+  changed_when: false
+  check_mode: false
+
 - name: Install Helm
-  when: not (uninstall | bool)
+  when:
+    - not (uninstall | bool)
+    - helm_check.stdout == ''
   block:
     - name: Install Helm dependnencies
       become: true
@@ -9,11 +20,9 @@
           - curl
           - gpg
 
-# See vars/main.yaml (top-level) and this role's vars/main.yaml for configuration.
-
-- name: Install Helm
-  ansible.builtin.script:
-    cmd: script.sh --version "{{ helm_version }}"
+    - name: Install Helm
+      ansible.builtin.script:
+        cmd: script.sh --version "{{ helm_version }}"
 
 - name: Uninstall Helm
   when: uninstall | bool
