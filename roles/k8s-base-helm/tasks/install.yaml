@@ -48,7 +48,6 @@
         release_state: present
         create_namespace: true
         update_repo_cache: true
-        wait: true
         values_files: "{{ ['/tmp/' + release_name + '-values.yaml'] if values_file is defined else [] }}"
       when: release_installed is false or release_version_match is true
 
