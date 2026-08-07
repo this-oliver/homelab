@@ -1,26 +1,44 @@
 # See vars/main.yaml (top-level) and this role's vars/main.yaml for configuration.
 
-- name: Check if microk8s snap is installed
-  ansible.builtin.command: snap list microk8s
-  register: microk8s_check
-  failed_when: false
-  changed_when: false
-  check_mode: false
-
-- name: Install MetalLB
-  when: not (uninstall | bool) and microk8s_check.rc == 0 and not (cloud | bool)
+- name: Create Metallb Namespace
+  when: not (uninstall | bool)
   block:
-    - name: Fail if "metallb_ip_pool" is undefined
-      ansible.builtin.fail: msg="Bailing out. This task requires 'metallb_ip_pool'"
-      when: metallb_ip_pool is undefined
+    - name: Create temporary metallb dir
+      ansible.builtin.tempfile:
+        state: directory
+      register: metallb_dir
 
-    - name: Enable MetalLB
-      become: true
-      ansible.builtin.command: microk8s enable "metallb:{{metallb_ip_pool}}"
+    - name: Copy namespace.yaml templat to metallb dir
+      ansible.builtin.template:
+        src: templates/namespace.yaml.j2
+        dest: "{{metallb_dir.path}}/namespace.yaml"
 
-- name: Uninstall MetalLB
-  when: uninstall | bool and microk8s_check.rc == 0
+    - name: Create metallb namespace
+      ansible.builtin.command: "kubectl apply -n {{ release_namespace }} -f {{metallb_dir.path}}/namespace.yaml"
+
+- name: Install {{ release_name }}
+  ansible.builtin.include_tasks: ../../k8s-base-helm/tasks/install.yaml
+  vars:
+    chart_version: "{{ metallb_chart_version }}"
+
+- name: Configure Metallb
+  when: not (uninstall | bool)
   block:
-    - name: Disable MetalLB
-      become: true
-      ansible.builtin.command: microk8s disable metallb
+    - name: Copy metallb config file to metallb dir
+      ansible.builtin.template:
+        src: templates/config.yaml.j2
+        dest: "{{metallb_dir.path}}/config.yaml"
+
+    - name: Wait for metallb controller to be ready
+      ansible.builtin.command: "kubectl -n {{ release_namespace }} rollout status deployment/metallb-controller --timeout=300s"
+
+    - name: Apply metallb config
+      ansible.builtin.command: "kubectl apply -n {{ release_namespace }} -f {{metallb_dir.path}}/config.yaml"
+
+- name: Cleanup
+  when: not (uninstall | bool)
+  block:
+    - name: Delete metallb dir
+      ansible.builtin.file:
+        path: "{{ metallb_dir.path }}"
+        state: absent

@@ -48,6 +48,10 @@ addons:
 #   Comma list:  10.0.0.100,10.0.0.101,10.0.0.102
 metallb_ip_pool: 0.0.0.0
 
+# (optional) MetalLB Helm chart version.
+# Default: 0.16.1
+metallb_chart_version: 0.16.1
+
 # ── Traefik ─────────────────────────────────────────────────────────
 
 # (optional) Traefik Helm chart version.

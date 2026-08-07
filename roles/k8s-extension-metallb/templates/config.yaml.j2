@@ -1,0 +1,16 @@
+# IMPORTANT: the order of the resources matters.
+# IPAdressPool first, and then L2Advertisment.
+
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: metallb-ip-address-pool
+spec:
+  addresses:
+  - {{ metallb_ip_pool }}
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: metallb-advertisement
