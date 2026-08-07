@@ -4,3 +4,4 @@
   ansible.builtin.include_tasks: ../../k8s-base-helm/tasks/install.yaml
   vars:
     chart_version: "{{ cert_manager_chart_version }}"
+    values_file: values.yaml
