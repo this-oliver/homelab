@@ -1,36 +1,29 @@
 # ── General ─────────────────────────────────────────────────────────
 
-# (optional) Path for the homelab directory.
-# Default: ~/homelab
+# OPTIONAL. Path for the homelab directory.
 homelab_dir: "~/homelab"
 
-# (optional) Uninstall all components instead of installing them.
-# Default: false
+# OPTIONAL. Uninstall all components instead of installing them.
 uninstall: false
 
-# (optional) Set to true if running in a cloud provider environment.
+# OPTIONAL. Set to true if running in a cloud provider environment.
 # Skips MetalLB installation (cloud providers supply their own load balancers).
-# Default: false
 cloud: false
 
 # ── Kubernetes ──────────────────────────────────────────────────────
 
-# (optional) Path for the Kubernetes config file.
-# Default: ~/.kube/config.yaml
+# OPTIONAL. Path for the Kubernetes config file.
 kubeconfig_path: "~/.kube/config.yaml"
 
-# (optional) Kubernetes version for the APT repository.
-# Default: 1.36
+# OPTIONAL. Kubernetes version for the APT repository.
 k8s_version: 1.36
 
-# (optional) Helm version to install.
-# Default: 3.21.1
+# OPTIONAL. Helm version to install.
 helm_version: 3.21.1
 
 # ── MicroK8s ────────────────────────────────────────────────────────
 
-# (optional) List of microk8s addons to enable.
-# Default: [cis-hardening, dns, helm, helm3, hostpath-storage, rbac]
+# OPTIONAL. List of microk8s addons to enable.
 addons:
   - cis-hardening
   - dns
@@ -46,39 +39,27 @@ addons:
 #   Single IP:   10.0.0.100
 #   IP range:    10.0.0.100-10.0.0.200
 #   Comma list:  10.0.0.100,10.0.0.101,10.0.0.102
-metallb_ip_pool: 0.0.0.0
+metallb_ip_pool: undefined
 
-# (optional) MetalLB Helm chart version.
-# Default: 0.16.1
+# OPTIONAL. MetalLB Helm chart version.
 metallb_chart_version: 0.16.1
 
 # ── Traefik ─────────────────────────────────────────────────────────
 
-# (optional) Traefik Helm chart version.
-# Default: 41.0.2
+# OPTIONAL. Traefik Helm chart version.
 traefik_chart_version: 41.0.2
-
-# (optional) Domain for TLS. Leave empty for local-only access (e.g. traefik.local).
-# When set, enables Let's Encrypt ACME and HTTP→HTTPS redirect.
-# traefik_domain: homelab.example.com
-
-# (required when traefik_domain is set) Let's Encrypt email for ACME.
-# traefik_acme_email: you@example.com
 
 # ── Cert Manager ────────────────────────────────────────────────────
 
-# (optional) Cert Manager Helm chart version.
-# Default: v1.21.0
+# OPTIONAL. Cert Manager Helm chart version.
 cert_manager_chart_version: v1.21.0
 
 # ── Headlamp ───────────────────────────────────────────────────────
 
-# (optional) Headlamp dashboard Helm chart version.
-# Default: 0.43.0
+# OPTIONAL. Headlamp dashboard Helm chart version.
 headlamp_chart_version: 0.43.0
 
 # ── Gateway API ───────────────────────────────────────────────────────
 
-# (optional) Gateway API version.
-# Default: v1.6.1
+# OPTIONAL. Gateway API version.
 gateway_api_version: v1.6.1
