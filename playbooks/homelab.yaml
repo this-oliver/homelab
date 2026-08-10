@@ -4,6 +4,7 @@
     - ../vars/main.yaml
   tasks:
     - name: Basic
+      when: not (uninstall | bool)
       ansible.builtin.include_role:
         name: ../roles/common
 
@@ -28,7 +29,6 @@
     - name: Prepare uninstall roles
       ansible.builtin.set_fact:
         homelab_roles:
-          - ../roles/k8s-extension-metallb
           - ../roles/k8s-base-microk8s
           - ../roles/k8s-base-helm
           - ../roles/k8s-base-kubectl
