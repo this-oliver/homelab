@@ -80,5 +80,5 @@ headlamp_chart_version: 0.43.0
 # ── Gateway API ───────────────────────────────────────────────────────
 
 # (optional) Gateway API version.
-# Default: v1.5.1
-gateway_api_version: v1.5.1
+# Default: v1.6.1
+gateway_api_version: v1.6.1
