@@ -19,8 +19,8 @@ gateway:
 # ── Dashboard ───────────────────────────────────────────────────────
 ingressRoute:
   dashboard:
-    enabled: true
-    matchRule: ClientIP(`{{ ansible_facts['default_ipv4']['network'] }}/24`)
+    enabled: {{ traefik_dashboard_ingress_rule != "" }}
+    matchRule: {{ traefik_dashboard_ingress_rule }}
     entryPoints:
       - web
 

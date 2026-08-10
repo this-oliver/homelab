@@ -49,6 +49,14 @@ metallb_chart_version: 0.16.1
 # OPTIONAL. Traefik Helm chart version.
 traefik_chart_version: 41.0.2
 
+# OPTIONAL. Ingress rule for Treafik Dashboard. If
+# left undefined, the dashboard is disabled. For more
+# information about how to write a rule, visit https://doc.traefik.io/traefik/reference/routing-configuration/http/routing/rules-and-priority/#rules
+# Examples include:
+# - ClientIP(`123.123.123.123`)
+# - Host(`example.com`)
+traefik_dashboard_ingress_rule: undefined
+
 # ── Cert Manager ────────────────────────────────────────────────────
 
 # OPTIONAL. Cert Manager Helm chart version.
