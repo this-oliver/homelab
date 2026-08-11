@@ -39,7 +39,7 @@ addons:
 #   Single IP:   10.0.0.100
 #   IP range:    10.0.0.100-10.0.0.200
 #   Comma list:  10.0.0.100,10.0.0.101,10.0.0.102
-metallb_ip_pool: undefined
+metallb_ip_pool: {{ undef() }}
 
 # OPTIONAL. MetalLB Helm chart version.
 metallb_chart_version: 0.16.1
@@ -55,7 +55,12 @@ traefik_chart_version: 41.0.2
 # Examples include:
 # - ClientIP(`123.123.123.123`)
 # - Host(`example.com`)
-traefik_dashboard_ingress_rule: undefined
+traefik_dashboard_ingress_rule: ""
+
+# KINDA REQUIRED. Credentials for Traefik dashboard if
+# dahboard has been enabled via `traefik_dashboard_ingress_rule`.
+traefik_dashboard_username: ""
+traefik_dashboard_password: ""
 
 # ── Cert Manager ────────────────────────────────────────────────────
 
