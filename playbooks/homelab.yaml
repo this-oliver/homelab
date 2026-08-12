@@ -19,8 +19,8 @@
           - ../roles/k8s-base-helm
           - ../roles/k8s-base-microk8s
           - ../roles/k8s-extension-metallb
-          - ../roles/k8s-extension-cert-manager
           - ../roles/k8s-extension-gateway
+          - ../roles/k8s-extension-cert-manager
           - ../roles/k8s-extension-traefik
           - ../roles/k8s-extension-headlamp
           - ../roles/k8s-summary
