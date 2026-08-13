@@ -52,8 +52,8 @@ extraObjects:
       name: traefik-dashboard-auth-secret
     type: kubernetes.io/basic-auth
     stringData:
-      username: "{{ traefik_dashboard_username }}"
-      password: "{{ traefik_dashboard_password }}"
+      username: "{{ homelab_admin_username }}"
+      password: "{{ homelab_admin_password }}"
   - apiVersion: traefik.io/v1alpha1
     kind: Middleware
     metadata:
