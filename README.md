@@ -59,11 +59,11 @@ For a deeper explanation of how these components connect, see [Architecture](doc
 Two files control your setup. Both are gitignored so real values are never committed:
 
 ```bash
-cp inventory.example.yaml inventory.yaml
+cp inventory.example.yaml inventory/main.yaml
 cp vars/main.example.yaml vars/main.yaml
 ```
 
-1. **`inventory.yaml`** — target node definitions (hosts, SSH details). See [inventory.example.yaml](./inventory.example.yaml) for the structure.
+1. **`inventory/main.yaml`** — target node definitions (hosts, SSH details). See [inventory.example.yaml](./inventory.example.yaml) for the structure.
 2. **`vars/main.yaml`** — site-specific values (MetalLB IP pool, Traefik domain, component versions). See [vars/main.example.yaml](./vars/main.example.yaml) for all options.
 
 ### Installation
@@ -81,19 +81,19 @@ python3 -m pip install -r requirements.txt
 Create the homelab:
 
 ```bash
-ansible-playbook -i inventory.yaml playbooks/homelab.yaml
+ansible-playbook -i inventory/main.yaml playbooks/homelab.yaml
 ```
 
 | Flag | Purpose |
 |---|---|
 | `ansible-playbook` | the Ansible CLI entry point |
-| `-i inventory.yaml` | the inventory of target nodes |
+| `-i inventory/main.yaml` | the inventory of target nodes |
 | `playbooks/homelab.yaml` | the playbook that orchestrates the installation |
 
 To tear down the homelab, run with the uninstall flag:
 
 ```bash
-ansible-playbook -i inventory.yaml playbooks/homelab.yaml -e "uninstall=true"
+ansible-playbook -i inventory/main.yaml playbooks/homelab.yaml -e "uninstall=true"
 ```
 
 ## Further Reading

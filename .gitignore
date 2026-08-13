@@ -1,6 +1,9 @@
+# --- Ansible -------------------
 .ansible
-.venv
-**/inventory.yaml
-**/inventory.yml
+/inventory/*.yaml
+!/inventory/main.example.yaml
 /vars/*.yaml
 !/vars/main.example.yaml
+
+# --- Python -------------------
+.venv
