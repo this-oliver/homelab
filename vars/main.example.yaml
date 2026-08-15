@@ -16,9 +16,6 @@ cloud: false
 
 # ── Kubernetes ──────────────────────────────────────────────────────
 
-# OPTIONAL. Path for the Kubernetes config file.
-kubeconfig_path: "~/.kube/config.yaml"
-
 # OPTIONAL. Kubernetes version for the APT repository.
 k8s_version: 1.36
 

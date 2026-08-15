@@ -25,14 +25,14 @@
   block:
     - name: Ensure .kube directory exists
       ansible.builtin.file:
-        path:  "{{ ansible_facts['user_dir'] }}/.kube"
+        path:  "{{ homelab_dir }}/.kube"
         owner: "{{ ansible_facts['user_id'] }}"
         group: microk8s
         state: directory
 
     - name: Ensure KubeConfig file exists
       ansible.builtin.file:
-        path: "{{ kubeconfig_path }}"
+        path: "{{ homelab_dir }}/.kube/config.yaml"
         owner: "{{ ansible_facts['user_id'] }}"
         group: microk8s
         state: touch
@@ -42,7 +42,7 @@
       ansible.builtin.lineinfile:
         path: /etc/environment
         regexp: 'KUBECONFIG='
-        line: "KUBECONFIG=\"{{ kubeconfig_path | regex_replace('^~', ansible_facts['user_dir']) }}\""
+        line: "KUBECONFIG=\"{{ homelab_dir }}/.kube/config.yaml\""
         create: yes
 
     - name: Add "{{ ansible_facts['user_id'] }}" user to microk8s group
@@ -91,7 +91,7 @@
         - name: Update Kubernetes Config file
           ansible.builtin.copy:
             content: "{{ kubeconfig_output.stdout }}"
-            dest: "{{ kubeconfig_path }}"
+            dest: "{{ homelab_dir }}/.kube/config.yaml"
             remote_src: true
             owner: "{{ ansible_facts['user_id'] }}"
             group: microk8s
