@@ -14,7 +14,7 @@
         dest: "{{metallb_dir.path}}/namespace.yaml"
 
     - name: Create metallb namespace
-      ansible.builtin.command: "kubectl apply -n {{ helm_release.namespace }} -f {{metallb_dir.path}}/namespace.yaml"
+      ansible.builtin.command: "kubectl apply -f {{metallb_dir.path}}/namespace.yaml"
 
 - name: Install {{ helm_release.name }}
   ansible.builtin.include_tasks: ../../k8s-base-helm/tasks/install.yaml
