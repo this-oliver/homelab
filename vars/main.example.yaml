@@ -25,17 +25,6 @@ k8s_version: 1.36
 # OPTIONAL. Helm version to install.
 helm_version: 3.21.1
 
-# ── MicroK8s ────────────────────────────────────────────────────────
-
-# OPTIONAL. List of microk8s addons to enable.
-addons:
-  - cis-hardening
-  - dns
-  - helm
-  - helm3
-  - hostpath-storage
-  - rbac
-
 # ── MetalLB ─────────────────────────────────────────────────────────
 
 # REQUIRED. IP address pool for MetalLB load balancing.
