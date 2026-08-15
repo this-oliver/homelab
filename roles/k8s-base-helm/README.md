@@ -61,11 +61,13 @@ the controller and parse it with `from_yaml`:
 - static file in the calling role's `files/`: `lookup('ansible.builtin.file', 'values.yaml') | from_yaml`
 - rendered template in the calling role's `templates/`: `lookup('ansible.builtin.template', 'values.yaml.j2') | from_yaml`
 
-##### Global vars (from `vars/defaults.yaml`)
+##### Role vars (from `vars/main.yaml`)
 
 | Var | Description |
 |-----|-------------|
-| `uninstall` | When `true`, uninstalls the release instead of installing |
+| `helm_version` | Helm version to install (e.g. `3.21.1`) |
+
+`uninstall` comes from the top-level `vars/main.yaml` (or the `-e "uninstall=true"` CLI flag): when `true`, uninstalls the release instead of installing.
 
 #### Behavior
 
