@@ -1,6 +1,11 @@
-# Structural vars. User-configurable vars are in vars/main.yaml (top-level).
-chart_ref: headlamp/headlamp
-release_name: headlamp
-release_namespace: kube-system
-repo_name: headlamp
-repo_url: https://kubernetes-sigs.github.io/headlamp/
+# Structural vars. User-configurable vars are declared in vars/schema.yaml (top-level).
+helm_release:
+  name: headlamp
+  namespace: kube-system
+  chart:
+    ref: headlamp/headlamp
+    version: "0.43.0"
+  repo:
+    name: headlamp
+    url: https://kubernetes-sigs.github.io/headlamp/
+  config: "{{ lookup('ansible.builtin.file', 'values.yaml') | from_yaml }}"

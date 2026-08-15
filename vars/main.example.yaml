@@ -45,23 +45,7 @@ addons:
 #   Comma list:  10.0.0.100,10.0.0.101,10.0.0.102
 metallb_ip_pool: {{ undef() }}
 
-# OPTIONAL. MetalLB Helm chart version.
-metallb_chart_version: 0.16.1
-
-# ── Gateway API ───────────────────────────────────────────────────────
-
-# OPTIONAL. Gateway API version.
-gateway_api_version: v1.6.1
-
-# ── Cert Manager ────────────────────────────────────────────────────
-
-# OPTIONAL. Cert Manager Helm chart version.
-cert_manager_chart_version: v1.21.0
-
 # ── Traefik ─────────────────────────────────────────────────────────
-
-# OPTIONAL. Traefik Helm chart version.
-traefik_chart_version: 41.0.2
 
 # OPTIONAL. Ingress rule for Treafik Dashboard. If
 # left undefined, the dashboard is disabled. For more
@@ -70,8 +54,3 @@ traefik_chart_version: 41.0.2
 # - ClientIP(`123.123.123.123`)
 # - Host(`example.com`)
 traefik_dashboard_ingress_rule: ""
-
-# ── Headlamp ───────────────────────────────────────────────────────
-
-# OPTIONAL. Headlamp dashboard Helm chart version.
-headlamp_chart_version: 0.43.0

@@ -1,6 +1,10 @@
-# Structural vars. User-configurable vars are in vars/main.yaml (top-level).
-chart_ref: metallb/metallb
-release_name: metallb
-release_namespace: metallb-system
-repo_name: metallb
-repo_url: https://metallb.github.io/metallb
+# Structural vars. User-configurable vars are declared in vars/schema.yaml (top-level).
+helm_release:
+  name: metallb
+  namespace: metallb-system
+  chart:
+    ref: metallb/metallb
+    version: "0.16.1"
+  repo:
+    name: metallb
+    url: https://metallb.github.io/metallb

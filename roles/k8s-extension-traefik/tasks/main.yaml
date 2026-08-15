@@ -1,28 +1,4 @@
-# See vars/main.yaml (top-level) and this role's vars/main.yaml for configuration.
+# See vars/schema.yaml (top-level) and this role's vars/main.yaml for configuration.
 
-- name: Create temporary dir
-  ansible.builtin.tempfile:
-    state: directory
-  register: traefik_dir
-
-- name: Render {{ release_name }} values
-  ansible.builtin.template:
-    src: values.yaml.j2
-    dest: "{{ traefik_dir.path }}/{{ release_name }}-values-rendered.yaml"
-    mode: '0644'
-  when: not (uninstall | bool)
-
-- name: Install {{ release_name }}
+- name: Install {{ helm_release.name }}
   ansible.builtin.include_tasks: ../../k8s-base-helm/tasks/install.yaml
-  vars:
-    chart_version: "{{ traefik_chart_version }}"
-    values_file: "{{ traefik_dir.path }}/{{ release_name }}-values-rendered.yaml"
-    values_file_remote: true
-
-- name: Cleanup
-  when: not (uninstall | bool)
-  block:
-    - name: Delete temporary dir
-      ansible.builtin.file:
-        path: "{{ traefik_dir.path }}"
-        state: absent

@@ -14,12 +14,10 @@
         dest: "{{metallb_dir.path}}/namespace.yaml"
 
     - name: Create metallb namespace
-      ansible.builtin.command: "kubectl apply -n {{ release_namespace }} -f {{metallb_dir.path}}/namespace.yaml"
+      ansible.builtin.command: "kubectl apply -n {{ helm_release.namespace }} -f {{metallb_dir.path}}/namespace.yaml"
 
-- name: Install {{ release_name }}
+- name: Install {{ helm_release.name }}
   ansible.builtin.include_tasks: ../../k8s-base-helm/tasks/install.yaml
-  vars:
-    chart_version: "{{ metallb_chart_version }}"
 
 - name: Configure Metallb
   when: not (uninstall | bool)
@@ -30,10 +28,10 @@
         dest: "{{metallb_dir.path}}/config.yaml"
 
     - name: Wait for metallb controller to be ready
-      ansible.builtin.command: "kubectl -n {{ release_namespace }} rollout status deployment/metallb-controller --timeout=300s"
+      ansible.builtin.command: "kubectl -n {{ helm_release.namespace }} rollout status deployment/metallb-controller --timeout=300s"
 
     - name: Apply metallb config
-      ansible.builtin.command: "kubectl apply -n {{ release_namespace }} -f {{metallb_dir.path}}/config.yaml"
+      ansible.builtin.command: "kubectl apply -n {{ helm_release.namespace }} -f {{metallb_dir.path}}/config.yaml"
 
 - name: Cleanup
   when: not (uninstall | bool)

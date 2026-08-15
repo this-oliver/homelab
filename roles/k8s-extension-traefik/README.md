@@ -14,7 +14,6 @@ Prerequisites:
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `traefik_chart_version` | no | `41.0.2` | Helm chart version |
 | `traefik_domain` | no | `""` (empty = local) | Domain for TLS (e.g. `homelab.example.com`) |
 | `traefik_acme_email` | yes if domain set | — | Let's Encrypt email for ACME |
 | `traefik_local_suffix` | no | `local` | TLD for local access (e.g. `local` → `traefik.local`) |
