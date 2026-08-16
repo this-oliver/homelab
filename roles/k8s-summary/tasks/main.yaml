@@ -81,11 +81,11 @@
 
     - name: Set traefik URL (domain mode)
       ansible.builtin.set_fact:
-        traefik_url: "https://traefik.{{ traefik_domain }}"
+        traefik_url: "https://{{ homelab.domain.name }}/traefik/dashboard"
       when:
         - traefik_svc.rc == 0
-        - traefik_domain is defined
-        - traefik_domain | length > 0
+        - homelab.domain.name is defined
+        - homelab.domain.name | length > 0
 
     - name: Set traefik URL (local mode)
       ansible.builtin.set_fact:
@@ -100,7 +100,7 @@
   become: true
   ansible.builtin.template:
     src: "{{ role_path }}/templates/README.md.j2"
-    dest: "{{ homelab_dir | regex_replace('^~', ansible_facts['user_dir']) }}/README.md"
+    dest: "{{ homelab.dir }}/README.md"
     owner: "{{ ansible_facts['user_id'] }}"
     group: homelab
     mode: '0644'

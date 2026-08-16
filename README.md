@@ -56,15 +56,40 @@ For a deeper explanation of how these components connect, see [Architecture](doc
 
 ### Configuration
 
-Two files control your setup. Both are gitignored so real values are never committed:
+Two files control your setup. The inventory is gitignored so real values are never committed; `vars/main.yaml` is version controlled and contains no secrets:
 
 ```bash
-cp inventory.example.yaml inventory/main.yaml
-cp vars/main.example.yaml vars/main.yaml
+cp inventory/main.example.yaml inventory/main.yaml
 ```
 
-1. **`inventory/main.yaml`** — target node definitions (hosts, SSH details). See [inventory.example.yaml](./inventory.example.yaml) for the structure.
-2. **`vars/main.yaml`** — site-specific values (MetalLB IP pool, Traefik domain, component versions). See [vars/main.example.yaml](./vars/main.example.yaml) for all options.
+1. **`inventory/main.yaml`** — target node definitions (hosts, SSH details). See [inventory/main.example.yaml](./inventory/main.example.yaml) for the structure.
+2. **`vars/main.yaml`** — version-controlled configuration. The `homelab` dict holds the admin credentials (read from the environment), the homelab directory, and the optional domain. `metallb_ip_pool` and `k8s_version` sit at the top level. See the file itself for all options.
+
+Admin credentials come from environment variables, so no secrets live in the repository:
+
+```bash
+export HOMELAB_ADMIN_USERNAME=admin
+export HOMELAB_ADMIN_PASSWORD=change-me
+```
+
+Required configuration:
+
+| Variable | Description |
+|---|---|
+| `HOMELAB_ADMIN_USERNAME` | Environment variable with the admin username |
+| `HOMELAB_ADMIN_PASSWORD` | Environment variable with the admin password |
+| `metallb_ip_pool` | IP address pool for MetalLB load balancing |
+
+Optional configuration:
+
+| Variable | Description |
+|---|---|
+| `homelab.dir` | Path for the homelab directory (default `~/homelab`) |
+| `homelab.domain.name` | Public domain the homelab sits behind (enables the Traefik dashboard at `<domain>/traefik/dashboard`) |
+| `homelab.domain.https.email` | Email for TLS certificate management; required when `homelab.domain.name` is set |
+| `k8s_version` | Kubernetes version for the APT repository and MicroK8s channel (default `1.36`) |
+
+A preflight check runs at the start of the playbook and fails with a clear message if any required configuration is missing.
 
 ### Installation
 
@@ -89,6 +114,11 @@ ansible-playbook -i inventory/main.yaml playbooks/homelab.yaml
 | `ansible-playbook` | the Ansible CLI entry point |
 | `-i inventory/main.yaml` | the inventory of target nodes |
 | `playbooks/homelab.yaml` | the playbook that orchestrates the installation |
+
+> [!NOTE]
+> Do not pass a global `--become` (privilege escalation is already handled per-task).
+> `homelab.dir` resolves `~` against the **connecting user's** home directory, so a
+> global `--become` would make it point at `/root/homelab` instead.
 
 To tear down the homelab, run with the uninstall flag:
 

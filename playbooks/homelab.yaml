@@ -1,16 +1,26 @@
 ---
-- hosts: all
+- name: Bootstrap all nodes
+  hosts: all
   vars_files:
     - ../vars/main.yaml
+  pre_tasks:
+    - name: Resolve homelab directory to an absolute path
+      ansible.builtin.set_fact:
+        homelab: "{{ homelab | combine({'dir': homelab.dir | regex_replace('^~', ansible_facts['user_dir'])}) }}"
   tasks:
     - name: Basic
       when: not (uninstall | bool)
       ansible.builtin.include_role:
         name: ../roles/common
 
-- hosts: controllers
+- name: Provision Kubernetes controllers
+  hosts: controllers
   vars_files:
     - ../vars/main.yaml
+  pre_tasks:
+    - name: Resolve homelab directory to an absolute path
+      ansible.builtin.set_fact:
+        homelab: "{{ homelab | combine({'dir': homelab.dir | regex_replace('^~', ansible_facts['user_dir'])}) }}"
   tasks:
     - name: Prepare installation roles
       ansible.builtin.set_fact:
@@ -41,13 +51,18 @@
       loop_control:
         loop_var: role
 
-- hosts: reverse_proxy
+- name: Provision reverse proxy
+  hosts: reverse_proxy
   vars_files:
     - ../vars/main.yaml
+  pre_tasks:
+    - name: Resolve homelab directory to an absolute path
+      ansible.builtin.set_fact:
+        homelab: "{{ homelab | combine({'dir': homelab.dir | regex_replace('^~', ansible_facts['user_dir'])}) }}"
   tasks:
     - name: Ensure homelab/reverse_proxy directory exists
       ansible.builtin.file:
-        path: "{{ homelab_dir | regex_replace('^~', ansible_facts['user_dir']) }}/reverse-proxy"
+        path: "{{ homelab.dir }}/reverse-proxy"
         state: directory
 
     - name: Prepare installation roles

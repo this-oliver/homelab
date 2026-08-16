@@ -1,4 +1,4 @@
-# Structural vars. User-configurable vars are declared in vars/schema.yaml (top-level).
+# Structural vars. User-configurable vars are declared in vars/main.yaml (top-level).
 helm_release:
   name: metallb
   namespace: metallb-system

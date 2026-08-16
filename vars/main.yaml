@@ -1,0 +1,44 @@
+# ── Homelab ─────────────────────────────────────────────────────────
+
+homelab:
+  # REQUIRED. Credentials for admin account for services. Read from the
+  # environment so no secrets are committed to version control:
+  #   export HOMELAB_ADMIN_USERNAME=admin
+  #   export HOMELAB_ADMIN_PASSWORD=change-me
+  admin:
+    username: "{{ lookup('ansible.builtin.env', 'HOMELAB_ADMIN_USERNAME') | regex_replace('^\"|\"$', '') }}"
+    password: "{{ lookup('ansible.builtin.env', 'HOMELAB_ADMIN_PASSWORD') | regex_replace('^\"|\"$', '') }}"
+
+  # OPTIONAL. Path for the homelab directory. A leading `~` is resolved
+  # against the connecting user's home (the playbook rewrites it to an
+  # absolute path before any role runs).
+  dir: "~/homelab"
+
+  # OPTIONAL. When the homelab sits behind a public domain, set the
+  # domain name. The email is required for TLS certificate management
+  # (Let's Encrypt/ACME) and must be set whenever the name is set.
+  domain:
+    name: "{{ lookup('ansible.builtin.env', 'HOMELAB_DOMAIN_NAME') | regex_replace('^\"|\"$', '') }}"
+    https:
+      enabled: true
+      email: "{{ lookup('ansible.builtin.env', 'HOMELAB_DOMAIN_HTTPS_EMAIL') | regex_replace('^\"|\"$', '') }}"
+
+# ── Kubernetes ──────────────────────────────────────────────────────
+
+# OPTIONAL. Kubernetes version for the APT repository and MicroK8s
+# channel. Shared by the kubectl and microk8s roles.
+k8s_version: 1.36
+
+# ── MetalLB ─────────────────────────────────────────────────────────
+
+# REQUIRED. IP address pool for MetalLB load balancing.
+# Accepted formats:
+#   Single IP:   10.0.0.100
+#   IP range:    10.0.0.100-10.0.0.200
+#   Comma list:  10.0.0.100,10.0.0.101,10.0.0.102
+metallb_ip_pool: "{{ lookup('ansible.builtin.env', 'HOMELAB_METALLB_IP_POOL') | regex_replace('^\"|\"$', '') }}"
+
+# ── MISC ─────────────────────────────────────────────────────────
+
+# OPTIONAL. Uninstalls homelab if set to true.
+uninstall: false

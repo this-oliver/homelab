@@ -1,4 +1,4 @@
-# Structural vars. User-configurable vars are declared in vars/schema.yaml (top-level).
+# Structural vars. User-configurable vars are declared in vars/main.yaml (top-level).
 # Version pin for the Gateway API CRDs release. Not a Helm release yet; will move into
 # a helm_release.chart.version when the Gateway API role is converted to Helm.
 gateway_api_version: "v1.6.1"
