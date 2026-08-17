@@ -120,10 +120,28 @@ ansible-playbook -i inventory/main.yaml playbooks/homelab.yaml
 > `homelab.dir` resolves `~` against the **connecting user's** home directory, so a
 > global `--become` would make it point at `/root/homelab` instead.
 
+#### Running Specific Components
+
+Use `--tags` to run only a subset of the playbook:
+
+```bash
+ansible-playbook -i inventory/main.yaml playbooks/homelab.yaml --tags networking
+```
+
+Available tags: `base`, `kubectl`, `helm`, `microk8s`, `metallb`, `gateway`, `traefik`, `cert-manager`, `headlamp`, `podman`, `summary`.
+
+#### Teardown
+
 To tear down the homelab, run with the uninstall flag:
 
 ```bash
 ansible-playbook -i inventory/main.yaml playbooks/homelab.yaml -e "uninstall=true"
+```
+
+To tear down a specific component:
+
+```bash
+ansible-playbook -i inventory/main.yaml playbooks/homelab.yaml -e "uninstall=true" --tags kubernetes
 ```
 
 ## Further Reading

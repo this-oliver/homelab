@@ -8,28 +8,28 @@ all:
 	$(ANSIBLE_PLAYBOOK) $(PLAYBOOKS)/homelab.yaml
 
 base:
-	$(ANSIBLE_PLAYBOOK) $(PLAYBOOKS)/base.yaml
+	$(ANSIBLE_PLAYBOOK) $(PLAYBOOKS)/homelab.yaml --tags base
 
 kubernetes:
-	$(ANSIBLE_PLAYBOOK) $(PLAYBOOKS)/kubernetes.yaml
+	$(ANSIBLE_PLAYBOOK) $(PLAYBOOKS)/homelab.yaml --tags kubernetes
 
 networking:
-	$(ANSIBLE_PLAYBOOK) $(PLAYBOOKS)/networking.yaml
+	$(ANSIBLE_PLAYBOOK) $(PLAYBOOKS)/homelab.yaml --tags networking
 
 certificates:
-	$(ANSIBLE_PLAYBOOK) $(PLAYBOOKS)/certificates.yaml
+	$(ANSIBLE_PLAYBOOK) $(PLAYBOOKS)/homelab.yaml --tags certificates
 
 dashboards:
-	$(ANSIBLE_PLAYBOOK) $(PLAYBOOKS)/dashboards.yaml
+	$(ANSIBLE_PLAYBOOK) $(PLAYBOOKS)/homelab.yaml --tags dashboards
 
 reverse-proxy:
-	$(ANSIBLE_PLAYBOOK) $(PLAYBOOKS)/reverse-proxy.yaml
+	$(ANSIBLE_PLAYBOOK) $(PLAYBOOKS)/homelab.yaml --tags reverse-proxy
 
 summary:
-	$(ANSIBLE_PLAYBOOK) $(PLAYBOOKS)/summary.yaml
+	$(ANSIBLE_PLAYBOOK) $(PLAYBOOKS)/homelab.yaml --tags summary
 
 uninstall:
 	$(ANSIBLE_PLAYBOOK) $(PLAYBOOKS)/homelab.yaml -e "uninstall=true"
 
 uninstall-%:
-	$(ANSIBLE_PLAYBOOK) $(PLAYBOOKS)/$*.yaml -e "uninstall=true"
+	$(ANSIBLE_PLAYBOOK) $(PLAYBOOKS)/homelab.yaml -e "uninstall=true" --tags $*

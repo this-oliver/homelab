@@ -11,6 +11,7 @@
       when: not (uninstall | bool)
       ansible.builtin.include_role:
         name: ../roles/common
+      tags: [base]
 
 - name: Provision Kubernetes controllers
   hosts: controllers
@@ -124,9 +125,16 @@
         state: directory
         mode: "0755"
   tasks:
-    - name: Podman
+    - name: Install Podman
       ansible.builtin.include_role:
         name: ../roles/tool-podman
+      when: not (uninstall | bool)
+      tags: [podman]
+
+    - name: Uninstall Podman
+      ansible.builtin.include_role:
+        name: ../roles/tool-podman
+      when: uninstall | bool
       tags: [podman]
 
 - name: Generate summary
