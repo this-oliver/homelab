@@ -5,16 +5,16 @@
     state: directory
   register: temp_dir
 
-# - name: Create Metallb Namespace
-#   when: not (uninstall | bool)
-#   block:
-#     - name: Copy namespace.yaml templat to metallb dir
-#       ansible.builtin.template:
-#         src: templates/namespace.yaml.j2
-#         dest: "{{temp_dir.path}}/namespace.yaml"
+- name: Create Metallb Namespace
+  when: not (uninstall | bool)
+  block:
+    - name: Copy namespace.yaml templat to metallb dir
+      ansible.builtin.template:
+        src: templates/namespace.yaml.j2
+        dest: "{{temp_dir.path}}/namespace.yaml"
 
-#     - name: Create metallb namespace
-#       ansible.builtin.command: "kubectl apply -f {{temp_dir.path}}/namespace.yaml"
+    - name: Create metallb namespace
+      ansible.builtin.command: "kubectl apply -f {{temp_dir.path}}/namespace.yaml"
 
 - name: Install {{ helm_release.name }}
   ansible.builtin.include_tasks: ../../k8s-base-helm/tasks/install.yaml
@@ -34,7 +34,6 @@
       ansible.builtin.command: "kubectl apply -n {{ helm_release.namespace }} -f {{temp_dir.path}}/config.yaml"
 
 - name: Cleanup
-  when: not (uninstall | bool)
   block:
     - name: Delete metallb dir
       ansible.builtin.file:
