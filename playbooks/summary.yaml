@@ -5,9 +5,10 @@
     - ../vars/main.yaml
   pre_tasks:
     - name: Resolve homelab directory to an absolute path
-      ansible.builtin.include_tasks: _resolve_path.yaml
+      ansible.builtin.include_tasks: ../tasks/resolve-path.yaml
   tasks:
     - name: Post-install summary
       ansible.builtin.include_role:
-        name: ../roles/k8s-summary
+        name: ../roles/common
+        tasks_from: summary.yaml
       tags: [summary]

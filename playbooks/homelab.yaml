@@ -5,7 +5,7 @@
     - ../vars/main.yaml
   pre_tasks:
     - name: Resolve homelab directory to an absolute path
-      ansible.builtin.include_tasks: _resolve_path.yaml
+      ansible.builtin.include_tasks: ../tasks/resolve-path.yaml
   tasks:
     - name: Basic
       when: not (uninstall | bool)
@@ -18,7 +18,7 @@
     - ../vars/main.yaml
   pre_tasks:
     - name: Resolve homelab directory to an absolute path
-      ansible.builtin.include_tasks: _resolve_path.yaml
+      ansible.builtin.include_tasks: ../tasks/resolve-path.yaml
   tasks:
     - name: Install Kubernetes base
       when: not (uninstall | bool)
@@ -62,7 +62,7 @@
     - ../vars/main.yaml
   pre_tasks:
     - name: Resolve homelab directory to an absolute path
-      ansible.builtin.include_tasks: _resolve_path.yaml
+      ansible.builtin.include_tasks: ../tasks/resolve-path.yaml
   tasks:
     - name: Install networking stack
       when: not (uninstall | bool)
@@ -88,7 +88,7 @@
     - ../vars/main.yaml
   pre_tasks:
     - name: Resolve homelab directory to an absolute path
-      ansible.builtin.include_tasks: _resolve_path.yaml
+      ansible.builtin.include_tasks: ../tasks/resolve-path.yaml
   tasks:
     - name: Install cert-manager
       when: not (uninstall | bool)
@@ -102,7 +102,7 @@
     - ../vars/main.yaml
   pre_tasks:
     - name: Resolve homelab directory to an absolute path
-      ansible.builtin.include_tasks: _resolve_path.yaml
+      ansible.builtin.include_tasks: ../tasks/resolve-path.yaml
   tasks:
     - name: Install Headlamp
       when: not (uninstall | bool)
@@ -116,7 +116,7 @@
     - ../vars/main.yaml
   pre_tasks:
     - name: Resolve homelab directory to an absolute path
-      ansible.builtin.include_tasks: _resolve_path.yaml
+      ansible.builtin.include_tasks: ../tasks/resolve-path.yaml
 
     - name: Ensure homelab/reverse_proxy directory exists
       ansible.builtin.file:
@@ -135,10 +135,10 @@
     - ../vars/main.yaml
   pre_tasks:
     - name: Resolve homelab directory to an absolute path
-      ansible.builtin.include_tasks: _resolve_path.yaml
+      ansible.builtin.include_tasks: ../tasks/resolve-path.yaml
   tasks:
     - name: Post-install summary
       ansible.builtin.include_role:
-        name: ../roles/k8s-summary
+        name: ../roles/common
       tags: [summary]
       when: not (uninstall | bool)

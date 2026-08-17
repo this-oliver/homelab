@@ -1,43 +1,13 @@
-# See vars/main.yaml (top-level) and this role's vars/main.yaml for configuration.
+# See vars/main.yaml (top-level) for configuration.
 
-- name: Assert credentials are configured
-  ansible.builtin.assert:
-    that:
-      - homelab.admin.username | length > 0
-      - homelab.admin.password | length > 0
-    fail_msg: |-
-      Missing credentials in vars/main.yaml:
-        - homelab.admin.username and homelab.admin.password must be set via
-          the HOMELAB_ADMIN_USERNAME and HOMELAB_ADMIN_PASSWORD environment variables. [username: {{ homelab.admin.username | checksum}}, password: {{ homelab.admin.password | checksum}}]
+- name: Preflight checks
+  ansible.builtin.include_tasks: preflight.yaml
+  tags: [preflight]
 
-- name: Assert MetalLB is configured
-  ansible.builtin.assert:
-    that:
-      - metallb_ip_pool | length > 0
-    fail_msg: |-
-      Missing MetalLB configuration in vars/main.yaml:
-        - metallb_ip_pool must be set via the HOMELAB_METALLB_IP_POOL
-          environment variable. [ip pool: {{ metallb_ip_pool }}]
+- name: Setup homelab basics
+  ansible.builtin.include_tasks: setup.yaml
+  tags: [setup]
 
-- name: Assert domain https (TLS) is configured
-  ansible.builtin.assert:
-    that:
-      - not homelab.domain.https.enabled or homelab.domain.https.email | default('') | length > 0
-      - not homelab.domain.https.enabled or homelab.domain.https.email | default('') is search('.+@.+\..+')
-    fail_msg: |-
-      Missing or invalid domain TLS configuration in vars/main.yaml:
-        - homelab.domain.https.email must be set to a valid email address when
-          homelab.domain.https.enabled is true. [enabled: {{ homelab.domain.https.enabled }}, email: {{ homelab.domain.https.email }}]
-
-- name: Setting up homelab basics
-  block:
-    - name: Ensure homelab directory exists
-      ansible.builtin.file:
-        path: "{{ homelab.dir }}"
-        state: directory
-
-    - name: Install basic tools
-      become: true
-      ansible.builtin.apt:
-        pkg:
-          - curl
+- name: Generate summary
+  ansible.builtin.include_tasks: summary.yaml
+  tags: [summary]

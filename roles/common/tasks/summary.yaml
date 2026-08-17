@@ -1,5 +1,3 @@
-# See vars/main.yaml (top-level) and this role's vars/main.yaml for configuration.
-
 - name: Check if kubectl is installed
   ansible.builtin.command: which kubectl
   register: kubectl_check

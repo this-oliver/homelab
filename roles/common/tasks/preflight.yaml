@@ -1,0 +1,30 @@
+# See vars/main.yaml (top-level) for configuration.
+
+- name: Assert credentials are configured
+  ansible.builtin.assert:
+    that:
+      - homelab.admin.username | length > 0
+      - homelab.admin.password | length > 0
+    fail_msg: |-
+      Missing credentials in vars/main.yaml:
+        - homelab.admin.username and homelab.admin.password must be set via
+          the HOMELAB_ADMIN_USERNAME and HOMELAB_ADMIN_PASSWORD environment variables. [username: {{ homelab.admin.username | checksum}}, password: {{ homelab.admin.password | checksum}}]
+
+- name: Assert MetalLB is configured
+  ansible.builtin.assert:
+    that:
+      - metallb_ip_pool | length > 0
+    fail_msg: |-
+      Missing MetalLB configuration in vars/main.yaml:
+        - metallb_ip_pool must be set via the HOMELAB_METALLB_IP_POOL
+          environment variable. [ip pool: {{ metallb_ip_pool }}]
+
+- name: Assert domain https (TLS) is configured
+  ansible.builtin.assert:
+    that:
+      - not homelab.domain.https.enabled or homelab.domain.https.email | default('') | length > 0
+      - not homelab.domain.https.enabled or homelab.domain.https.email | default('') is search('.+@.+\..+')
+    fail_msg: |-
+      Missing or invalid domain TLS configuration in vars/main.yaml:
+        - homelab.domain.https.email must be set to a valid email address when
+          homelab.domain.https.enabled is true. [enabled: {{ homelab.domain.https.enabled }}, email: {{ homelab.domain.https.email }}]

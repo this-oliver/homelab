@@ -1,0 +1,10 @@
+- name: Ensure homelab directory exists
+  ansible.builtin.file:
+    path: "{{ homelab.dir }}"
+    state: directory
+
+- name: Install basic tools
+  become: true
+  ansible.builtin.apt:
+    pkg:
+      - curl

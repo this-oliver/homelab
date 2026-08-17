@@ -5,7 +5,7 @@
     - ../vars/main.yaml
   pre_tasks:
     - name: Resolve homelab directory to an absolute path
-      ansible.builtin.include_tasks: _resolve_path.yaml
+      ansible.builtin.include_tasks: ../tasks/resolve-path.yaml
 
     - name: Ensure homelab/reverse_proxy directory exists
       ansible.builtin.file:

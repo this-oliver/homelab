@@ -5,7 +5,7 @@
     - ../vars/main.yaml
   pre_tasks:
     - name: Resolve homelab directory to an absolute path
-      ansible.builtin.include_tasks: _resolve_path.yaml
+      ansible.builtin.include_tasks: ../tasks/resolve-path.yaml
   tasks:
     - name: Install Kubernetes base
       when: not (uninstall | bool)
