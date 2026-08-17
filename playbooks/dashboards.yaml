@@ -1,0 +1,20 @@
+---
+- name: Provision dashboards
+  hosts: controllers
+  vars_files:
+    - ../vars/main.yaml
+  pre_tasks:
+    - name: Resolve homelab directory to an absolute path
+      ansible.builtin.include_tasks: _resolve_path.yaml
+  tasks:
+    - name: Install Headlamp
+      ansible.builtin.include_role:
+        name: ../roles/k8s-extension-headlamp
+      when: not (uninstall | bool)
+      tags: [headlamp]
+
+    - name: Uninstall Headlamp
+      ansible.builtin.include_role:
+        name: ../roles/k8s-extension-headlamp
+      when: uninstall | bool
+      tags: [headlamp]

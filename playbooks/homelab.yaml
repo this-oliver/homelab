@@ -1,70 +1,144 @@
 ---
-- hosts: all
+- name: Bootstrap all nodes
+  hosts: all
   vars_files:
     - ../vars/main.yaml
+  pre_tasks:
+    - name: Resolve homelab directory to an absolute path
+      ansible.builtin.include_tasks: _resolve_path.yaml
   tasks:
     - name: Basic
       when: not (uninstall | bool)
       ansible.builtin.include_role:
         name: ../roles/common
 
-- hosts: controllers
+- name: Provision Kubernetes controllers
+  hosts: controllers
   vars_files:
     - ../vars/main.yaml
+  pre_tasks:
+    - name: Resolve homelab directory to an absolute path
+      ansible.builtin.include_tasks: _resolve_path.yaml
   tasks:
-    - name: Prepare installation roles
-      ansible.builtin.set_fact:
-        homelab_roles:
-          - ../roles/k8s-base-kubectl
-          - ../roles/k8s-base-helm
-          - ../roles/k8s-base-microk8s
-          - ../roles/k8s-extension-metallb
-          - ../roles/k8s-extension-gateway
-          - ../roles/k8s-extension-cert-manager
-          - ../roles/k8s-extension-traefik
-          - ../roles/k8s-extension-headlamp
-          - ../roles/k8s-summary
+    - name: Install Kubernetes base
       when: not (uninstall | bool)
+      block:
+        - name: Kubectl
+          ansible.builtin.include_role:
+            name: ../roles/k8s-base-kubectl
+          tags: [kubectl]
 
-    - name: Prepare uninstall roles
-      ansible.builtin.set_fact:
-        homelab_roles:
-          - ../roles/k8s-base-microk8s
-          - ../roles/k8s-base-helm
-          - ../roles/k8s-base-kubectl
+        - name: Helm
+          ansible.builtin.include_role:
+            name: ../roles/k8s-base-helm
+          tags: [helm]
+
+        - name: MicroK8s
+          ansible.builtin.include_role:
+            name: ../roles/k8s-base-microk8s
+          tags: [microk8s]
+
+    - name: Uninstall Kubernetes base
       when: uninstall | bool
+      block:
+        - name: MicroK8s
+          ansible.builtin.include_role:
+            name: ../roles/k8s-base-microk8s
+          tags: [microk8s]
 
-    - name: Execute roles
-      ansible.builtin.include_role:
-        name: "{{ role }}"
-      loop: "{{ homelab_roles }}"
-      loop_control:
-        loop_var: role
+        - name: Helm
+          ansible.builtin.include_role:
+            name: ../roles/k8s-base-helm
+          tags: [helm]
 
-- hosts: reverse_proxy
+        - name: Kubectl
+          ansible.builtin.include_role:
+            name: ../roles/k8s-base-kubectl
+          tags: [kubectl]
+
+- name: Provision networking stack
+  hosts: controllers
   vars_files:
     - ../vars/main.yaml
+  pre_tasks:
+    - name: Resolve homelab directory to an absolute path
+      ansible.builtin.include_tasks: _resolve_path.yaml
   tasks:
+    - name: Install networking stack
+      when: not (uninstall | bool)
+      block:
+        - name: MetalLB
+          ansible.builtin.include_role:
+            name: ../roles/k8s-extension-metallb
+          tags: [metallb]
+
+        - name: Gateway API
+          ansible.builtin.include_role:
+            name: ../roles/k8s-extension-gateway
+          tags: [gateway]
+
+        - name: Traefik
+          ansible.builtin.include_role:
+            name: ../roles/k8s-extension-traefik
+          tags: [traefik]
+
+- name: Provision certificate management
+  hosts: controllers
+  vars_files:
+    - ../vars/main.yaml
+  pre_tasks:
+    - name: Resolve homelab directory to an absolute path
+      ansible.builtin.include_tasks: _resolve_path.yaml
+  tasks:
+    - name: Install cert-manager
+      when: not (uninstall | bool)
+      ansible.builtin.include_role:
+        name: ../roles/k8s-extension-cert-manager
+      tags: [cert-manager]
+
+- name: Provision dashboards
+  hosts: controllers
+  vars_files:
+    - ../vars/main.yaml
+  pre_tasks:
+    - name: Resolve homelab directory to an absolute path
+      ansible.builtin.include_tasks: _resolve_path.yaml
+  tasks:
+    - name: Install Headlamp
+      when: not (uninstall | bool)
+      ansible.builtin.include_role:
+        name: ../roles/k8s-extension-headlamp
+      tags: [headlamp]
+
+- name: Provision reverse proxy
+  hosts: reverse_proxy
+  vars_files:
+    - ../vars/main.yaml
+  pre_tasks:
+    - name: Resolve homelab directory to an absolute path
+      ansible.builtin.include_tasks: _resolve_path.yaml
+
     - name: Ensure homelab/reverse_proxy directory exists
       ansible.builtin.file:
-        path: "{{ homelab_dir | regex_replace('^~', ansible_facts['user_dir']) }}/reverse-proxy"
+        path: "{{ homelab.dir }}/reverse-proxy"
         state: directory
-
-    - name: Prepare installation roles
-      ansible.builtin.set_fact:
-        homelab_roles:
-          - ../roles/tool-podman
-      when: not (uninstall | bool)
-
-    - name: Prepare uninstall roles
-      ansible.builtin.set_fact:
-        homelab_roles:
-          - ../roles/tool-podman
-      when: uninstall | bool
-
-    - name: Execute roles
+        mode: "0755"
+  tasks:
+    - name: Podman
       ansible.builtin.include_role:
-        name: "{{ role }}"
-      loop: "{{ homelab_roles }}"
-      loop_control:
-        loop_var: role
+        name: ../roles/tool-podman
+      tags: [podman]
+
+- name: Generate summary
+  hosts: controllers
+  vars_files:
+    - ../vars/main.yaml
+  pre_tasks:
+    - name: Resolve homelab directory to an absolute path
+      ansible.builtin.include_tasks: _resolve_path.yaml
+  tasks:
+    - name: Post-install summary
+      ansible.builtin.include_role:
+        name: ../roles/k8s-summary
+      tags: [summary]
+      when: not (uninstall | bool)

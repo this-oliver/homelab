@@ -1,6 +1,11 @@
-# Structural vars. User-configurable vars are in vars/main.yaml (top-level).
-chart_ref: jetstack/cert-manager
-release_name: cert-manager
-release_namespace: cert-manager
-repo_name: jetstack
-repo_url: https://charts.jetstack.io
+# Structural vars. User-configurable vars are declared in vars/main.yaml (top-level).
+helm_release:
+  name: cert-manager
+  namespace: cert-manager
+  chart:
+    ref: jetstack/cert-manager
+    version: "v1.21.0"
+  repo:
+    name: jetstack
+    url: https://charts.jetstack.io
+  config: "{{ lookup('ansible.builtin.file', 'values.yaml') | from_yaml }}"

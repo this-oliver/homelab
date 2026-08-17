@@ -1,16 +1,33 @@
 # Shared Helm install/uninstall task.
 # Called by extension roles via include_tasks.
-# See roles/k8s-base-helm-chart/README.md for the contract.
+# Contract: see roles/k8s-base-helm/README.md.
 
-- name: Check if {{ repo_name }} repository exists
+- name: Validate helm_release contract
+  ansible.builtin.assert:
+    that:
+      - helm_release is defined and helm_release is mapping
+      - (helm_release.name | default('') | string | length) > 0
+      - (helm_release.namespace | default('') | string | length) > 0
+      - helm_release.chart is defined and helm_release.chart is mapping
+      - (helm_release.chart.ref | default('') | string | length) > 0
+      - (helm_release.chart.version | default('') | string | length) > 0
+      - helm_release.repo is defined and helm_release.repo is mapping
+      - (helm_release.repo.name | default('') | string | length) > 0
+      - (helm_release.repo.url | default('') | string | length) > 0
+    fail_msg: >-
+      helm_release contract violation. Expected a dict with required keys name,
+      namespace, chart.ref, chart.version, repo.name, repo.url and optional
+      values. See roles/k8s-base-helm/README.md.
+
+- name: Check if {{ helm_release.repo.name }} repository exists
   ansible.builtin.command: helm repo list
   register: repo
   failed_when: false
   changed_when: false
   check_mode: false
 
-- name: Check if {{ release_name }} release exists
-  ansible.builtin.command: "helm --namespace {{ release_namespace }} list --filter {{ release_name }} --no-headers"
+- name: Check if {{ helm_release.name }} release exists
+  ansible.builtin.command: "helm --namespace {{ helm_release.namespace }} list --filter {{ helm_release.name }} --no-headers"
   register: release
   failed_when: false
   changed_when: false
@@ -19,46 +36,32 @@
 - name: Set facts
   ansible.builtin.set_fact:
     release_installed: "{{ release.rc == 0 and release.stdout != '' }}"
-    release_version_match: "{{ release.rc == 0 and release.stdout.find(chart_version) != -1 }}"
-    repo_installed: "{{ repo.rc == 0 and repo.stdout.find(repo_name) != -1 and repo.stdout.find(repo_url) != -1 }}"
+    release_version_match: "{{ release.rc == 0 and release.stdout.find(helm_release.chart.version) != -1 }}"
+    repo_installed: "{{ repo.rc == 0 and repo.stdout.find(helm_release.repo.name) != -1 and repo.stdout.find(helm_release.repo.url) != -1 }}"
 
-- name: Install {{ release_name }}
+- name: Install {{ helm_release.name }}
   when: not (uninstall | bool)
   block:
-    - name: Copy values file
-      ansible.builtin.copy:
-        src: "{{ values_file }}"
-        dest: "/tmp/{{ release_name }}-values.yaml"
-        remote_src: "{{ values_file_remote | default(false) }}"
-        mode: '0400'
-      when: values_file is defined and (release_installed is false or release_version_match is true)
-
-    - name: Install {{ repo_name }} repository via Helm
+    - name: Install {{ helm_release.repo.name }} repository via Helm
       kubernetes.core.helm_repository:
-        name: "{{ repo_name }}"
-        repo_url: "{{ repo_url }}"
+        name: "{{ helm_release.repo.name }}"
+        repo_url: "{{ helm_release.repo.url }}"
       when: repo_installed is false
 
-    - name: Install {{ release_name }} release via Helm
+    - name: Install {{ helm_release.name }} release via Helm
       kubernetes.core.helm:
-        chart_ref: "{{ chart_ref }}"
-        chart_version: "{{ chart_version }}"
-        release_name: "{{ release_name }}"
-        release_namespace: "{{ release_namespace }}"
+        chart_ref: "{{ helm_release.chart.ref }}"
+        chart_version: "{{ helm_release.chart.version }}"
+        release_name: "{{ helm_release.name }}"
+        release_namespace: "{{ helm_release.namespace }}"
         release_state: present
         create_namespace: true
         update_repo_cache: true
-        values_files: "{{ ['/tmp/' + release_name + '-values.yaml'] if values_file is defined else [] }}"
+        values: "{{ helm_release.config | default({}) }}"
       when: release_installed is false or release_version_match is true
 
-    - name: Remove values file
-      ansible.builtin.file:
-        path: "/tmp/{{ release_name }}-values.yaml"
-        state: absent
-      when: values_file is defined and (release_installed is false or release_version_match is true)
-
-- name: Uninstall {{ release_name }}
+- name: Uninstall {{ helm_release.name }}
   when: uninstall | bool and release_installed | bool
   block:
-    - name: Uninstall {{ release_name }} release via Helm
-      ansible.builtin.command: "helm --namespace {{ release_namespace }} uninstall {{ release_name }}"
+    - name: Uninstall {{ helm_release.name }} release via Helm
+      ansible.builtin.command: "helm --namespace {{ helm_release.namespace }} uninstall {{ helm_release.name }}"

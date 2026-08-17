@@ -50,18 +50,27 @@ sequenceDiagram
 
 ### Local access (default)
 
-Without a domain, Traefik is accessible at `http://traefik.local`. You need a local DNS resolver or a hosts file entry pointing `traefik.local` to your cluster node's IP.
+Without a domain, the Traefik dashboard is only reachable from clients on the same subnet as the cluster node (the ingress route is restricted with a `ClientIP` rule). Reach it via the Traefik service's external IP and port:
+
+```bash
+kubectl get svc --namespace traefik -o wide
+```
 
 ### Domain access with TLS
 
-Set `traefik_domain` and `traefik_acme_email` in `vars/main.yaml`:
+Set `homelab.domain.name` (and `homelab.domain.https.email` for TLS certificate management) in `vars/main.yaml`:
 
 ```yaml
-traefik_domain: homelab.example.com
-traefik_acme_email: you@example.com
+homelab:
+  domain:
+    name: homelab.example.com
+    https:
+      enabled: true
+      email: you@example.com
 ```
 
 This enables:
+- Traefik dashboard at `https://homelab.example.com/traefik/dashboard`
 - Automatic TLS certificate issuance via Let's Encrypt
 - HTTP → HTTPS redirect
 - HTTPS access at your domain (e.g. `https://app.homelab.example.com`)

@@ -1,0 +1,7 @@
+addons:
+  - cis-hardening
+  - dns
+  - helm
+  - helm3
+  - hostpath-storage
+  - rbac

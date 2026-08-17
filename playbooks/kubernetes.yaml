@@ -1,0 +1,44 @@
+---
+- name: Provision Kubernetes controllers
+  hosts: controllers
+  vars_files:
+    - ../vars/main.yaml
+  pre_tasks:
+    - name: Resolve homelab directory to an absolute path
+      ansible.builtin.include_tasks: _resolve_path.yaml
+  tasks:
+    - name: Install Kubernetes base
+      when: not (uninstall | bool)
+      block:
+        - name: Kubectl
+          ansible.builtin.include_role:
+            name: ../roles/k8s-base-kubectl
+          tags: [kubectl]
+
+        - name: Helm
+          ansible.builtin.include_role:
+            name: ../roles/k8s-base-helm
+          tags: [helm]
+
+        - name: MicroK8s
+          ansible.builtin.include_role:
+            name: ../roles/k8s-base-microk8s
+          tags: [microk8s]
+
+    - name: Uninstall Kubernetes base
+      when: uninstall | bool
+      block:
+        - name: MicroK8s
+          ansible.builtin.include_role:
+            name: ../roles/k8s-base-microk8s
+          tags: [microk8s]
+
+        - name: Helm
+          ansible.builtin.include_role:
+            name: ../roles/k8s-base-helm
+          tags: [helm]
+
+        - name: Kubectl
+          ansible.builtin.include_role:
+            name: ../roles/k8s-base-kubectl
+          tags: [kubectl]
