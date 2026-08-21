@@ -12,23 +12,20 @@
     - not (uninstall | bool)
     - helm_check.stdout == ''
   block:
-    - name: Install Helm dependnencies
-      become: true
-      ansible.builtin.apt:
-        pkg:
-          - apt-transport-https
-          - curl
-          - gpg
-
     - name: Install Helm
-      ansible.builtin.script:
-        cmd: script.sh --version "{{ helm_version }}"
+      become: true
+      community.general.snap:
+        classic: true
+        channel: "{{ helm_version }}"
+        name: helm
 
 - name: Uninstall Helm
   when: uninstall | bool
   block:
     - name: Uninstall Helm
       become: true
-      ansible.builtin.file:
-        path: /usr/local/bin/helm
+      community.general.snap:
+        classic: true
+        channel: "{{ helm_version }}"
+        name: helm
         state: absent
