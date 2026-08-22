@@ -72,6 +72,7 @@
           ansible.builtin.include_role:
             name: ../roles/k8s-extension-metallb
           tags: [metallb]
+          when: not (homelab.cloud | bool)
 
         - name: Gateway API
           ansible.builtin.include_role:
