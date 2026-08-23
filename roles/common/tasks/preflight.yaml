@@ -5,6 +5,7 @@
 
 - name: Assert target OS is Ubuntu
   ansible.builtin.assert:
+    quiet: true
     that:
       - ansible_facts['distribution'] == "Ubuntu"
     fail_msg: |-
@@ -14,6 +15,7 @@
 
 - name: Assert credentials are configured
   ansible.builtin.assert:
+    quiet: true
     that:
       - homelab.admin.username | length > 0
       - homelab.admin.password | length > 0
@@ -24,6 +26,7 @@
 
 - name: Assert MetalLB is configured
   ansible.builtin.assert:
+    quiet: true
     that:
       - metallb_ip_pool | length > 0
     fail_msg: |-
@@ -33,6 +36,7 @@
 
 - name: Assert domain https (TLS) is configured
   ansible.builtin.assert:
+    quiet: true
     that:
       - not homelab.domain.https.enabled or homelab.domain.https.email | default('') | length > 0
       - not homelab.domain.https.enabled or homelab.domain.https.email | default('') is search('.+@.+\..+')

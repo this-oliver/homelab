@@ -4,6 +4,7 @@
 
 - name: Validate helm_release contract
   ansible.builtin.assert:
+    quiet: true
     that:
       - helm_release is defined and helm_release is mapping
       - (helm_release.name | default('') | string | length) > 0
