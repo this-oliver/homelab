@@ -1,5 +1,8 @@
 # See vars/main.yaml (top-level) for configuration.
 
+- ansible.builtin.debug:
+    msg: "{{ homelab | combine({'admin': {'username': '<redacted>', 'password': '<redacted>'}}, recursive=true) }}"
+
 - name: Assert target OS is Ubuntu
   ansible.builtin.assert:
     that:
