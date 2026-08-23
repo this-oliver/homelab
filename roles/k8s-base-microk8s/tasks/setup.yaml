@@ -20,29 +20,16 @@
     is_raspi: "{{ (pi_model.content | default('') | b64decode) is search('Raspberry Pi') }}"
     has_microk8s: "{{ microk8s_check.rc == 0 }}"
 
-- name: Ensure microk8s group exists
-  become: true
-  ansible.builtin.group:
-    name: microk8s
-    state: present
-
-- name: Add "{{ ansible_facts['user_id'] }}" user to microk8s group
-  become: true
-  ansible.builtin.user:
-    name: "{{ ansible_facts['user_id'] }}"
-    groups: microk8s
-    append: true
-
 - name: Ensure .kube directory exists
   ansible.builtin.file:
     path:  "{{ homelab.dir }}/.kube"
-    group: microk8s
+    group: homelab
     state: directory
 
 - name: Ensure KubeConfig file exists
   ansible.builtin.file:
     path: "{{ homelab.dir }}/.kube/config.yaml"
-    group: microk8s
+    group: homelab
     state: touch
     mode: 0640
 
@@ -102,7 +89,7 @@
         content: "{{ kubeconfig_output.stdout }}"
         dest: "{{ homelab.dir }}/.kube/config.yaml"
         remote_src: true
-        group: microk8s
+        group: homelab
       register: kubeconfig_updated
 
 - name: Configure for Raspberry Pi
