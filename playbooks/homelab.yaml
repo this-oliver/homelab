@@ -13,8 +13,8 @@
         name: ../roles/common
       tags: [base]
 
-- name: Provision Kubernetes controllers
-  hosts: controllers
+- name: Provision kubernetes
+  hosts: controllers:workers
   vars_files:
     - ../vars/main.yaml
   pre_tasks:
