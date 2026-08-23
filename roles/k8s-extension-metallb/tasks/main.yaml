@@ -1,41 +1,11 @@
 # See vars/main.yaml (top-level) and this role's vars/main.yaml for configuration.
 
-- name: Create temporary dir
-  ansible.builtin.tempfile:
-    state: directory
-  register: temp_dir
-
-- name: Create Metallb Namespace
+- name: Install MetalLB
+  ansible.builtin.include_tasks:
+    file: setup.yaml
   when: not (uninstall | bool)
-  block:
-    - name: Copy namespace.yaml templat to metallb dir
-      ansible.builtin.template:
-        src: templates/namespace.yaml.j2
-        dest: "{{temp_dir.path}}/namespace.yaml"
 
-    - name: Create metallb namespace
-      ansible.builtin.command: "kubectl apply -f {{temp_dir.path}}/namespace.yaml"
-
-- name: Install {{ helm_release.name }}
-  ansible.builtin.include_tasks: ../../k8s-base-helm/tasks/install.yaml
-
-- name: Configure Metallb
-  when: not (uninstall | bool)
-  block:
-    - name: Copy metallb config file to metallb dir
-      ansible.builtin.template:
-        src: templates/config.yaml.j2
-        dest: "{{temp_dir.path}}/config.yaml"
-
-    - name: Wait for metallb controller to be ready
-      ansible.builtin.command: "kubectl -n {{ helm_release.namespace }} rollout status deployment/metallb-controller --timeout=300s"
-
-    - name: Apply metallb config
-      ansible.builtin.command: "kubectl apply -n {{ helm_release.namespace }} -f {{temp_dir.path}}/config.yaml"
-
-- name: Cleanup
-  block:
-    - name: Delete metallb dir
-      ansible.builtin.file:
-        path: "{{ temp_dir.path }}"
-        state: absent
+- name: Uninstall MetalLB
+  ansible.builtin.include_tasks:
+    file: teardown.yaml
+  when: uninstall | bool

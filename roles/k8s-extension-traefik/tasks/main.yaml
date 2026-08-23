@@ -1,4 +1,11 @@
 # See vars/main.yaml (top-level) and this role's vars/main.yaml for configuration.
 
-- name: Install {{ helm_release.name }}
-  ansible.builtin.include_tasks: ../../k8s-base-helm/tasks/install.yaml
+- name: Install Traefik
+  ansible.builtin.include_tasks:
+    file: setup.yaml
+  when: not (uninstall | bool)
+
+- name: Uninstall Traefik
+  ansible.builtin.include_tasks:
+    file: teardown.yaml
+  when: uninstall | bool

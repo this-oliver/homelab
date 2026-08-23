@@ -1,13 +1,11 @@
 # See vars/main.yaml (top-level) and this role's vars/main.yaml for configuration.
 
 - name: Install Gateway API
+  ansible.builtin.include_tasks:
+    file: setup.yaml
   when: not (uninstall | bool)
-  block:
-    - name: Install Gateway API
-      ansible.builtin.command: "kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/{{ gateway_api_version }}/standard-install.yaml"
 
 - name: Uninstall Gateway API
-  when: uninstall | bool and release_installed | bool
-  block:
-    - name: Uninstall Gateway API
-      ansible.builtin.command: "kubectl delete -f https://github.com/kubernetes-sigs/gateway-api/releases/download/{{ gateway_api_version }}/standard-install.yaml"
+  ansible.builtin.include_tasks:
+    file: teardown.yaml
+  when: uninstall | bool

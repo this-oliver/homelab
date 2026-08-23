@@ -1,0 +1,13 @@
+# See vars/main.yaml (top-level) and this role's vars/main.yaml for configuration.
+
+- name: Uninstall microk8s snap
+  become: true
+  community.general.snap:
+    state: absent
+    name: microk8s
+
+- name: Delete Kubernetes Config file
+  become: true
+  ansible.builtin.file:
+    path:  "{{ homelab.dir }}/.kube/config.yaml"
+    state: absent

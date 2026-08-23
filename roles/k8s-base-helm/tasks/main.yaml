@@ -1,31 +1,11 @@
 # See vars/main.yaml (top-level) and this role's vars/main.yaml for configuration.
 
-- name: Check if helm is installed
-  ansible.builtin.command: which helm
-  register: helm_check
-  failed_when: false
-  changed_when: false
-  check_mode: false
-
 - name: Install Helm
-  when:
-    - not (uninstall | bool)
-    - helm_check.stdout == ''
-  block:
-    - name: Install Helm
-      become: true
-      community.general.snap:
-        classic: true
-        channel: "{{ helm_version }}"
-        name: helm
+  ansible.builtin.include_tasks:
+    file: setup.yaml
+  when: not (uninstall | bool)
 
 - name: Uninstall Helm
+  ansible.builtin.include_tasks:
+    file: teardown.yaml
   when: uninstall | bool
-  block:
-    - name: Uninstall Helm
-      become: true
-      community.general.snap:
-        classic: true
-        channel: "{{ helm_version }}"
-        name: helm
-        state: absent

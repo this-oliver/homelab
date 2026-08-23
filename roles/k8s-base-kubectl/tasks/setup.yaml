@@ -1,0 +1,8 @@
+# See vars/main.yaml (top-level) and this role's vars/main.yaml for configuration.
+
+- name: Install Kubectl
+  become: true
+  community.general.snap:
+    classic: true
+    channel: "{{ k8s_version }}"
+    name: kubectl

@@ -1,0 +1,4 @@
+# See vars/main.yaml (top-level) and this role's vars/main.yaml for configuration.
+
+- name: Uninstall Gateway API
+  ansible.builtin.command: "kubectl delete -f https://github.com/kubernetes-sigs/gateway-api/releases/download/{{ gateway_api_version }}/standard-install.yaml"
