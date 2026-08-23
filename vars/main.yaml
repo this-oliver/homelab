@@ -27,7 +27,7 @@ homelab:
   # If homelab is installed on a cloud provider then there are
   # considerations that must be taken into account like how to expose
   # the Traefik ingress, for example.
-  cloud: false
+  cloud: "{{ lookup('ansible.builtin.env', 'HOMELAB_CLOUD') | regex_replace('^\"|\"$', '') | bool | default(False) }}"
 
 # ── Kubernetes ──────────────────────────────────────────────────────
 
