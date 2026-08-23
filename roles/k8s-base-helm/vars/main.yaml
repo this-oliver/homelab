@@ -1,4 +1,4 @@
 # Structural vars. User-configurable vars are declared in vars/main.yaml (top-level).
 
 # see: https://snapcraft.io/helm
-helm_version: 3.7/stable
+helm_version: latest/stable # 4.2.4
