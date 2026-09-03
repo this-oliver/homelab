@@ -1,0 +1,11 @@
+# --- Env -------------------
+.env*
+!.env.example
+
+# --- Ansible -------------------
+.ansible
+/inventory/*.yaml
+!/inventory/main.example.yaml
+
+# --- Python -------------------
+.venv
