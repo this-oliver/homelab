@@ -1,9 +1,10 @@
 # --- Global -------------------
 # Allow all example files (i.e. .env.example or inventory.example.yaml)
-!*.example*
+!*.example.*
 
 # --- Env -------------------
 .env*
+!.env.example
 
 # --- Ansible -------------------
 .ansible

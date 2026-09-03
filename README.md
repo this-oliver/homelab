@@ -10,16 +10,14 @@ Pre-requisites:
   - 2gb ram minimum
   - ip address
 
-### Setup python environment:
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-```
-
 ### Install dependencies
 
 ```bash
+# setup python env
+python3 -m venv .venv
+source .venv/bin/activate
+
+# install deps
 python3 -m pip install -r requirements.txt
 ```
 
@@ -36,6 +34,27 @@ Configure the `inventory/main.yaml` such that an ip address or url is provided f
 ### Configure `config.yaml`
 
 The `config.yaml` is used to configure the homelab. The homelab should be able to install without edditing this file however if there is anything that you, as a user, can tweak then it should be found here.
+
+### Configure environmental variables (secrets)
+
+First, create a .env file based on the `.env.example` template.
+
+```bash
+cp .env.example .env
+```
+
+Second, fill in the REQUIRED values. The values are explained below:
+
+- HOMELAB_ADMIN_USERNAME (REQUIRED) - admin username
+- HOMELAB_ADMIN_PASSWORD (REQUIRED) - admin password for authenticating
+- HOMELAB_DOMAIN_URL (OPTIONAL) - url for accessing homelab remotely
+- HOMELAB_DOMAIN_HTTPS_EMAIL (OPTIONAL) - email for configuring HTTPS certificates
+
+Lastly, apply the env variables to the terminal's session:
+
+```bash
+export $(cat .env | tr '\n' ' ')
+```
 
 ## Usage
 

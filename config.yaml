@@ -11,6 +11,22 @@ homelab:
     # roles.
     version: 1.36
 
+  # REQUIRED. Credentials for admin account for services. Read from the
+  # environment so no secrets are committed to version control:
+  #   export HOMELAB_ADMIN_USERNAME=admin
+  #   export HOMELAB_ADMIN_PASSWORD=change-me
+  admin:
+    username: "{{ lookup('ansible.builtin.env', 'HOMELAB_ADMIN_USERNAME') | regex_replace('^\"|\"$', '') }}"
+    password: "{{ lookup('ansible.builtin.env', 'HOMELAB_ADMIN_PASSWORD') | regex_replace('^\"|\"$', '') }}"
+
+  # OPTIONAL. When the homelab sits behind a public domain, set the
+  # domain url.
+  domain:
+    url: "{{ lookup('ansible.builtin.env', 'HOMELAB_DOMAIN_URL') | regex_replace('^\"|\"$', '') }}"
+    https:
+      enabled: false
+      email: "{{ lookup('ansible.builtin.env', 'HOMELAB_DOMAIN_HTTPS_EMAIL') | regex_replace('^\"|\"$', '') }}"
+
 # ── MISC ─────────────────────────────────────────────────────────
 
 # OPTIONAL. Uninstalls homelab if set to true.

@@ -1,0 +1,2 @@
+- name: Install {{ helm_release.name }}
+  ansible.builtin.include_tasks: ../../common/tasks/helm.yaml
