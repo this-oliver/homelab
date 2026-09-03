@@ -57,6 +57,25 @@
             name: ../roles/k8s-base-kubectl
           tags: [kubectl]
 
+# Cert manager is installed before the networking stack because the
+# Traefik release ships a ClusterIssuer and Certificate that reference
+# cert-manager CRDs at install time.
+- name: Provision certificate management
+  hosts: controllers
+  vars_files:
+    - ../vars/main.yaml
+  pre_tasks:
+    - name: Resolve homelab directory to an absolute path
+      ansible.builtin.include_tasks: ../tasks/resolve-path.yaml
+  tasks:
+    - name: Install cert-manager
+      when:
+        - not (uninstall | bool)
+        - homelab.domain.https.email is defined
+      ansible.builtin.include_role:
+        name: ../roles/k8s-extension-cert-manager
+      tags: [cert-manager]
+
 - name: Provision networking stack
   hosts: controllers
   vars_files:
@@ -72,7 +91,6 @@
           ansible.builtin.include_role:
             name: ../roles/k8s-extension-metallb
           tags: [metallb]
-          when: not (homelab.cloud | bool)
 
         - name: Gateway API
           ansible.builtin.include_role:
@@ -83,20 +101,6 @@
           ansible.builtin.include_role:
             name: ../roles/k8s-extension-traefik
           tags: [traefik]
-
-- name: Provision certificate management
-  hosts: controllers
-  vars_files:
-    - ../vars/main.yaml
-  pre_tasks:
-    - name: Resolve homelab directory to an absolute path
-      ansible.builtin.include_tasks: ../tasks/resolve-path.yaml
-  tasks:
-    - name: Install cert-manager
-      when: not (uninstall | bool)
-      ansible.builtin.include_role:
-        name: ../roles/k8s-extension-cert-manager
-      tags: [cert-manager]
 
 - name: Provision dashboards
   hosts: controllers
@@ -121,7 +125,7 @@
       ansible.builtin.include_tasks: ../tasks/resolve-path.yaml
   tasks:
     - name: Post-install summary
+      when: not (uninstall | bool)
       ansible.builtin.include_role:
         name: ../roles/common
       tags: [summary]
-      when: not (uninstall | bool)

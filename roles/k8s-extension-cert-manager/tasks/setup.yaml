@@ -2,3 +2,21 @@
 
 - name: Install {{ helm_release.name }}
   ansible.builtin.include_tasks: ../../k8s-base-helm/tasks/install.yaml
+
+- name: Create temporary dir
+  ansible.builtin.tempfile:
+    state: directory
+  register: temp_dir
+
+- name: Copy namespace.yaml templat to metallb dir
+  ansible.builtin.template:
+    src: templates/cluster-issuer.yaml.j2
+    dest: "{{temp_dir.path}}/cluster-issuer.yaml"
+
+- name: Install Cluster Issuers
+  ansible.builtin.command: "kubectl apply -f {{temp_dir.path}}/cluster-issuer.yaml"
+
+- name: Delete temp dir
+  ansible.builtin.file:
+    path: "{{ temp_dir.path }}"
+    state: absent

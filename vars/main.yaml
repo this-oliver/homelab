@@ -15,10 +15,12 @@ homelab:
   dir: "~/homelab"
 
   # OPTIONAL. When the homelab sits behind a public domain, set the
-  # domain name. The email is required for TLS certificate management
-  # (Let's Encrypt/ACME) and must be set whenever the name is set.
+  # domain url. When https.enabled is true, then https.email
+  # is required for TLS certificate management (Let's Encrypt/ACME)
+  # and its absence fails the run. Setting https.enabled to false
+  # serves the domain over plain HTTP.
   domain:
-    name: "{{ lookup('ansible.builtin.env', 'HOMELAB_DOMAIN_NAME') | regex_replace('^\"|\"$', '') }}"
+    url: "{{ lookup('ansible.builtin.env', 'HOMELAB_DOMAIN_NAME') | regex_replace('^\"|\"$', '') }}"
     https:
       enabled: true
       email: "{{ lookup('ansible.builtin.env', 'HOMELAB_DOMAIN_HTTPS_EMAIL') | regex_replace('^\"|\"$', '') }}"
@@ -34,15 +36,6 @@ homelab:
 # OPTIONAL. Kubernetes version for the APT repository and MicroK8s
 # channel. Shared by the kubectl and microk8s roles.
 k8s_version: 1.36
-
-# ── MetalLB ─────────────────────────────────────────────────────────
-
-# REQUIRED. IP address pool for MetalLB load balancing.
-# Accepted formats:
-#   Single IP:   10.0.0.100
-#   IP range:    10.0.0.100-10.0.0.200
-#   Comma list:  10.0.0.100,10.0.0.101,10.0.0.102
-metallb_ip_pool: "{{ lookup('ansible.builtin.env', 'HOMELAB_METALLB_IP_POOL') | regex_replace('^\"|\"$', '') }}"
 
 # ── MISC ─────────────────────────────────────────────────────────
 

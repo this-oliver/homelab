@@ -79,11 +79,11 @@
 
     - name: Set traefik URL (domain mode)
       ansible.builtin.set_fact:
-        traefik_url: "https://{{ homelab.domain.name }}/traefik/dashboard"
+        traefik_url: "https://{{ homelab.domain.url }}/traefik/dashboard"
       when:
         - traefik_svc.rc == 0
-        - homelab.domain.name is defined
-        - homelab.domain.name | length > 0
+        - homelab.domain.url is defined
+        - homelab.domain.url | length > 0
 
     - name: Set traefik URL (local mode)
       ansible.builtin.set_fact:

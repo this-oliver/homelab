@@ -1,4 +1,27 @@
 # See vars/main.yaml (top-level) and this role's vars/main.yaml for configuration.
 
+- name: Fail when HTTPS is enabled without an ACME email
+  ansible.builtin.assert:
+    quiet: true
+    that: homelab.domain.https.email | length > 0
+    fail_msg: >-
+      homelab.domain.https.email (env HOMELAB_DOMAIN_HTTPS_EMAIL) is required
+      when homelab.domain.url is set and homelab.domain.https.enabled is true.
+      Provide an email for Let's Encrypt certificate management, or set
+      homelab.domain.https.enabled to false to serve the domain over plain HTTP.
+  when:
+    - homelab.domain.url | length > 0
+    - homelab.domain.https.enabled | bool
+
+- name: Warn when the domain is served over plain HTTP
+  ansible.builtin.debug:
+    msg: >-
+      homelab.domain.https.enabled is false: '{{ homelab.domain.url }}' will be
+      served over unencrypted HTTP. Set homelab.domain.https.enabled to true and
+      HOMELAB_DOMAIN_HTTPS_EMAIL to enable HTTPS via Let's Encrypt.
+  when:
+    - homelab.domain.url | length > 0
+    - not (homelab.domain.https.enabled | bool)
+
 - name: Install {{ helm_release.name }}
   ansible.builtin.include_tasks: ../../k8s-base-helm/tasks/install.yaml

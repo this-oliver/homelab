@@ -1,0 +1,44 @@
+---
+- name: Provision networking stack
+  hosts: controllers
+  vars_files:
+    - ../vars/main.yaml
+  pre_tasks:
+    - name: Resolve homelab directory to an absolute path
+      ansible.builtin.include_tasks: _resolve_path.yaml
+  tasks:
+    - name: Install networking stack
+      when: not (uninstall | bool)
+      block:
+        - name: MetalLB
+          ansible.builtin.include_role:
+            name: ../roles/k8s-extension-metallb
+          tags: [metallb]
+
+        - name: Gateway API
+          ansible.builtin.include_role:
+            name: ../roles/k8s-extension-gateway
+          tags: [gateway]
+
+        - name: Traefik
+          ansible.builtin.include_role:
+            name: ../roles/k8s-extension-traefik
+          tags: [traefik]
+
+    - name: Uninstall networking stack
+      when: uninstall | bool
+      block:
+        - name: Traefik
+          ansible.builtin.include_role:
+            name: ../roles/k8s-extension-traefik
+          tags: [traefik]
+
+        - name: Gateway API
+          ansible.builtin.include_role:
+            name: ../roles/k8s-extension-gateway
+          tags: [gateway]
+
+        - name: MetalLB
+          ansible.builtin.include_role:
+            name: ../roles/k8s-extension-metallb
+          tags: [metallb]

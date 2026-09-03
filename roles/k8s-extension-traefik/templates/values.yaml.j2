@@ -1,15 +1,47 @@
 # Traefik Helm values.
 # See https://github.com/traefik/traefik-helm-chart/blob/master/traefik/values.yaml
 
+# ── TLS ─────────────────────────────────────────────────────────────
+# The TLS mode is derived from the homelab domain settings:
+#
+#   domain + https.enabled + email -> ACME mode. A cert-manager issued
+#     Let's Encrypt certificate terminates TLS on the websecure Gateway
+#     listener and plain HTTP is redirected to HTTPS. tasks/setup.yaml
+#     fails loudly when the email is missing.
+#   domain + https.enabled false   -> HTTP only. Unencrypted; a warning
+#     is emitted by tasks/setup.yaml.
+#   no domain                      -> local mode. HTTP only, dashboard
+#     restricted to the cluster node's subnet.
+{% set acme_tls = homelab.domain.url | length > 0 and homelab.domain.https.enabled | bool %}
+
 # ── Dashboard rule ───────────────────────────────────────────────────
 # The dashboard is always enabled. When a domain is configured it is
 # served at <domain>/traefik/dashboard, otherwise it is restricted to
 # clients on the same subnet as the cluster node.
-{% if homelab.domain.name | length > 0 %}
-{% set traefik_dashboard_rule = 'Host(`' ~ homelab.domain.name ~ '`) && (PathPrefix(`/traefik/api`) || PathPrefix(`/traefik/dashboard`))' %}
+{% if homelab.domain.url | length > 0 %}
+{% set traefik_dashboard_rule = 'Host(`' ~ homelab.domain.url ~ '`) && (PathPrefix(`/traefik/api`) || PathPrefix(`/traefik/dashboard`))' %}
 {% else %}
 {% set traefik_dashboard_rule = 'ClientIP(`' ~ ansible_facts['default_ipv4']['network'] ~ '/' ~ ansible_facts['default_ipv4']['prefix'] ~ '`) && (PathPrefix(`/traefik/api`) || PathPrefix(`/traefik/dashboard`))' %}
 {% endif %}
+
+# ── Global ─────────────────────────────────────────────────────────
+global:
+  checkNewVersion: true
+  # -- Please take time to consider whether or not you wish to share anonymous data with us
+  # See https://doc.traefik.io/traefik/contributing/data-collection/
+  sendAnonymousUsage: false
+
+# ── Service ─────────────────────────────────────────────────────────
+# On bare metal, MetalLB satisfies LoadBalancer Services with an IP
+# from HOMELAB_METALLB_IP_POOL. Cloud VMs run without a load balancer
+# controller, so Traefik falls back to pinned NodePorts that an
+# external cloud load balancer (or firewall) can target:
+#
+#   web       80  -> 30080
+#   websecure 443 -> 30443
+service:
+  spec:
+    type: "{{ 'NodePort' if homelab.cloud | bool else 'LoadBalancer' }}"
 
 # ── Providers ───────────────────────────────────────────────────────
 providers:
@@ -25,6 +57,39 @@ gateway:
       protocol: HTTP
       namespacePolicy:
         from: All
+{% if acme_tls %}
+    websecure:
+      port: 8443
+      protocol: HTTPS
+      namespacePolicy:
+        from: All
+      certificateRefs:
+        - kind: Secret
+          name: homelab-domain-tls
+{% endif %}
+
+# ── Ports ────────────────────────────────────────────────────────────
+# Only emit overrides; never render an empty block, since a null value
+# would make Helm drop the chart's defaults for that key.
+{% if homelab.cloud | bool or acme_tls %}
+ports:
+  web:
+{% if homelab.cloud | bool %}
+    nodePort: 30080
+{% endif %}
+{% if acme_tls %}
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+{% endif %}
+{% if homelab.cloud | bool %}
+  websecure:
+    nodePort: 30443
+{% endif %}
+{% endif %}
 
 # ── Dashboard ───────────────────────────────────────────────────────
 api:
@@ -36,6 +101,9 @@ ingressRoute:
     matchRule: "{{ traefik_dashboard_rule }}"
     entryPoints:
       - web
+{% if acme_tls %}
+      - websecure
+{% endif %}
     middlewares:
       - name: traefik-dashboard-ratelimit
       - name: traefik-dashboard-auth
@@ -46,6 +114,10 @@ log:
 
 accessLog:
   enabled: true
+
+# ── Experimental ─────────────────────────────────────────────────────────
+experimental:
+  kubernetesGateway: true
 
 # ── Extra Objects ─────────────────────────────────────────────────────────
 extraObjects:
@@ -73,3 +145,37 @@ extraObjects:
         average: 50
         period: 1s
         burst: 50
+{% if acme_tls %}
+# Requires cert-manager (k8s-extension-cert-manager) to be installed
+# first. The ClusterIssuer is cluster-scoped so future workloads can
+# request certificates from any namespace.
+  - apiVersion: cert-manager.io/v1
+    kind: ClusterIssuer
+    metadata:
+      name: letsencrypt
+    spec:
+      acme:
+        server: https://acme-v02.api.letsencrypt.org/directory
+        email: "{{ homelab.domain.https.email }}"
+        privateKeySecretRef:
+          name: letsencrypt-account-key
+        solvers:
+          - http01:
+              gatewayHTTPRoute:
+                parentRefs:
+                  - group: gateway.networking.k8s.io
+                    kind: Gateway
+                    name: traefik
+                    namespace: traefik
+  - apiVersion: cert-manager.io/v1
+    kind: Certificate
+    metadata:
+      name: homelab-domain-tls
+    spec:
+      secretName: homelab-domain-tls
+      dnsNames:
+        - "{{ homelab.domain.url }}"
+      issuerRef:
+        name: letsencrypt
+        kind: ClusterIssuer
+{% endif %}

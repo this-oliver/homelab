@@ -1,0 +1,13 @@
+---
+- name: Generate summary
+  hosts: controllers
+  vars_files:
+    - ../vars/main.yaml
+  pre_tasks:
+    - name: Resolve homelab directory to an absolute path
+      ansible.builtin.include_tasks: _resolve_path.yaml
+  tasks:
+    - name: Post-install summary
+      ansible.builtin.include_role:
+        name: ../roles/k8s-summary
+      tags: [summary]

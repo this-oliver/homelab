@@ -1,14 +1,13 @@
 # IMPORTANT: the order of the resources matters.
 # IPAdressPool first, and then L2Advertisment.
-
 ---
 apiVersion: metallb.io/v1beta1
 kind: IPAddressPool
 metadata:
-  name: metallb-ip-address-pool
+  name: gateway
 spec:
   addresses:
-  - {{ metallb_ip_pool }}
+  - {{ ansible_facts['ansible_default_ipv4']['address'] }}
 ---
 apiVersion: metallb.io/v1beta1
 kind: L2Advertisement

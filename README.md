@@ -85,8 +85,8 @@ Optional configuration:
 | Variable | Description |
 |---|---|
 | `homelab.dir` | Path for the homelab directory (default `~/homelab`) |
-| `homelab.domain.name` | Public domain the homelab sits behind (enables the Traefik dashboard at `<domain>/traefik/dashboard`) |
-| `homelab.domain.https.email` | Email for TLS certificate management; required when `homelab.domain.name` is set |
+| `homelab.domain.url` | Public domain the homelab sits behind (enables the Traefik dashboard at `<domain>/traefik/dashboard`) |
+| `homelab.domain.https.email` | Email for TLS certificate management; required when `homelab.domain.url` is set |
 | `k8s_version` | Kubernetes version for the APT repository and MicroK8s channel (default `1.36`) |
 
 A preflight check runs at the start of the playbook and fails with a clear message if any required configuration is missing.
