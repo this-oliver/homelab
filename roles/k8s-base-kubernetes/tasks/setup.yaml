@@ -42,31 +42,41 @@
         line: "KUBECONFIG=\"{{ homelab.dir }}/.kube/config.yaml\""
         create: yes
 
+- when: has_microk8s | bool
+  ansible.builtin.debug:
+    msg: "Skipping microk8s setup because it already exists"
+
 - name: Install Kubernetes
+  become: true
+  when: not (has_microk8s | bool)
   block:
     - name: Install Snap
-      become: true
       ansible.builtin.apt:
         name: snapd
         state: present
 
     - name: Install Microk8s
-      become: true
       community.general.snap:
         classic: true
         channel: "{{ homelab.k8s.version }}"
         name: microk8s
 
     - name: Start microk8s
-      become: true
       ansible.builtin.command: microk8s start
 
     - name: Wait for microk8s
-      become: true
       ansible.builtin.command: microk8s status --wait-ready
 
+    - name: Enable microk8s common modules
+      ansible.builtin.command: "microk8s enable {{ addon }}"
+      loop: "{{ addons }}"
+      loop_control:
+        loop_var: addon
+
+- name: Configure Kubernetes
+  become: true
+  block:
     - name: Extract MicroK8s Kubectl Config
-      become: true
       ansible.builtin.command: microk8s config
       register: kubeconfig_output
 
@@ -78,14 +88,7 @@
         group: homelab
       register: kubeconfig_updated
 
-    - name: Enable microk8s common modules
-      become: true
-      ansible.builtin.command: "microk8s enable {{ addon }}"
-      loop: "{{ addons }}"
-      loop_control:
-        loop_var: addon
-
-- name: Configure for Raspberry Pi
+- name: Configure Kubernetes for Raspberry Pi
   when: is_raspi | default(false) is true
   block:
     # see https://canonical.com/microk8s/docs/install-raspberry-pi
