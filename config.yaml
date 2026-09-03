@@ -1,0 +1,17 @@
+# ── Homelab ─────────────────────────────────────────────────────────
+
+homelab:
+  # OPTIONAL. Path for the homelab directory. A leading `~` is resolved
+  # against the connecting user's home (the playbook rewrites it to an
+  # absolute path before any role runs).
+  dir: "~/homelab"
+
+  k8s:
+    # OPTIONAL. Kubernetes version consumed by the kubectl and kubernetes
+    # roles.
+    version: 1.36
+
+# ── MISC ─────────────────────────────────────────────────────────
+
+# OPTIONAL. Uninstalls homelab if set to true.
+uninstall: false

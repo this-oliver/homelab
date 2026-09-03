@@ -1,0 +1,9 @@
+- name: Assert target OS is Ubuntu
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - ansible_facts['distribution'] == "Ubuntu"
+    fail_msg: |-
+      Unsupported operating system:
+        - This homelab playbook only supports Ubuntu.
+          [os: {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }}]

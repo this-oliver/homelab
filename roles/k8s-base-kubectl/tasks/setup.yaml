@@ -1,0 +1,6 @@
+- name: Install Kubectl
+  become: true
+  community.general.snap:
+    classic: true
+    channel: "{{ homelab.k8s.version }}"
+    name: kubectl

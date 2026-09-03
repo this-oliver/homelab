@@ -1,0 +1,58 @@
+---
+- name: Bootstrap all nodes
+  hosts: all
+  vars_files:
+    - ../config.yaml
+  pre_tasks:
+    - name: Resolve homelab directory to an absolute path
+      ansible.builtin.include_tasks: ../tasks/resolve-path.yaml
+  tasks:
+    - name: Basic
+      when: not (uninstall | bool)
+      ansible.builtin.include_role:
+        name: ../roles/common
+      tags: [base]
+
+- name: Provision kubernetes
+  hosts: controllers
+  vars_files:
+    - ../config.yaml
+  pre_tasks:
+    - name: Resolve homelab directory to an absolute path
+      ansible.builtin.include_tasks: ../tasks/resolve-path.yaml
+  tasks:
+    - name: Install Kubernetes base
+      when: not (uninstall | bool)
+      block:
+        - name: Kubectl
+          ansible.builtin.include_role:
+            name: ../roles/k8s-base-kubectl
+          tags: [kubectl]
+
+        - name: Helm
+          ansible.builtin.include_role:
+            name: ../roles/k8s-base-helm
+          tags: [helm]
+
+        - name: Kubernetes
+          ansible.builtin.include_role:
+            name: ../roles/k8s-base-kubernetes
+          tags: [kubernetes]
+
+    - name: Uninstall Kubernetes base
+      when: uninstall | bool
+      block:
+        - name: Kubernetes
+          ansible.builtin.include_role:
+            name: ../roles/k8s-base-kubernetes
+          tags: [kubernetes]
+
+        - name: Helm
+          ansible.builtin.include_role:
+            name: ../roles/k8s-base-helm
+          tags: [helm]
+
+        - name: Kubectl
+          ansible.builtin.include_role:
+            name: ../roles/k8s-base-kubectl
+          tags: [kubectl]

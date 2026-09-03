@@ -1,0 +1,23 @@
+- name: Ensure homelab group exists
+  become: true
+  ansible.builtin.group:
+    name: homelab
+    state: present
+
+- name: Add "{{ ansible_facts['user_id'] }}" user to homelab group
+  become: true
+  ansible.builtin.user:
+    name: "{{ ansible_facts['user_id'] }}"
+    groups: homelab
+    append: true
+
+- name: Ensure homelab directory exists
+  ansible.builtin.file:
+    path: "{{ homelab.dir }}"
+    state: directory
+
+- name: Install basic tools
+  become: true
+  ansible.builtin.apt:
+    pkg:
+      - curl
