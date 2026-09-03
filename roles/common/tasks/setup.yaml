@@ -15,6 +15,7 @@
   ansible.builtin.file:
     path: "{{ homelab.dir }}"
     state: directory
+    group: homelab
 
 - name: Install basic tools
   become: true

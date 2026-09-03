@@ -73,10 +73,10 @@
       loop_control:
         loop_var: addon
 
-- name: Configure Kubernetes
-  become: true
+- name: Update Kubeconfig file
   block:
     - name: Extract MicroK8s Kubectl Config
+      become: true
       ansible.builtin.command: microk8s config
       register: kubeconfig_output
 
@@ -92,7 +92,7 @@
   when: is_raspi | default(false) is true
   block:
     # see https://canonical.com/microk8s/docs/install-raspberry-pi
-    - name: Install Raspberry Pi deps
+    - name: Install Raspberry Pi dependencies
       become: true
       ansible.builtin.apt:
         state: present
