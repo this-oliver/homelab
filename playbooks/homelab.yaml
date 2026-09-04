@@ -100,3 +100,31 @@
             apply:
               tags: [networking, traefik]
           tags: [networking, traefik]
+
+- name: Provision reverse proxy
+  hosts: controllers
+  vars_files:
+    - ../config.yaml
+  pre_tasks:
+    - name: Resolve homelab directory to an absolute path
+      ansible.builtin.include_tasks: ../tasks/resolve-path.yaml
+  tasks:
+    - name: Install reverse proxy
+      when: not (uninstall | bool)
+      block:
+        - name: Reverse proxy
+          ansible.builtin.include_role:
+            name: ../roles/reverse-proxy
+            apply:
+              tags: [reverse-proxy]
+          tags: [reverse-proxy]
+
+    - name: Uninstall reverse proxy
+      when: uninstall | bool
+      block:
+        - name: Reverse proxy
+          ansible.builtin.include_role:
+            name: ../roles/reverse-proxy
+            apply:
+              tags: [reverse-proxy]
+          tags: [reverse-proxy]

@@ -1,0 +1,10 @@
+- name: Stop and remove HAProxy container
+  become: true
+  containers.podman.podman_container:
+    name: "{{ reverse_proxy.container.image }}"
+    state: absent
+
+- name: Remove HAProxy config directory
+  ansible.builtin.file:
+    path: "{{ reverse_proxy.dir }}"
+    state: absent

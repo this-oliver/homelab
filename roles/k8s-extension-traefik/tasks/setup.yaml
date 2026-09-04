@@ -1,3 +1,6 @@
+- name: Run shared preflight checks
+  ansible.builtin.include_tasks: ../../../tasks/preflight.yaml
+
 - name: Fail when HTTPS is enabled without an ACME email
   ansible.builtin.assert:
     quiet: true
@@ -22,4 +25,4 @@
     - not (homelab.domain.https.enabled | bool)
 
 - name: Install {{ helm_release.name }}
-  ansible.builtin.include_tasks: ../../common/tasks/helm.yaml
+  ansible.builtin.include_tasks: ../../../tasks/helm.yaml

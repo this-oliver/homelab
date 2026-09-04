@@ -1,0 +1,23 @@
+global
+    log stdout format raw local0
+
+defaults
+    mode tcp
+    log global
+    timeout connect 5s
+    timeout client 30s
+    timeout server 30s
+
+frontend http
+    bind *:{{ reverse_proxy.http.listen_port }}
+    default_backend traefik_http
+
+frontend https
+    bind *:{{ reverse_proxy.https.listen_port }}
+    default_backend traefik_https
+
+backend traefik_http
+    server traefik 127.0.0.1:{{ reverse_proxy.http.node_port }} check inter 5s fall 3 rise 2
+
+backend traefik_https
+    server traefik 127.0.0.1:{{ reverse_proxy.https.node_port }} check inter 5s fall 3 rise 2
