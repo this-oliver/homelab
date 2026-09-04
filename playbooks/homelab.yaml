@@ -14,7 +14,7 @@
     - name: Basic
       when: not (uninstall | bool)
       ansible.builtin.include_role:
-        name: ../roles/common
+        name: ../roles/base
         apply:
               tags: [base]
       tags: [base]
@@ -36,21 +36,21 @@
       block:
         - name: Kubectl
           ansible.builtin.include_role:
-            name: ../roles/k8s-base-kubectl
+            name: ../roles/k8s-tool-kubectl
             apply:
               tags: [kubernetes, kubectl]
           tags: [kubernetes, kubectl]
 
         - name: Helm
           ansible.builtin.include_role:
-            name: ../roles/k8s-base-helm
+            name: ../roles/k8s-tool-helm
             apply:
               tags: [kubernetes, helm]
           tags: [kubernetes, helm]
 
         - name: Kubernetes
           ansible.builtin.include_role:
-            name: ../roles/k8s-base-kubernetes
+            name: ../roles/k8s-core
             apply:
               tags: [kubernetes]
           tags: [kubernetes]
@@ -60,21 +60,21 @@
       block:
         - name: Kubernetes
           ansible.builtin.include_role:
-            name: ../roles/k8s-base-kubernetes
+            name: ../roles/k8s-core
             apply:
               tags: [kubernetes]
           tags: [kubernetes]
 
         - name: Helm
           ansible.builtin.include_role:
-            name: ../roles/k8s-base-helm
+            name: ../roles/k8s-tool-helm
             apply:
               tags: [kubernetes, helm]
           tags: [kubernetes, helm]
 
         - name: Kubectl
           ansible.builtin.include_role:
-            name: ../roles/k8s-base-kubectl
+            name: ../roles/k8s-tool-kubectl
             apply:
               tags: [kubernetes, kubectl]
           tags: [kubernetes, kubectl]
@@ -107,7 +107,11 @@
     - ../config.yaml
   pre_tasks:
     - name: Resolve homelab directory to an absolute path
-      ansible.builtin.include_tasks: ../tasks/resolve-path.yaml
+      ansible.builtin.include_tasks:
+        file: ../tasks/resolve-path.yaml
+        apply:
+          tags: [reverse-proxy]
+      tags: [reverse-proxy]
   tasks:
     - name: Install reverse proxy
       when: not (uninstall | bool)
