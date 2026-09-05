@@ -24,7 +24,7 @@ homelab:
   domain:
     url: "{{ lookup('ansible.builtin.env', 'HOMELAB_DOMAIN_URL') | regex_replace('^\"|\"$', '') }}"
     https:
-      enabled: false
+      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_DOMAIN_HTTPS_ENABLED') | bool | default(True) }}"
       email: "{{ lookup('ansible.builtin.env', 'HOMELAB_DOMAIN_HTTPS_EMAIL') | regex_replace('^\"|\"$', '') }}"
 
 # ── MISC ─────────────────────────────────────────────────────────
