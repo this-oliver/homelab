@@ -1,2 +1,2 @@
-- name: Install {{ helm_release.name }}
+- name: Uninstall {{ helm_release.name }}
   ansible.builtin.include_tasks: ../../../tasks/helm.yaml

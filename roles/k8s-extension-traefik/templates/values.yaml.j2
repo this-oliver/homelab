@@ -6,6 +6,7 @@
    being provided. HTTPS is not yet wired up; this only exposes the flag so
    future HTTPS config can be emitted conditionally. #}
 {% set traefik_https_enabled = homelab.domain.url | length > 0 and homelab.domain.https.enabled | bool and homelab.domain.https.email | length > 0 %}
+{% set traefik_port = 443 if traefik_https_enabled else 80 %}
 
 # ── Dashboard rule ───────────────────────────────────────────────────
 # The dashboard is always enabled. When a domain is configured it is
@@ -24,14 +25,39 @@ global:
 
 # ── Service ───────────────────────────────────────────────────────
 service:
-  type: NodePort
+  spec:
+    type: NodePort
 
 # ── Ports ───────────────────────────────────────────────────────
 ports:
   web:
     nodePort: 30080
+{% if traefik_https_enabled %}
+    http:
+      redirections:
+        entrypoint:
+          to: websecure
+{% endif %}
   websecure:
     nodePort: 30443
+
+# ── TLS ───────────────────────────────────────────────────────
+{% if traefik_https_enabled %}
+persistence:
+  enabled: true
+  name: data
+  accessMode: ReadWriteOnce
+  size: 128Mi
+  path: "{{ homelab.dir }}/traefik/certs"
+
+certificatesResolvers:
+  defaultCertResolver:
+    acme:
+      email: "{{ homelab.domain.https.email }}"
+      storage: "{{ homelab.dir }}/traefik/certs/acme.json"
+      httpChallenge:
+        entryPoint: "web"
+{% endif %}
 
 # ── Dashboard ───────────────────────────────────────────────────────
 api:
@@ -41,12 +67,20 @@ api:
 ingressRoute:
   dashboard:
     enabled: true
-    entryPoints: ["web"]
     matchRule: "{{ traefik_dashboard_rule }}"
+    entryPoints:
+{% if traefik_https_enabled %}
+      - websecure
+{% else %}
+      - web
+{% endif %}
     middlewares:
       - name: traefik-dashboard-redirect
-      - name: traefik-dashboard-ratelimit
       - name: traefik-dashboard-auth
+      - name: rate-limit
+{% if traefik_https_enabled %}
+      - name: https-redirect
+{% endif %}
 
 # ── Logging ─────────────────────────────────────────────────────────
 log:
@@ -60,32 +94,44 @@ extraObjects:
   - apiVersion: v1
     kind: Secret
     metadata:
-      name: traefik-dashboard-auth-secret
+        name: traefik-dashboard-auth-secret
     type: kubernetes.io/basic-auth
     stringData:
-      username: "{{ homelab.admin.username }}"
-      password: "{{ homelab.admin.password }}"
+        username: "{{ homelab.admin.username }}"
+        password: "{{ homelab.admin.password }}"
+
   - apiVersion: traefik.io/v1alpha1
     kind: Middleware
     metadata:
-      name: traefik-dashboard-auth
+        name: traefik-dashboard-auth
     spec:
-      basicAuth:
-        secret: traefik-dashboard-auth-secret
+        basicAuth:
+            secret: traefik-dashboard-auth-secret
+
   - apiVersion: traefik.io/v1alpha1
     kind: Middleware
     metadata:
-      name: traefik-dashboard-redirect
+        name: traefik-dashboard-redirect
     spec:
-      redirectRegex:
-        regex: \/traefik\/dashboard$
-        replacement: /traefik/dashboard/
+        redirectRegex:
+            regex: "\/traefik\/dashboard$"
+            replacement: "/traefik/dashboard/"
+
   - apiVersion: traefik.io/v1alpha1
     kind: Middleware
     metadata:
-      name: traefik-dashboard-ratelimit
+        name: rate-limit
     spec:
-      rateLimit:
-        average: 50
-        period: 1s
-        burst: 50
+        rateLimit:
+            average: 50
+            period: 1s
+            burst: 50
+
+  - apiVersion: traefik.io/v1alpha1
+    kind: Middleware
+    metadata:
+        name: https-redirect
+    spec:
+        redirectRegex:
+            regex: "^http:\/\/(.*)"
+            replacement: "https://${1}"
