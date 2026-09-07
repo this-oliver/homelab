@@ -1,0 +1,55 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-app
+  labels:
+    app: demo-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-app
+  template:
+    metadata:
+      labels:
+        app: demo-app
+    spec:
+      containers:
+      - name: simple-web
+        image: ghcr.io/this-oliver/simple-web-app:v1.0.1@sha256:12f7dfc283ebf48f50284187bb56269b179b605f15a26a92baec8d836d9d0073
+        ports:
+        - containerPort: 3000
+          name: demo-app-http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-app
+spec:
+  selector:
+    app: demo-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: demo-app-http
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: demo-app
+spec:
+  entryPoints:
+    - websecure
+    - web
+  routes:
+  - match: Host(`oliverr.net`)
+    kind: Rule
+    middlewares:
+      - name: rate-limit
+      - name: https-redirect
+    services:
+    - name: demo-app
+      port: 80
+  tls:
+    certResolver: defaultCertResolver
