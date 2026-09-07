@@ -132,3 +132,24 @@
             apply:
               tags: [reverse-proxy]
           tags: [reverse-proxy]
+
+- name: Provision monitoring
+  hosts: controllers
+  vars_files:
+    - ../config.yaml
+  pre_tasks:
+    - name: Resolve homelab directory to an absolute path
+      ansible.builtin.include_tasks:
+        file: ../tasks/resolve-path.yaml
+        apply:
+          tags: [monitor]
+      tags: [monitor]
+  tasks:
+    - name: Monitoring
+      block:
+        - name: Headlamp dashboard for kubernetes
+          ansible.builtin.include_role:
+            name: ../roles/k8s-extension-headlamp
+            apply:
+              tags: [monitor, headlamp, dashboard]
+          tags: [monitor, headlamp, dashboard]

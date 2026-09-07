@@ -3,19 +3,18 @@
 
 # ── HTTPS flag ───────────────────────────────────────────────────
 {# HTTPS is gated on a domain being set, https being enabled and an email
-   being provided. HTTPS is not yet wired up; this only exposes the flag so
-   future HTTPS config can be emitted conditionally. #}
-{% set traefik_https_enabled = homelab.domain.url | length > 0 and homelab.domain.https.enabled | bool and homelab.domain.https.email | length > 0 %}
-{% set traefik_port = 443 if traefik_https_enabled else 80 %}
+being provided. HTTPS is not yet wired up; this only exposes the flag so
+future HTTPS config can be emitted conditionally. #}
+{% set https_enabled = homelab.domain.url | length > 0 and homelab.domain.https.enabled | bool and homelab.domain.https.email | length > 0 %}
 
 # ── Dashboard rule ───────────────────────────────────────────────────
-# The dashboard is always enabled. When a domain is configured it is
-# served at <domain>/traefik/dashboard, otherwise it is served at the
-# host/node IP address on /traefik/dashboard.
+{#The dashboard is always enabled. When a domain is configured it is
+served at <domain>/traefik/dashboard, otherwise it is served at the
+host/node IP address on /traefik/dashboard.#}
 {% if homelab.domain.url | length > 0 %}
-{% set traefik_dashboard_rule = 'Host(`' ~ homelab.domain.url ~ '`) && (PathPrefix(`/traefik/api`) || PathPrefix(`/traefik/dashboard`))' %}
+{% set dashboard_rule = 'Host(`' ~ homelab.domain.url ~ '`) && (PathPrefix(`/' ~ helm_release.name ~ '/api`) || PathPrefix(`/' ~ helm_release.name ~ '/dashboard`))' %}
 {% else %}
-{% set traefik_dashboard_rule = '(PathPrefix(`/traefik/api`) || PathPrefix(`/traefik/dashboard`))' %}
+{% set dashboard_rule = '(PathPrefix(`/' ~ helm_release.name ~ '/api`) || PathPrefix(`/' ~ helm_release.name ~ '/dashboard`))' %}
 {% endif %}
 
 # ── Global ─────────────────────────────────────────────────────────
@@ -32,7 +31,7 @@ service:
 ports:
   web:
     nodePort: 30080
-{% if traefik_https_enabled %}
+{% if https_enabled %}
     http:
       redirections:
         entrypoint:
@@ -42,7 +41,7 @@ ports:
     nodePort: 30443
 
 # ── TLS ───────────────────────────────────────────────────────
-{% if traefik_https_enabled %}
+{% if https_enabled %}
 persistence:
   enabled: true
   name: data
@@ -67,9 +66,9 @@ api:
 ingressRoute:
   dashboard:
     enabled: true
-    matchRule: "{{ traefik_dashboard_rule }}"
+    matchRule: "{{ dashboard_rule }}"
     entryPoints:
-{% if traefik_https_enabled %}
+{% if https_enabled %}
       - websecure
 {% else %}
       - web
@@ -78,7 +77,7 @@ ingressRoute:
       - name: traefik-dashboard-redirect
       - name: traefik-dashboard-auth
       - name: rate-limit
-{% if traefik_https_enabled %}
+{% if https_enabled %}
       - name: https-redirect
 {% endif %}
 

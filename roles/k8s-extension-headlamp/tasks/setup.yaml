@@ -1,0 +1,5 @@
+- name: Run shared preflight checks
+  ansible.builtin.include_tasks: ../../../tasks/preflight.yaml
+
+- name: Install {{ helm_release.name }}
+  ansible.builtin.include_tasks: ../../../tasks/helm.yaml

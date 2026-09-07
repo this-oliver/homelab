@@ -1,0 +1,10 @@
+helm_release:
+  name: headlamp
+  namespace: kube-system
+  chart:
+    ref: headlamp/headlamp
+    version: "0.45.0"
+  repo:
+    name: headlamp
+    url: https://kubernetes-sigs.github.io/headlamp/
+  config: "{{ lookup('ansible.builtin.template', 'values.yaml.j2') | from_yaml }}"
