@@ -31,6 +31,8 @@ service:
 ports:
   web:
     nodePort: 30080
+    proxyProtocol:
+      insecure: true
 {% if https_enabled %}
     http:
       redirections:
@@ -39,6 +41,8 @@ ports:
 {% endif %}
   websecure:
     nodePort: 30443
+    proxyProtocol:
+      insecure: true
 
 # ── TLS ───────────────────────────────────────────────────────
 {% if https_enabled %}

@@ -17,7 +17,7 @@ frontend https
     default_backend traefik_https
 
 backend traefik_http
-    server traefik 127.0.0.1:{{ reverse_proxy.http.node_port }} check inter 5s fall 3 rise 2
+    server traefik 127.0.0.1:{{ reverse_proxy.http.node_port }} send-proxy check inter 5s fall 3 rise 2
 
 backend traefik_https
-    server traefik 127.0.0.1:{{ reverse_proxy.https.node_port }} check inter 5s fall 3 rise 2
+    server traefik 127.0.0.1:{{ reverse_proxy.https.node_port }} send-proxy check inter 5s fall 3 rise 2
