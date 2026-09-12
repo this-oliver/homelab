@@ -12,9 +12,9 @@ future HTTPS config can be emitted conditionally. #}
 served at <domain>/traefik/dashboard, otherwise it is served at the
 host/node IP address on /traefik/dashboard.#}
 {% if homelab.domain.url | length > 0 %}
-{% set dashboard_rule = 'Host(`' ~ homelab.domain.url ~ '`) && (PathPrefix(`/' ~ helm_release.name ~ '/api`) || PathPrefix(`/' ~ helm_release.name ~ '/dashboard`))' %}
+{% set dashboard_rule = 'Host(`' ~ homelab.domain.url ~ '`) && PathPrefix(`/traefik`)' %}
 {% else %}
-{% set dashboard_rule = '(PathPrefix(`/' ~ helm_release.name ~ '/api`) || PathPrefix(`/' ~ helm_release.name ~ '/dashboard`))' %}
+{% set dashboard_rule = 'PathPrefix(`/traefik`)' %}
 {% endif %}
 
 # ── Global ─────────────────────────────────────────────────────────
@@ -117,7 +117,7 @@ extraObjects:
         name: traefik-dashboard-redirect
     spec:
         redirectRegex:
-            regex: "\/traefik\/dashboard$"
+            regex: "\/traefik(\\/)?$"
             replacement: "/traefik/dashboard/"
 
   - apiVersion: traefik.io/v1alpha1

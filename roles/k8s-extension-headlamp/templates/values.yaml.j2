@@ -9,15 +9,15 @@ future HTTPS config can be emitted conditionally. #}
 served at <domain>/traefik/dashboard, otherwise it is served at the
 host/node IP address on /traefik/dashboard.#}
 {% if homelab.domain.url | length > 0 %}
-{% set dashboard_rule = 'Host(`' ~ homelab.domain.url ~ '`) && PathPrefix(`/' ~ helm_release.name ~ '/dashboard/`)' %}
+{% set dashboard_rule = 'Host(`' ~ homelab.domain.url ~ '`) && PathPrefix(`/`)' %}
 {% else %}
-{% set dashboard_rule = 'PathPrefix(`/' ~ helm_release.name ~ '/dashboard/`)' %}
+{% set dashboard_rule = 'PathPrefix(`/`)' %}
 {% endif %}
 
 # ── Headlamp Helm Values ───────────────────────────────────────────────────
 
 config:
-  baseURL: "/{{ helm_release.name }}/dashboard"
+  baseURL: "/dashboard"
   pluginsDir: /build/plugins
 
 volumeMounts:
@@ -40,22 +40,23 @@ initContainers:
           name: headlamp-plugins
 
 serviceAccount:
-  # -- Specifies whether a service account should be created
   create: true
-  # -- Annotations to add to the service account
-  annotations: {}
-  # -- The name of the service account to use.(If not set and create is true, a name is generated using the fullname template)
   name: "headlamp-admin"
 
 clusterRoleBinding:
-  # -- Specified whether a cluster role binding should be created
   create: true
-  # -- Set name of the Cluster Role with limited permissions from you cluster
-  # for example - clusterRoleName: user-ro
   clusterRoleName: cluster-admin
 
-# -- Additional Kubernetes manifests to be deployed. Include the manifest as nested YAML.
 extraManifests:
+- |
+  apiVersion: traefik.io/v1alpha1
+  kind: Middleware
+  metadata:
+    name: headlamp-redirect
+  spec:
+    replacePathRegex:
+        regex: "^\\/$"
+        replacement: "/dashboard/"
 - |
   apiVersion: traefik.io/v1alpha1
   kind: IngressRoute
@@ -71,6 +72,8 @@ extraManifests:
     routes:
     - match: "{{ dashboard_rule }}"
       kind: Rule
+      middlewares:
+      - name: headlamp-redirect
       services:
       - name: "{{ helm_release.name }}"
         namespace: "{{ helm_release.namespace }}"
