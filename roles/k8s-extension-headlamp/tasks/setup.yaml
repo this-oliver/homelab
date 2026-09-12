@@ -1,5 +1,12 @@
 - name: Run shared preflight checks
   ansible.builtin.include_tasks: ../../../tasks/preflight.yaml
 
-- name: Install {{ helm_release.name }}
+- name: Install {{ trivy_helm_release.name }}
   ansible.builtin.include_tasks: ../../../tasks/helm.yaml
+  vars:
+    helm_release: "{{ trivy_helm_release }}"
+
+- name: Install {{ headlamp_helm_release.name }}
+  ansible.builtin.include_tasks: ../../../tasks/helm.yaml
+  vars:
+    helm_release: "{{ headlamp_helm_release }}"

@@ -1,2 +1,9 @@
-- name: Uninstall {{ helm_release.name }}
+- name: Uninstall {{ headlamp_helm_release.name }}
   ansible.builtin.include_tasks: ../../../tasks/helm.yaml
+  vars:
+    helm_release: "{{ headlamp_helm_release }}"
+
+- name: Uninstall {{ trivy_helm_release.name }}
+  ansible.builtin.include_tasks: ../../../tasks/helm.yaml
+  vars:
+    helm_release: "{{ trivy_helm_release }}"
