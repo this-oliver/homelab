@@ -1,0 +1,20 @@
+headlamp_helm_release:
+  name: headlamp
+  namespace: kube-system
+  chart:
+    ref: headlamp/headlamp
+    version: "0.45.0"
+  repo:
+    name: headlamp
+    url: https://kubernetes-sigs.github.io/headlamp/
+  config: "{{ lookup('ansible.builtin.template', 'values.yaml.j2') | from_yaml }}"
+
+trivy_helm_release:
+  name: trivy-operator
+  namespace: trivy
+  chart:
+    ref: aqua/trivy-operator
+    version: "0.34.0"
+  repo:
+    name: aqua
+    url: https://aquasecurity.github.io/helm-charts/

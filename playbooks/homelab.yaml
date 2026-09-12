@@ -1,0 +1,155 @@
+---
+- name: Bootstrap all nodes
+  hosts: all
+  vars_files:
+    - ../config.yaml
+  pre_tasks:
+    - name: Resolve homelab directory to an absolute path
+      ansible.builtin.include_tasks:
+        file: ../tasks/resolve-path.yaml
+        apply:
+          tags: [base]
+      tags: [base]
+  tasks:
+    - name: Basic
+      when: not (uninstall | bool)
+      ansible.builtin.include_role:
+        name: ../roles/base
+        apply:
+              tags: [base]
+      tags: [base]
+
+- name: Provision kubernetes
+  hosts: controllers
+  vars_files:
+    - ../config.yaml
+  pre_tasks:
+    - name: Resolve homelab directory to an absolute path
+      ansible.builtin.include_tasks:
+        file: ../tasks/resolve-path.yaml
+        apply:
+          tags: [kubernetes]
+      tags: [kubernetes]
+  tasks:
+    - name: Install Kubernetes base
+      when: not (uninstall | bool)
+      block:
+        - name: Kubectl
+          ansible.builtin.include_role:
+            name: ../roles/k8s-tool-kubectl
+            apply:
+              tags: [kubernetes, kubectl]
+          tags: [kubernetes, kubectl]
+
+        - name: Helm
+          ansible.builtin.include_role:
+            name: ../roles/k8s-tool-helm
+            apply:
+              tags: [kubernetes, helm]
+          tags: [kubernetes, helm]
+
+        - name: Kubernetes
+          ansible.builtin.include_role:
+            name: ../roles/k8s-core
+            apply:
+              tags: [kubernetes]
+          tags: [kubernetes]
+
+    - name: Uninstall Kubernetes base
+      when: uninstall | bool
+      block:
+        - name: Kubernetes
+          ansible.builtin.include_role:
+            name: ../roles/k8s-core
+            apply:
+              tags: [kubernetes]
+          tags: [kubernetes]
+
+        - name: Helm
+          ansible.builtin.include_role:
+            name: ../roles/k8s-tool-helm
+            apply:
+              tags: [kubernetes, helm]
+          tags: [kubernetes, helm]
+
+        - name: Kubectl
+          ansible.builtin.include_role:
+            name: ../roles/k8s-tool-kubectl
+            apply:
+              tags: [kubernetes, kubectl]
+          tags: [kubernetes, kubectl]
+
+- name: Provision networking stack
+  hosts: controllers
+  vars_files:
+    - ../config.yaml
+  pre_tasks:
+    - name: Resolve homelab directory to an absolute path
+      ansible.builtin.include_tasks:
+        file: ../tasks/resolve-path.yaml
+        apply:
+          tags: [networking]
+      tags: [networking]
+  tasks:
+    - name: Install networking stack
+      when: not (uninstall | bool)
+      block:
+        - name: Traefik
+          ansible.builtin.include_role:
+            name: ../roles/k8s-extension-traefik
+            apply:
+              tags: [networking, traefik]
+          tags: [networking, traefik]
+
+- name: Provision monitoring
+  hosts: controllers
+  vars_files:
+    - ../config.yaml
+  pre_tasks:
+    - name: Resolve homelab directory to an absolute path
+      ansible.builtin.include_tasks:
+        file: ../tasks/resolve-path.yaml
+        apply:
+          tags: [monitor]
+      tags: [monitor]
+  tasks:
+    - name: Monitoring
+      block:
+        - name: Headlamp dashboard for kubernetes
+          ansible.builtin.include_role:
+            name: ../roles/k8s-extension-headlamp
+            apply:
+              tags: [monitor, headlamp, dashboard, trivy]
+          tags: [monitor, headlamp, dashboard, trivy]
+
+- name: Provision reverse proxy
+  hosts: controllers
+  vars_files:
+    - ../config.yaml
+  pre_tasks:
+    - name: Resolve homelab directory to an absolute path
+      ansible.builtin.include_tasks:
+        file: ../tasks/resolve-path.yaml
+        apply:
+          tags: [reverse-proxy]
+      tags: [reverse-proxy]
+  tasks:
+    - name: Install reverse proxy
+      when: not (uninstall | bool)
+      block:
+        - name: Reverse proxy
+          ansible.builtin.include_role:
+            name: ../roles/reverse-proxy
+            apply:
+              tags: [reverse-proxy]
+          tags: [reverse-proxy]
+
+    - name: Uninstall reverse proxy
+      when: uninstall | bool
+      block:
+        - name: Reverse proxy
+          ansible.builtin.include_role:
+            name: ../roles/reverse-proxy
+            apply:
+              tags: [reverse-proxy]
+          tags: [reverse-proxy]

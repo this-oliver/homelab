@@ -1,0 +1,63 @@
+---
+# Reusable preflight library.
+#
+# Import this from a playbook pre_task or a role's setup/teardown with:
+#   ansible.builtin.import_tasks: tasks/preflight.yaml
+#
+# Each assertion is tagged so that targeted runs (e.g. --tags traefik) execute
+# only the checks relevant to the components being provisioned. Because this is
+# imported statically (import_tasks), tags propagate to the caller's run and the
+# tasks appear in `ansible-playbook --list-tasks`.
+#
+# The identity/credential assertions are tagged `always` so they run for every
+# invocation regardless of --tags, since admin credentials are required by
+# nearly every component (auth middleware, ingress, reverse proxy, etc.).
+
+- name: Assert target OS is Ubuntu
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - ansible_facts['distribution'] == "Ubuntu"
+    fail_msg: |-
+      Unsupported operating system:
+        - This homelab playbook only supports Ubuntu.
+          [os: {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }}]
+  tags: [always]
+
+- name: Assert admin credentials are configured
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - homelab.admin.username | length > 0
+      - homelab.admin.password | length > 0
+    fail_msg: |-
+      Missing credentials in vars/main.yaml:
+        - homelab.admin.username and homelab.admin.password must be set via
+          the HOMELAB_ADMIN_USERNAME and HOMELAB_ADMIN_PASSWORD environment variables. [username: {{ homelab.admin.username | checksum}}, password: {{ homelab.admin.password | checksum}}]
+  tags: [always]
+
+- name: Assert domain URL is a valid hostname when set
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - homelab.domain.url is match('^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$')
+    fail_msg: |-
+      Invalid homelab.domain.url: '{{ homelab.domain.url }}'
+        - Provide a bare hostname/domain without a scheme or path, e.g.
+          'homelab.example.com' (env HOMELAB_DOMAIN_URL).
+  when: homelab.domain.url | length > 0
+  tags: [always]
+
+- name: Assert HTTPS email is valid when https is enabled
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - homelab.domain.https.email is match('^[^@\s]+@[^@\s]+\.[^@\s]+$')
+    fail_msg: |-
+      Invalid homelab.domain.https.email: '{{ homelab.domain.https.email }}'
+        - A valid email is required for Let's Encrypt certificate management
+          when HTTPS is enabled (env HOMELAB_DOMAIN_HTTPS_EMAIL).
+  when:
+    - homelab.domain.https.enabled | bool
+    - homelab.domain.url | length > 0
+  tags: [always]

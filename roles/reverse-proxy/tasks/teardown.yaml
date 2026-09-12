@@ -1,0 +1,117 @@
+- name: Stop and remove HAProxy container
+  become: true
+  containers.podman.podman_container:
+    name: "{{ reverse_proxy.container.image }}"
+    state: absent
+
+- name: Remove HAProxy config directory
+  ansible.builtin.file:
+    path: "{{ reverse_proxy.dir }}"
+    state: absent
+
+- name: Ensure HAProxy system user
+  become: true
+  ansible.builtin.user:
+    name: "{{ reverse_proxy.container.user }}"
+    system: true
+  register: reverse_proxy_owner_user
+  check_mode: false
+
+- name: Set HAProxy user uid
+  ansible.builtin.set_fact:
+    reverse_proxy_uid: "{{ reverse_proxy_owner_user.uid }}"
+
+- name: Check HAProxy owner accept firewall rules
+  become: true
+  ansible.builtin.command: >-
+    {{ 'ip6tables' if item[1] == 'ipv6' else 'iptables' }}
+    -t raw -C OUTPUT -p tcp --dport {{ item[0] }}
+    -m owner --uid-owner {{ reverse_proxy_uid }} -j ACCEPT
+  loop: "{{ [reverse_proxy.http.node_port, reverse_proxy.https.node_port] | product(['ipv4', 'ipv6']) | list }}"
+  register: reverse_proxy_owner_check
+  failed_when: false
+  changed_when: false
+  check_mode: false
+
+- name: Remove HAProxy owner accept firewall rules
+  become: true
+  ansible.builtin.command: >-
+    {{ 'ip6tables' if item[1] == 'ipv6' else 'iptables' }}
+    -t raw -D OUTPUT -p tcp --dport {{ item[0] }}
+    -m owner --uid-owner {{ reverse_proxy_uid }} -j ACCEPT
+  loop: "{{ [reverse_proxy.http.node_port, reverse_proxy.https.node_port] | product(['ipv4', 'ipv6']) | list }}"
+  loop_control:
+    index_var: reverse_proxy_owner_rule_index
+  when: reverse_proxy_owner_check.results[reverse_proxy_owner_rule_index].rc == 0
+  changed_when: true
+  register: reverse_proxy_owner_removed
+
+- name: Drop non-owner access to reverse proxy node ports
+  become: true
+  ansible.builtin.iptables:
+    ip_version: "{{ item[1] }}"
+    table: raw
+    chain: OUTPUT
+    protocol: tcp
+    destination_port: "{{ item[0] }}"
+    jump: DROP
+    state: absent
+  loop: "{{ [reverse_proxy.http.node_port, reverse_proxy.https.node_port] | product(['ipv4', 'ipv6']) | list }}"
+  register: reverse_proxy_firewall_owner_drop_removed
+
+- name: Allow loopback access to reverse proxy node ports
+  become: true
+  ansible.builtin.iptables:
+    ip_version: "{{ item[1] }}"
+    table: raw
+    chain: PREROUTING
+    protocol: tcp
+    destination_port: "{{ item[0] }}"
+    source: "{{ reverse_proxy.firewall.loopback[item[1]] }}"
+    jump: ACCEPT
+    state: absent
+  loop: "{{ [reverse_proxy.http.node_port, reverse_proxy.https.node_port] | product(['ipv4', 'ipv6']) | list }}"
+  register: reverse_proxy_firewall_allow_removed
+
+- name: Drop non-loopback access to reverse proxy node ports
+  become: true
+  ansible.builtin.iptables:
+    ip_version: "{{ item[1] }}"
+    table: raw
+    chain: PREROUTING
+    protocol: tcp
+    destination_port: "{{ item[0] }}"
+    jump: DROP
+    state: absent
+  loop: "{{ [reverse_proxy.http.node_port, reverse_proxy.https.node_port] | product(['ipv4', 'ipv6']) | list }}"
+  register: reverse_proxy_firewall_drop_removed
+
+- name: Persist cleared ipv4 firewall rules
+  become: true
+  community.general.iptables_state:
+    ip_version: ipv4
+    state: saved
+    path: /etc/iptables/rules.v4
+  when: >-
+    reverse_proxy_owner_removed.changed
+    or reverse_proxy_firewall_owner_drop_removed.changed
+    or reverse_proxy_firewall_allow_removed.changed
+    or reverse_proxy_firewall_drop_removed.changed
+
+- name: Persist cleared ipv6 firewall rules
+  become: true
+  community.general.iptables_state:
+    ip_version: ipv6
+    state: saved
+    path: /etc/iptables/rules.v6
+  when: >-
+    reverse_proxy_owner_removed.changed
+    or reverse_proxy_firewall_owner_drop_removed.changed
+    or reverse_proxy_firewall_allow_removed.changed
+    or reverse_proxy_firewall_drop_removed.changed
+
+- name: Remove HAProxy system user
+  become: true
+  ansible.builtin.user:
+    name: "{{ reverse_proxy.container.user }}"
+    state: absent

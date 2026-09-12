@@ -1,0 +1,14 @@
+- name: Check if helm is installed
+  ansible.builtin.command: which helm
+  register: helm_check
+  failed_when: false
+  changed_when: false
+  check_mode: false
+
+- name: Install Helm
+  become: true
+  community.general.snap:
+    classic: true
+    channel: "{{ helm_version }}"
+    name: helm
+  when: helm_check.stdout == ''

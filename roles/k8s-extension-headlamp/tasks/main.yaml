@@ -1,0 +1,9 @@
+- name: Install Headlamp
+  ansible.builtin.include_tasks:
+    file: setup.yaml
+  when: not (uninstall | bool)
+
+- name: Uninstall Headlamp
+  ansible.builtin.include_tasks:
+    file: teardown.yaml
+  when: uninstall | bool

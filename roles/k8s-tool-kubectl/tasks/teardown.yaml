@@ -1,0 +1,5 @@
+- name: Uninstall Kubectl
+  become: true
+  community.general.snap:
+    name: kubectl
+    state: absent

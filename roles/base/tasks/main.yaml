@@ -1,0 +1,6 @@
+- name: Preflight checks
+  ansible.builtin.include_tasks: ../../../tasks/preflight.yaml
+
+- name: Setup homelab basics
+  ansible.builtin.include_tasks: setup.yaml
+  tags: [setup]

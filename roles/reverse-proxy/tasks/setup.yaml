@@ -1,0 +1,139 @@
+- name: Run shared preflight checks
+  ansible.builtin.include_tasks: ../../../tasks/preflight.yaml
+
+- name: Install Podman
+  ansible.builtin.include_role:
+    name: ../roles/podman
+
+- name: Ensure HAProxy config directory exists
+  ansible.builtin.file:
+    path: "{{ reverse_proxy.dir }}"
+    state: directory
+    group: homelab
+
+- name: Template HAProxy configuration
+  ansible.builtin.template:
+    src: haproxy.cfg.j2
+    dest: "{{ reverse_proxy.dir }}/haproxy.cfg"
+    group: homelab
+
+- name: Create HAProxy system user
+  become: true
+  ansible.builtin.user:
+    name: "{{ reverse_proxy.container.user }}"
+    system: true
+  register: reverse_proxy_owner_user
+
+- name: Set HAProxy user uid
+  ansible.builtin.set_fact:
+    reverse_proxy_uid: "{{ reverse_proxy_owner_user.uid }}"
+
+- name: Run HAProxy container
+  become: true
+  containers.podman.podman_container:
+    name: "{{ reverse_proxy.container.name }}"
+    image: "{{ reverse_proxy.container.image }}"
+    state: started
+    restart_policy: unless-stopped
+    network: host
+    user: "{{ reverse_proxy_uid }}"
+    cap_add:
+      - NET_BIND_SERVICE
+    volumes:
+      - "{{ reverse_proxy.dir }}/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro"
+
+- name: Compose reverse proxy node port list
+  ansible.builtin.set_fact:
+    reverse_proxy_node_ports: "{{ [reverse_proxy.http.node_port, reverse_proxy.https.node_port] }}"
+
+- name: Install iptables
+  become: true
+  ansible.builtin.apt:
+    name: iptables-persistent
+    state: present
+
+- name: Allow loopback access to reverse proxy node ports
+  become: true
+  ansible.builtin.iptables:
+    ip_version: "{{ item[1] }}"
+    table: raw
+    chain: PREROUTING
+    protocol: tcp
+    destination_port: "{{ item[0] }}"
+    source: "{{ reverse_proxy.firewall.loopback[item[1]] }}"
+    jump: ACCEPT
+  loop: "{{ reverse_proxy_node_ports | product(['ipv4', 'ipv6']) | list }}"
+  register: reverse_proxy_firewall_allow
+
+- name: Drop non-loopback access to reverse proxy node ports
+  become: true
+  ansible.builtin.iptables:
+    ip_version: "{{ item[1] }}"
+    table: raw
+    chain: PREROUTING
+    protocol: tcp
+    destination_port: "{{ item[0] }}"
+    jump: DROP
+  loop: "{{ reverse_proxy_node_ports | product(['ipv4', 'ipv6']) | list }}"
+  register: reverse_proxy_firewall_drop
+
+- name: Check HAProxy owner accept firewall rules
+  become: true
+  ansible.builtin.command: >-
+    {{ 'ip6tables' if item[1] == 'ipv6' else 'iptables' }}
+    -t raw -C OUTPUT -p tcp --dport {{ item[0] }}
+    -m owner --uid-owner {{ reverse_proxy_uid }} -j ACCEPT
+  loop: "{{ reverse_proxy_node_ports | product(['ipv4', 'ipv6']) | list }}"
+  register: reverse_proxy_owner_check
+  failed_when: false
+  changed_when: false
+  check_mode: false
+
+- name: Add HAProxy owner accept firewall rules
+  become: true
+  ansible.builtin.command: >-
+    {{ 'ip6tables' if item[1] == 'ipv6' else 'iptables' }}
+    -t raw -I OUTPUT 1 -p tcp --dport {{ item[0] }}
+    -m owner --uid-owner {{ reverse_proxy_uid }} -j ACCEPT
+  loop: "{{ reverse_proxy_node_ports | product(['ipv4', 'ipv6']) | list }}"
+  loop_control:
+    index_var: reverse_proxy_owner_rule_index
+  when: reverse_proxy_owner_check.results[reverse_proxy_owner_rule_index].rc != 0
+  changed_when: true
+  register: reverse_proxy_owner_accept
+
+- name: Drop non-owner access to reverse proxy node ports
+  become: true
+  ansible.builtin.iptables:
+    ip_version: "{{ item[1] }}"
+    table: raw
+    chain: OUTPUT
+    protocol: tcp
+    destination_port: "{{ item[0] }}"
+    jump: DROP
+  loop: "{{ reverse_proxy_node_ports | product(['ipv4', 'ipv6']) | list }}"
+  register: reverse_proxy_firewall_owner_drop
+
+- name: Persist ipv4 firewall rules
+  become: true
+  community.general.iptables_state:
+    ip_version: ipv4
+    state: saved
+    path: /etc/iptables/rules.v4
+  when: >-
+    reverse_proxy_firewall_allow.changed
+    or reverse_proxy_firewall_drop.changed
+    or reverse_proxy_owner_check.results | selectattr('rc', 'ne', 0) | list | length > 0
+    or reverse_proxy_firewall_owner_drop.changed
+
+- name: Persist ipv6 firewall rules
+  become: true
+  community.general.iptables_state:
+    ip_version: ipv6
+    state: saved
+    path: /etc/iptables/rules.v6
+  when: >-
+    reverse_proxy_firewall_allow.changed
+    or reverse_proxy_firewall_drop.changed
+    or reverse_proxy_owner_check.results | selectattr('rc', 'ne', 0) | list | length > 0
+    or reverse_proxy_firewall_owner_drop.changed

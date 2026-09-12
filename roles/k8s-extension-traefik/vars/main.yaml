@@ -1,0 +1,10 @@
+helm_release:
+  name: traefik
+  namespace: traefik
+  chart:
+    ref: traefik/traefik
+    version: "41.0.2"
+  repo:
+    name: traefik
+    url: https://traefik.github.io/charts
+  config: "{{ lookup('ansible.builtin.template', 'values.yaml.j2') | from_yaml }}"

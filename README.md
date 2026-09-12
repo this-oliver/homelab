@@ -1,21 +1,71 @@
 # Homelab
 
-This repository contains the infrastructure as code for my homelab. The homelab hosts a number of applications that are managed by the following components:
-
-1. [kubernetes](./kubernetes/README.md) - orchestrates application deployments
-2. [registry](./registry/README.md) - hosts a private docker registry
-3. [dns-update](./dns-update/README.md) - updates DNS providers with the homelab's latest ip address
-4. [reverse-proxy](./reverse-proxy/README.md) - routes traffic to the appropriate services
-
 ## Getting Started
-
-> [!TIP]
-> Many of the scripts in this repository require superuser privileges (sudo) to run, mainly, the docker commands. If you don't want to use sudo, you can add your user to the docker group by running `sudo usermod -aG docker $USER` and then logging out and back in or running `newgrp docker`.
 
 Pre-requisites:
 
-- Docker
-- MicroK8s
+- Python 3.12+ installed
+- Linux machine (Ubuntu 20.04 LTS)
+  - 2cpu minimum
+  - 2gb ram minimum
+  - ip address
 
-Visit each of the directories (in the order listed above) to setup the homelab infrastructure.
+### Install dependencies
 
+```bash
+# setup python env
+python3 -m venv .venv
+source .venv/bin/activate
+
+# install deps
+python3 -m pip install -r requirements.txt
+```
+
+### Configure `inventory/main.yaml`
+
+First, create the `inventory/main.yaml` file from the example file `inventory/main.example.yaml`:
+
+```bash
+cp inventory/main.example.yaml inventory/main.yaml
+```
+
+Configure the `inventory/main.yaml` such that an ip address or url is provided for the controller host. Make sure to also configure the port, user and private key path for the host.
+
+### Configure `config.yaml`
+
+The `config.yaml` is used to configure the homelab. The homelab should be able to install without edditing this file however if there is anything that you, as a user, can tweak then it should be found here.
+
+### Configure environmental variables (secrets)
+
+First, create a .env file based on the `.env.example` template.
+
+```bash
+cp .env.example .env
+```
+
+Second, fill in the REQUIRED values. The values are explained below:
+
+- HOMELAB_ADMIN_USERNAME (REQUIRED) - admin username
+- HOMELAB_ADMIN_PASSWORD (REQUIRED) - admin password for authenticating
+- HOMELAB_DOMAIN_URL (OPTIONAL) - url for accessing homelab remotely
+- HOMELAB_DOMAIN_HTTPS_EMAIL (OPTIONAL) - email for configuring HTTPS certificates
+
+Lastly, apply the env variables to the terminal's session:
+
+```bash
+export $(cat .env | tr '\n' ' ')
+```
+
+## Usage
+
+Install homelab on target host:
+
+```bash
+ansible-playbook -i inventory/main.yaml playbooks/homelab.yaml
+```
+
+Uninstall homelab on target host:
+
+```bash
+ansible-playbook -i inventory/main.yaml playbooks/homelab.yaml -e uninstall=true
+```
