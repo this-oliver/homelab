@@ -7,7 +7,7 @@ headlamp_helm_release:
   repo:
     name: headlamp
     url: https://kubernetes-sigs.github.io/headlamp/
-  config: "{{ lookup('ansible.builtin.template', 'values.yaml.j2') | from_yaml }}"
+  config: "{{ lookup('ansible.builtin.template', 'headlamp-values.yaml.j2') | from_yaml }}"
 
 trivy_helm_release:
   name: trivy-operator
@@ -18,3 +18,4 @@ trivy_helm_release:
   repo:
     name: aqua
     url: https://aquasecurity.github.io/helm-charts/
+  config: "{{ lookup('ansible.builtin.template', 'trivy-values.yaml.j2') | from_yaml }}"

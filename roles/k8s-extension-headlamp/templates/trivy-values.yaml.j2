@@ -1,0 +1,97 @@
+---
+rbac:
+  create: true
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: "trivy-scanner"
+
+trivy:
+  # -- createConfig indicates whether to create config objects
+  createConfig: true
+
+  image:
+    # -- registry of the Trivy image
+    registry: mirror.gcr.io
+    # -- repository of the Trivy image
+    repository: aquasec/trivy
+    # -- tag version of the Trivy image
+    tag: 0.69.3
+
+    # -- pullPolicy is the imge pull policy used for trivy image , valid values are (Always, Never, IfNotPresent)
+    pullPolicy: IfNotPresent
+
+  # -- storageSize is the size of the trivy server PVC
+  storageSize: "2Gi"
+
+  # -- resources resource requests and limits for scan job containers
+  resources:
+    requests:
+      cpu: 100m
+      memory: 100M
+    limits:
+      cpu: 500m
+      memory: 500M
+
+  server:
+    # -- resources set trivy-server resource
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+        # ephemeral-storage: "2Gi"
+      limits:
+        cpu: 1
+        memory: 1Gi
+        # ephemeral-storage: "2Gi"
+
+  # -- mode is the Trivy client mode. Either Standalone or ClientServer. Depending
+  # on the active mode other settings might be applicable or required.
+  mode: Standalone
+
+  # -- severity is a comma separated list of severity levels reported by Trivy.
+  severity: UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
+
+  # -- slow this flag is to use less CPU/memory for scanning though it takes more time than normal scanning. It fits small-footprint
+  slow: true
+
+  # -- ignoreUnfixed is the flag to show only fixed vulnerabilities in
+  # vulnerabilities reported by Trivy. Set to true to enable it.
+  ignoreUnfixed: false
+
+  # -- offlineScan is the flag to enable the offline scan functionality in Trivy
+  # This will prevent outgoing HTTP requests, e.g. to search.maven.org
+  offlineScan: false
+
+  # -- timeout is the duration to wait for scan completion.
+  timeout: "5m0s"
+
+  # -- command. One of `image`, `filesystem` or `rootfs` scanning, depending on the target type required for the scan.
+  # For 'filesystem' and `rootfs` scanning, ensure that the `trivyOperator.scanJobPodTemplateContainerSecurityContext` is configured
+  # to run as the root user (runAsUser = 0).
+  command: image
+
+  # -- debug One of `true` or `false`. Enables debug mode.
+  debug: false
+
+compliance:
+  # -- failEntriesLimit the flag to limit the number of fail entries per control check in the cluster compliance detail report
+  # this limit is for preventing the report from being too large per control checks
+  failEntriesLimit: 10
+  # -- reportType this flag control the type of report generated (summary or all)
+  reportType: summary
+  # -- cron this flag control the cron interval for compliance report generation
+  cron: 0 */6 * * *
+  # -- specs is a list of compliance specs to be used by the cluster compliance scanner
+  #  - k8s-cis-1.23
+  #  - k8s-nsa-1.0
+  #  - k8s-pss-baseline-0.1
+  #  - k8s-pss-restricted-0.1
+  #  - eks-cis-1.4
+  #  - rke2-cis-1.24
+  specs:
+    - k8s-cis-1.23
+    - k8s-nsa-1.0
+    - k8s-pss-baseline-0.1
+    - k8s-pss-restricted-0.1
