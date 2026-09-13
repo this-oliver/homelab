@@ -5,6 +5,7 @@
   ansible.builtin.include_tasks: ../../../tasks/helm.yaml
   vars:
     helm_release: "{{ trivy_helm_release }}"
+  when: homelab.security.trivy.enabled is true
 
 - name: Install {{ headlamp_helm_release.name }}
   ansible.builtin.include_tasks: ../../../tasks/helm.yaml

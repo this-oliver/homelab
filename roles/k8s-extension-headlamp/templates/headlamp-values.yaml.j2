@@ -29,6 +29,7 @@ volumes:
       emptyDir: {}
 
 initContainers:
+{% if homelab.security.trivy.enabled %}
     - command:
         - /bin/sh
         - '-c'
@@ -38,6 +39,7 @@ initContainers:
       volumeMounts:
         - mountPath: /build/plugins
           name: headlamp-plugins
+{% endif %}
 
 serviceAccount:
   create: true

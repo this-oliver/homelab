@@ -27,6 +27,10 @@ homelab:
       enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_DOMAIN_HTTPS_ENABLED') | bool | default(True) }}"
       email: "{{ lookup('ansible.builtin.env', 'HOMELAB_DOMAIN_HTTPS_EMAIL') | regex_replace('^\"|\"$', '') }}"
 
+  security:
+    trivy:
+      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_SECURITY_TRIVY_ENABLED') | bool | default(True) }}"
+
 # ── MISC ─────────────────────────────────────────────────────────
 
 # OPTIONAL. Uninstalls homelab if set to true.
