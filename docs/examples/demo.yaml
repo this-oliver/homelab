@@ -15,12 +15,18 @@ spec:
       labels:
         app: demo-app
     spec:
+      securityContext:
+        runAsUser: 1001
+        runAsGroup: 1001
       containers:
       - name: simple-web
         image: ghcr.io/this-oliver/simple-web-app:v1.0.1@sha256:12f7dfc283ebf48f50284187bb56269b179b605f15a26a92baec8d836d9d0073
         ports:
         - containerPort: 3000
           name: demo-app-http
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
 ---
 apiVersion: v1
 kind: Service
