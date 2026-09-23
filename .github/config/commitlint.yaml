@@ -1,0 +1,16 @@
+extends:
+  - "@commitlint/config-conventional"
+
+rules:
+  type-enum:
+    - 2
+    - always
+    - [chore, docs, feat, fix]
+  body-max-length:
+    - 1
+    - always
+    - 500
+  body-max-line-length:
+    - 1
+    - always
+    - 100
