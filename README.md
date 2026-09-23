@@ -1,14 +1,46 @@
 # Homelab
 
+A self-hosted homelab that provisions a single Ubuntu host into a Kubernetes cluster with a web dashboard, an ingress gateway and a firewall-tightened reverse proxy — all driven by Ansible.
+
+## How it works
+
+One command provisions the whole stack. Ansible connects to your host and layers each component on top of the last: base system setup, a MicroK8s cluster, the Traefik ingress, the Headlamp + Trivy dashboards, and finally an HAProxy reverse proxy that is the only public entry point.
+
+```mermaid
+flowchart LR
+    Client[Your browser / apps] -->|HTTP and HTTPS<br/>ports 80 / 443| HAProxy[HAProxy<br/>reverse proxy]
+
+    subgraph host[Ubuntu host]
+        HAProxy -->|PROXY protocol| Traefik[Traefik<br/>ingress gateway]
+        Traefik -->|IngressRoute| Headlamp[Headlamp<br/>web dashboard]
+        Traefik -->|IngressRoute| Apps[Your apps]
+        Headlamp --> MicroK8s[MicroK8s cluster]
+        Apps --> MicroK8s
+        Trivy[Trivy<br/>vulnerability scanner] --> MicroK8s
+    end
+```
+
+Every layer is an [Ansible role](#components). Each role can be installed or uninstalled independently via an `uninstall` flag and `--tags`. See [docs/architecture.md](docs/architecture.md) for the full breakdown.
+
+## Components
+
+| Layer | Role | What it does |
+| --- | --- | --- |
+| Base | [base](roles/base/README.md) | Preflight checks, `homelab` group/user, home directory |
+| Kubernetes | [k8s-tool-kubectl](roles/k8s-tool-kubectl/README.md), [k8s-tool-helm](roles/k8s-tool-helm/README.md), [k8s-core](roles/k8s-core/README.md) | Kubectl + Helm CLI tools, MicroK8s cluster with hardened addons |
+| Networking | [k8s-extension-traefik](roles/k8s-extension-traefik/README.md) | Traefik ingress gateway, dashboard, rate limiting, HTTPS |
+| Monitoring | [k8s-extension-headlamp](roles/k8s-extension-headlamp/README.md) | Headlamp dashboard with Trivy vulnerability scanning |
+| Reverse proxy | [reverse-proxy](roles/reverse-proxy/README.md), [podman](roles/podman/README.md) | HAProxy container as the only public entry point, locked down with iptables |
+
 ## Getting Started
 
-Pre-requisites:
+### Pre-requisites
 
-- Python 3.12+ installed
-- Linux machine (Ubuntu 20.04 LTS)
-  - 2cpu minimum
-  - 2gb ram minimum
-  - ip address
+- Python 3.12+ on your control machine
+- A Linux host running **Ubuntu 20.04 LTS**
+  - 2 CPU minimum
+  - 2 GB RAM minimum
+  - An IP address or DNS name Ansible can reach
 
 ### Install dependencies
 
@@ -21,51 +53,58 @@ source .venv/bin/activate
 python3 -m pip install -r requirements.txt
 ```
 
-### Configure `inventory/main.yaml`
+### Configure the inventory
 
-First, create the `inventory/main.yaml` file from the example file `inventory/main.example.yaml`:
+> [!IMPORTANT]
+> The **controller** host group is mandatory although other groups are optional.
 
 ```bash
 cp inventory/main.example.yaml inventory/main.yaml
 ```
 
-Configure the `inventory/main.yaml` such that an ip address or url is provided for the controller host. Make sure to also configure the port, user and private key path for the host.
+Edit `inventory/main.yaml` and set the IP address (or url), `ansible_port`, `ansible_user` and `ansible_ssh_private_key_file` for your host. Remove host groups that you do not intend to use.
 
-### Configure `config.yaml`
-
-The `config.yaml` is used to configure the homelab. The homelab should be able to install without edditing this file however if there is anything that you, as a user, can tweak then it should be found here.
-
-### Configure environmental variables (secrets)
-
-First, create a .env file based on the `.env.example` template.
+### Configure secrets
 
 ```bash
 cp .env.example .env
 ```
 
-Second, fill in the REQUIRED values. The values are explained below:
-
-- HOMELAB_ADMIN_USERNAME (REQUIRED) - admin username
-- HOMELAB_ADMIN_PASSWORD (REQUIRED) - admin password for authenticating
-- HOMELAB_DOMAIN_URL (OPTIONAL) - url for accessing homelab remotely
-- HOMELAB_DOMAIN_HTTPS_EMAIL (OPTIONAL) - email for configuring HTTPS certificates
-
-Lastly, apply the env variables to the terminal's session:
+Fill in the REQUIRED values, then apply them to your shell:
 
 ```bash
 export $(cat .env | tr '\n' ' ')
 ```
 
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `HOMELAB_ADMIN_USERNAME` | yes | Admin username used by dashboard login |
+| `HOMELAB_ADMIN_PASSWORD` | yes | Admin password used by dashboard login |
+| `HOMELAB_DOMAIN_URL` | no | Public domain served by the homelab |
+| `HOMELAB_DOMAIN_HTTPS_EMAIL` | no | Email for Let's Encrypt certificates |
+
+The `config.yaml` holds every non-secret setting and has working defaults, so it needs no editing to get started. See [docs/intro.md](docs/intro.md) for the full reference (including `HOMELAB_DOMAIN_HTTPS_ENABLED` and `HOMELAB_SECURITY_TRIVY_ENABLED`).
+
 ## Usage
 
-Install homelab on target host:
+Install homelab on the target host:
 
 ```bash
 ansible-playbook -i inventory/main.yaml playbooks/homelab.yaml
 ```
 
-Uninstall homelab on target host:
+Uninstall homelab on the target host:
 
 ```bash
 ansible-playbook -i inventory/main.yaml playbooks/homelab.yaml -e uninstall=true
 ```
+
+The repo also ships a `makefile` for targeting individual layers (e.g. `make networking`). See [docs/intro.md#usage](docs/intro.md#usage) for details.
+
+## Documentation
+
+- [docs/README.md](docs/README.md) — documentation index
+- [docs/intro.md](docs/intro.md) — step-by-step getting started and usage in depth
+- [docs/architecture.md](docs/architecture.md) — how the stack is wired together
+- [CONTRIBUTING.md](CONTRIBUTING.md) — contributing guide
+- [docs/examples/demo.yaml](docs/examples/demo.yaml) — example app you can deploy after install

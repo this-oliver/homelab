@@ -17,7 +17,7 @@
     fail_msg: >-
       helm_release contract violation. Expected a dict with required keys name,
       namespace, chart.ref, chart.version, repo.name, repo.url and optional
-      values. See roles/k8s-base-helm/README.md.
+      values. See docs/intro.md and the role READMEs (e.g. roles/k8s-tool-helm/README.md).
 
 - name: Check if {{ helm_release.repo.name }} repository exists
   ansible.builtin.command: helm repo list
