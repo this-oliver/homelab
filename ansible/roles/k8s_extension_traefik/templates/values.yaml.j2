@@ -27,9 +27,6 @@ rbac:
   enabled: true
   namespaced: false {# when true, it disables cluster scope resources which means that IngressClass, NodePortLB and Gateway Provider cannot work. See https://doc.traefik.io/traefik/reference/install-configuration/providers/kubernetes/kubernetes-ingress/#opt-providers-kubernetesIngress-disableClusterScopeResources #}
 
-serviceAccount:
-  name: "traefik"
-
 # ── Logging ─────────────────────────────────────────────────────────
 log:
   format: json
