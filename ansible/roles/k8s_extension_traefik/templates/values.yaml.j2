@@ -25,25 +25,19 @@ global:
 # ── Access Control ─────────────────────────────────────────────────────────
 rbac:
   enabled: true
-  {#-- When set to true: <br />
-  1. It switches respectively the use of `ClusterRole` and `ClusterRoleBinding` to `Role` and `RoleBinding`.<br />
-  2. It adds `disableClusterScopeResources` on Ingress and CRD (Kubernetes) providers<br />
-  **NOTE**: `IngressClass`, `NodePortLB` and **Gateway** provider cannot be used with namespaced RBAC. <br />
-  See [upstream documentation](https://doc.traefik.io/traefik/reference/install-configuration/providers/kubernetes/kubernetes-ingress/#opt-providers-kubernetesIngress-disableClusterScopeResources) for more details.#}
-  namespaced: false
-  secretResourceNames: []
+  namespaced: false {# when true, it disables cluster scope resources which means that IngressClass, NodePortLB and Gateway Provider cannot work. See https://doc.traefik.io/traefik/reference/install-configuration/providers/kubernetes/kubernetes-ingress/#opt-providers-kubernetesIngress-disableClusterScopeResources #}
 
 serviceAccount:
-    name: "traefik"
+  name: "traefik"
 
 # ── Logging ─────────────────────────────────────────────────────────
 log:
-    format: json
-    level: "INFO"
+  format: json
+  level: "INFO"
 
 accessLog:
-    enabled: true
-    format: json
+  enabled: true
+  format: json
 
 # ── Ports, Services ───────────────────────────────────────────────────────
 ports:
@@ -107,44 +101,44 @@ extraObjects:
   - apiVersion: v1
     kind: Secret
     metadata:
-        name: traefik-dashboard-auth-secret
+      name: traefik-dashboard-auth-secret
     type: kubernetes.io/basic-auth
     stringData:
-        username: "{{ homelab.admin.username }}"
-        password: "{{ homelab.admin.password }}"
+      username: "{{ homelab.admin.username }}"
+      password: "{{ homelab.admin.password }}"
 
   - apiVersion: traefik.io/v1alpha1
     kind: Middleware
     metadata:
-        name: traefik-dashboard-auth
+      name: traefik-dashboard-auth
     spec:
-        basicAuth:
-            secret: traefik-dashboard-auth-secret
+      basicAuth:
+        secret: traefik-dashboard-auth-secret
 
   - apiVersion: traefik.io/v1alpha1
     kind: Middleware
     metadata:
-        name: traefik-dashboard-redirect
+      name: traefik-dashboard-redirect
     spec:
-        redirectRegex:
-            regex: "\/traefik(\\/)?$"
-            replacement: "/traefik/dashboard/"
+      redirectRegex:
+        regex: "\/traefik(\\/)?$"
+        replacement: "/traefik/dashboard/"
 
   - apiVersion: traefik.io/v1alpha1
     kind: Middleware
     metadata:
-        name: rate-limit
+      name: rate-limit
     spec:
-        rateLimit:
-            average: 50
-            period: 1s
-            burst: 50
+      rateLimit:
+        average: 50
+        period: 1s
+        burst: 50
 
   - apiVersion: traefik.io/v1alpha1
     kind: Middleware
     metadata:
-        name: https-redirect
+      name: https-redirect
     spec:
-        redirectRegex:
-            regex: "^http:\/\/(.*)"
-            replacement: "https://${1}"
+      redirectRegex:
+        regex: "^http:\/\/(.*)"
+        replacement: "https://${1}"
