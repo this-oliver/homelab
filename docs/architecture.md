@@ -5,13 +5,13 @@ This page explains *how* the homelab is wired together: how the playbook orders 
 ## Design goals
 
 - **One host, many layers.** Everything runs on a single Ubuntu host. Kubernetes, the ingress gateway, the dashboards and the reverse proxy are distinct layers with clearly separated responsibilities.
-- **Deterministic install and uninstall.** A single `uninstall` flag (`config.yaml`) toggles every role between its `setup` and `teardown` task files. No manual cleanup.
-- **Central configuration.** Host identity lives in the Ansible inventory; *what* gets installed lives in `config.yaml`; *secrets* live only in environment variables.
+- **Deterministic install and uninstall.** A single `uninstall` flag (`ansible/config.yaml`) toggles every role between its `setup` and `teardown` task files. No manual cleanup.
+- **Central configuration.** Host identity lives in the Ansible inventory; *what* gets installed lives in `ansible/config.yaml`; *secrets* live only in environment variables.
 - **Defense in depth.** The only public entry point is an HAProxy container. Kubernetes NodePorts are firewalled to loopback, and dashboards are behind basic auth.
 
 ## Playbook and role ordering
 
-`playbooks/homelab.yaml` is one playbook, five plays, run in order. Each play is tagged so you can install (or uninstall) a single layer with `--tags`.
+`ansible/homelab.yaml` is one playbook, five plays, run in order. Each play is tagged so you can install (or uninstall) a single layer with `--tags`.
 
 ```mermaid
 flowchart LR
@@ -22,9 +22,9 @@ flowchart LR
     end
 
     subgraph P2[Kubernetes - controllers]
-        kubectl[k8s-tool-kubectl]
-        helm[k8s-tool-helm]
-        core[k8s-core<br/>MicroK8s]
+        kubectl[k8s_tool_kubectl]
+        helm[k8s_tool_helm]
+        core[k8s_core<br/>MicroK8s]
         kubectl --> helm --> core
     end
 
@@ -37,7 +37,7 @@ flowchart LR
     end
 
     subgraph P5[Reverse proxy - controllers]
-        haproxy[reverse-proxy<br/>HAProxy container]
+        haproxy[reverse_proxy<br/>HAProxy container]
         podman[podman]
         haproxy --> podman
     end
@@ -54,7 +54,7 @@ Key points:
 The expected output (install):
 
 ```bash
-ansible-playbook -i inventory/main.yaml playbooks/homelab.yaml
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml
 ```
 
 ## Request flow
@@ -89,12 +89,12 @@ flowchart TD
     Teardown --> Done
 ```
 
-Helm-managed components (Traefik, Headlamp, Trivy) share `tasks/helm.yaml`, which is idempotent: it checks whether the Helm repo/release already exists and only installs or uninstalls when something needs to change.
+Helm-managed components (Traefik, Headlamp, Trivy) share `ansible/tasks/helm.yaml`, which is idempotent: it checks whether the Helm repo/release already exists and only installs or uninstalls when something needs to change.
 
 ```mermaid
 flowchart LR
-    Role[Extension role] --> Pre[preflight checks<br/>tasks/preflight.yaml]
-    Pre --> Shared[shared tasks/helm.yaml<br/>repo + release management]
+    Role[Extension role] --> Pre[preflight checks<br/>ansible/tasks/preflight.yaml]
+    Pre --> Shared[shared ansible/tasks/helm.yaml<br/>repo + release management]
     Shared --> Install[install when release missing / version drift]
     Shared --> Uninstall[uninstall when flag set and release present]
 ```
@@ -103,9 +103,9 @@ flowchart LR
 
 | File | Purpose |
 | --- | --- |
-| `tasks/preflight.yaml` | Assertions that run before anything mutates the host: Ubuntu OS, admin credentials present, valid domain URL, valid HTTPS email. Imported by the base role and by extension roles. |
-| `tasks/helm.yaml` | Reusable Helm repository/release install and uninstall. Used by the Traefik, Headlamp and Trivy extensions. Validates a `helm_release` contract (name, namespace, chart, repo). |
-| `tasks/resolve-path.yaml` | Resolves a leading `~` in `homelab.dir` to the connecting user's absolute home path before any role runs. |
+| `ansible/tasks/preflight.yaml` | Assertions that run before anything mutates the host: Ubuntu OS, admin credentials present, valid domain URL, valid HTTPS email. Imported by the base role and by extension roles. |
+| `ansible/tasks/helm.yaml` | Reusable Helm repository/release install and uninstall. Used by the Traefik, Headlamp and Trivy extensions. Validates a `helm_release` contract (name, namespace, chart, repo). |
+| `ansible/tasks/resolve_path.yaml` | Resolves a leading `~` in `homelab.dir` to the connecting user's absolute home path before any role runs. |
 
 ## Configuration and secrets
 
@@ -113,14 +113,14 @@ Configuration is split by sensitivity:
 
 ```mermaid
 flowchart TB
-    Env[.env / environment variables] --> Config[config.yaml parses lookups]
-    Inv[inventory/main.yaml] --> Playbook[playbooks/homelab.yaml]
+    Env[.env / environment variables] --> Config[ansible/config.yaml parses lookups]
+    Inv[ansible/inventory/main.yaml] --> Playbook[ansible/homelab.yaml]
     Config --> Playbook
-    Playbook --> Roles[roles]
+    Playbook --> Roles[ansible/roles]
 ```
 
-- **`inventory/main.yaml`** — which hosts get which services (`controllers` group).
-- **`config.yaml`** — non-secret settings (`homelab.dir`, `homelab.k8s.version`, domain, security toggles). Secret fields are `lookup`ed from the environment rather than hard-coded.
+- **`ansible/inventory/main.yaml`** — which hosts get which services (`controllers` group).
+- **`ansible/config.yaml`** — non-secret settings (`homelab.dir`, `homelab.k8s.version`, domain, security toggles). Secret fields are `lookup`ed from the environment rather than hard-coded.
 - **`.env`** — the actual secrets: `HOMELAB_ADMIN_*` (required) and `HOMELAB_DOMAIN_*`, `HOMELAB_SECURITY_TRIVY_ENABLED` (optional). Applied to the playbook session via `export`.
 
 See [docs/intro.md](intro.md) for a full reference of every key.
@@ -138,14 +138,14 @@ See [docs/intro.md](intro.md) for a full reference of every key.
 
 | Role | Readme |
 | --- | --- |
-| base (foundation) | [roles/base/README.md](../roles/base/README.md) |
-| k8s-tool-kubectl (kubectl CLI) | [roles/k8s-tool-kubectl/README.md](../roles/k8s-tool-kubectl/README.md) |
-| k8s-tool-helm (Helm CLI) | [roles/k8s-tool-helm/README.md](../roles/k8s-tool-helm/README.md) |
-| k8s-core (MicroK8s) | [roles/k8s-core/README.md](../roles/k8s-core/README.md) |
-| k8s-extension-traefik (ingress) | [roles/k8s-extension-traefik/README.md](../roles/k8s-extension-traefik/README.md) |
-| k8s-extension-headlamp (dashboard + Trivy) | [roles/k8s-extension-headlamp/README.md](../roles/k8s-extension-headlamp/README.md) |
-| podman (container runtime) | [roles/podman/README.md](../roles/podman/README.md) |
-| reverse-proxy (HAProxy) | [roles/reverse-proxy/README.md](../roles/reverse-proxy/README.md) |
+| base (foundation) | [roles/base/README.md](../ansible/roles/base/README.md) |
+| k8s_tool_kubectl (kubectl CLI) | [roles/k8s_tool_kubectl/README.md](../ansible/roles/k8s_tool_kubectl/README.md) |
+| k8s_tool_helm (Helm CLI) | [roles/k8s_tool_helm/README.md](../ansible/roles/k8s_tool_helm/README.md) |
+| k8s_core (MicroK8s) | [roles/k8s_core/README.md](../ansible/roles/k8s_core/README.md) |
+| k8s-extension-traefik (ingress) | [roles/k8s-extension-traefik/README.md](../ansible/roles/k8s-extension-traefik/README.md) |
+| k8s-extension-headlamp (dashboard + Trivy) | [roles/k8s-extension-headlamp/README.md](../ansible/roles/k8s-extension-headlamp/README.md) |
+| podman (container runtime) | [roles/podman/README.md](../ansible/roles/podman/README.md) |
+| reverse_proxy (HAProxy) | [roles/reverse_proxy/README.md](../ansible/roles/reverse_proxy/README.md) |
 
 ## Next steps
 

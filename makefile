@@ -1,29 +1,28 @@
-INVENTORY ?= inventory/main.yaml
-PLAYBOOKS := playbooks
+INVENTORY ?= ansible/inventory/main.yaml
 ANSIBLE_PLAYBOOK := ansible-playbook -i $(INVENTORY)
 
-.PHONY: all base kubernetes networking reverse-proxy monitor uninstall uninstall-%
+.PHONY: all base kubernetes networking reverse_proxy monitor uninstall uninstall-%
 
 all:
-	$(ANSIBLE_PLAYBOOK) $(PLAYBOOKS)/homelab.yaml
+	$(ANSIBLE_PLAYBOOK) ansible/homelab.yaml
 
 base:
-	$(ANSIBLE_PLAYBOOK) $(PLAYBOOKS)/homelab.yaml --tags base
+	$(ANSIBLE_PLAYBOOK) ansible/homelab.yaml --tags base
 
 kubernetes:
-	$(ANSIBLE_PLAYBOOK) $(PLAYBOOKS)/homelab.yaml --tags kubernetes
+	$(ANSIBLE_PLAYBOOK) ansible/homelab.yaml --tags kubernetes
 
 networking:
-	$(ANSIBLE_PLAYBOOK) $(PLAYBOOKS)/homelab.yaml --tags networking
+	$(ANSIBLE_PLAYBOOK) ansible/homelab.yaml --tags networking
 
-reverse-proxy:
-	$(ANSIBLE_PLAYBOOK) $(PLAYBOOKS)/homelab.yaml --tags reverse-proxy
+reverse_proxy:
+	$(ANSIBLE_PLAYBOOK) ansible/homelab.yaml --tags reverse_proxy
 
 monitor:
-	$(ANSIBLE_PLAYBOOK) $(PLAYBOOKS)/homelab.yaml --tags monitor
+	$(ANSIBLE_PLAYBOOK) ansible/homelab.yaml --tags monitor
 
 uninstall:
-	$(ANSIBLE_PLAYBOOK) $(PLAYBOOKS)/homelab.yaml -e "uninstall=true"
+	$(ANSIBLE_PLAYBOOK) ansible/homelab.yaml -e "uninstall=true"
 
 uninstall-%:
-	$(ANSIBLE_PLAYBOOK) $(PLAYBOOKS)/homelab.yaml -e "uninstall=true" --tags $*
+	$(ANSIBLE_PLAYBOOK) ansible/homelab.yaml -e "uninstall=true" --tags $*

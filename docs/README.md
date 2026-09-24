@@ -25,14 +25,14 @@ Each role lives in its own directory with a self-contained `README.md`.
 
 | Role | Responsibility |
 | --- | --- |
-| [base](../roles/base/README.md) | Preflight checks and host foundation (group, user, directory) |
-| [k8s-tool-kubectl](../roles/k8s-tool-kubectl/README.md) | Kubectl CLI via snap |
-| [k8s-tool-helm](../roles/k8s-tool-helm/README.md) | Helm CLI via snap |
-| [k8s-core](../roles/k8s-core/README.md) | MicroK8s cluster, addons, kubeconfig |
-| [k8s-extension-traefik](../roles/k8s-extension-traefik/README.md) | Traefik ingress gateway and dashboard |
-| [k8s-extension-headlamp](../roles/k8s-extension-headlamp/README.md) | Headlamp dashboard + Trivy vulnerability scanning |
-| [podman](../roles/podman/README.md) | Podman container runtime |
-| [reverse-proxy](../roles/reverse-proxy/README.md) | HAProxy reverse proxy and firewall lockdown |
+| [base](../ansible/roles/base/README.md) | Preflight checks and host foundation (group, user, directory) |
+| [k8s_tool_kubectl](../ansible/roles/k8s_tool_kubectl/README.md) | Kubectl CLI via snap |
+| [k8s_tool_helm](../ansible/roles/k8s_tool_helm/README.md) | Helm CLI via snap |
+| [k8s_core](../ansible/roles/k8s_core/README.md) | MicroK8s cluster, addons, kubeconfig |
+| [k8s-extension-traefik](../ansible/roles/k8s-extension-traefik/README.md) | Traefik ingress gateway and dashboard |
+| [k8s-extension-headlamp](../ansible/roles/k8s-extension-headlamp/README.md) | Headlamp dashboard + Trivy vulnerability scanning |
+| [podman](../ansible/roles/podman/README.md) | Podman container runtime |
+| [reverse_proxy](../ansible/roles/reverse_proxy/README.md) | HAProxy reverse proxy and firewall lockdown |
 
 ## Project-level
 

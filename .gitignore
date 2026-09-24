@@ -8,8 +8,8 @@
 
 # --- Ansible -------------------
 .ansible
-inventory/*
-!inventory/main.example.yaml
+ansible/inventory/*
+!ansible/inventory/main.example.yaml
 
 # --- Python -------------------
 .venv

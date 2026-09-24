@@ -1,5 +1,0 @@
-addons:
-  - cis-hardening
-  - dns
-  - hostpath-storage
-  - rbac

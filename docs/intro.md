@@ -41,10 +41,10 @@ Note: on modern Ubuntu, `python3-venv` may be a separate package. Install it wit
 ### 2. Configure the inventory
 
 ```bash
-cp inventory/main.example.yaml inventory/main.yaml
+cp ansible/inventory/main.example.yaml ansible/inventory/main.yaml
 ```
 
-The inventory defines the `controllers` group — the host(s) that get a Kubernetes cluster. Edit `inventory/main.yaml`:
+The inventory defines the `controllers` group — the host(s) that get a Kubernetes cluster. Edit `ansible/inventory/main.yaml`:
 
 ```yaml
 controllers:
@@ -58,14 +58,14 @@ controllers:
 - The key can be the IP address **or** a URL that resolves to the host.
 - `ansible_ssh_private_key_file` is the SSH key on your control machine that can log into the host.
 
-### 3. Configure `config.yaml`
+### 3. Configure `ansible/config.yaml`
 
-The list of hosts is inventory; everything else about *what* gets installed lives in `config.yaml`. It has working defaults, so **you can install without touching it**, but every tweakable lever is exposed there and documented below.
+The list of hosts is inventory; everything else about *what* gets installed lives in `ansible/config.yaml`. It has working defaults, so **you can install without touching it**, but every tweakable lever is exposed there and documented below.
 
 | Key | Required | Default | Description |
 | --- | --- | --- | --- |
 | `homelab.dir` | no | `"~/homelab"` | Directory on the target host for homelab state (`.kube`, HAProxy config, certs). A leading `~` is resolved against the connecting user's home before any role runs. |
-| `homelab.k8s.version` | no | `1.36` | Kubernetes version consumed by the kubectl and k8s-core roles (snap channel). |
+| `homelab.k8s.version` | no | `1.36` | Kubernetes version consumed by the kubectl and k8s_core roles (snap channel). |
 | `homelab.admin.username` | **yes** | from env | Admin username for dashboards. Read from `HOMELAB_ADMIN_USERNAME`. |
 | `homelab.admin.password` | **yes** | from env | Admin password for dashboards. Read from `HOMELAB_ADMIN_PASSWORD`. |
 | `homelab.domain.url` | no | from env | Public domain served by the homelab, e.g. `homelab.example.com`. Without one, dashboards are served on the host IP. |
@@ -76,7 +76,7 @@ The list of hosts is inventory; everything else about *what* gets installed live
 
 ### 4. Configure environmental variables (secrets)
 
-Secrets never live in `config.yaml` — they are read from the environment so nothing sensitive is committed to version control.
+Secrets never live in `ansible/config.yaml` — they are read from the environment so nothing sensitive is committed to version control.
 
 ```bash
 cp .env.example .env
@@ -106,7 +106,7 @@ export $(cat .env | tr '\n' ' ')
 Install (or update) the full stack on the target host:
 
 ```bash
-ansible-playbook -i inventory/main.yaml playbooks/homelab.yaml
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml
 ```
 
 The playbook runs the plays in dependency order, so the reverse proxy is never installed before the ingress gateway it protects.
@@ -120,18 +120,18 @@ make base          # preflight checks + base system setup
 make kubernetes    # kubectl, helm, MicroK8s
 make networking    # Traefik ingress gateway
 make monitor       # Headlamp dashboard + Trivy
-make reverse-proxy # HAProxy reverse proxy + podman
+make reverse_proxy # HAProxy reverse proxy + podman
 make all           # everything (equivalent to the plain command above)
 ```
 
 The underlying tagged commands are:
 
 ```bash
-ansible-playbook -i inventory/main.yaml playbooks/homelab.yaml --tags base
-ansible-playbook -i inventory/main.yaml playbooks/homelab.yaml --tags kubernetes
-ansible-playbook -i inventory/main.yaml playbooks/homelab.yaml --tags networking
-ansible-playbook -i inventory/main.yaml playbooks/homelab.yaml --tags monitor
-ansible-playbook -i inventory/main.yaml playbooks/homelab.yaml --tags reverse-proxy
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags base
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags kubernetes
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags networking
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags monitor
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags reverse_proxy
 ```
 
 ### Uninstall
@@ -139,7 +139,7 @@ ansible-playbook -i inventory/main.yaml playbooks/homelab.yaml --tags reverse-pr
 Uninstall the full stack:
 
 ```bash
-ansible-playbook -i inventory/main.yaml playbooks/homelab.yaml -e uninstall=true
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml -e uninstall=true
 ```
 
 Or uninstall a single layer:
@@ -163,7 +163,7 @@ Dashboards:
 - **Traefik** — `http://<host>/traefik/dashboard/` (or `https://<domain>/traefik/`)
 - **Headlamp** — `http://<host>/dashboard/` (or `https://<domain>/dashboard/`)
 
-Both are protected by the admin credentials from `config.yaml`.
+Both are protected by the admin credentials from `ansible/config.yaml`.
 
 Try deploying the bundled example app to confirm the ingress path works end to end:
 

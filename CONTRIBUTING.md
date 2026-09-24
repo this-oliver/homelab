@@ -4,7 +4,7 @@ Thanks for contributing! This guide covers the conventions to keep the project c
 
 ## Environment setup
 
-Install the dev dependencies and verify the playbook parses:
+Install the dev dependencies and verify the playbook parses. All Ansible code lives under `ansible/`, so inventory and playbook paths are always relative to the repo root:
 
 ```bash
 python3 -m venv .venv
@@ -12,27 +12,34 @@ source .venv/bin/activate
 python3 -m pip install -r requirements.txt
 
 # validate the playbook syntax without touching a host
-ansible-playbook -i inventory/main.yaml playbooks/homelab.yaml --syntax-check
-ansible-playbook -i inventory/main.yaml playbooks/homelab.yaml --list-tasks
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --syntax-check
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --list-tasks
 ```
+
+Tip: the `makefile` wraps these invocations for the common tags (`make base`, `make kubernetes`, `make monitor`, ...), so `make all` is the same as the plain `ansible-playbook` call above.
 
 There is no test suite that mutates real infrastructure — check your changes against `--syntax-check` and `--list-tasks`, and review the rendered task graph when you touch ordering.
 
 ## Project layout
 
 ```
-playbooks/homelab.yaml   # the single entry point: five plays, in dependency order
-roles/<name>/            # each component is an Ansible role
-  tasks/main.yaml        #   dispatch: setup vs teardown based on `uninstall`
-  tasks/setup.yaml       #   install logic
-  tasks/teardown.yaml    #   uninstall logic
-  vars/main.yaml         #   role defaults
-  templates/             #   rendered configs (values.yaml, haproxy.cfg, ...)
-tasks/                   # shared, reusable task libraries
-config.yaml              # user-facing, non-secret configuration
-inventory/               # which hosts get which services
+ansible/                 # all Ansible code lives here
+  homelab.yaml           #   the single entry point: five plays, in dependency order
+  config.yaml            #   user-facing, non-secret configuration (secrets from env)
+  inventory/             #   which hosts get which services
+  roles/<name>/          #   each component is an Ansible role
+    tasks/main.yaml      #     dispatch: setup vs teardown based on `uninstall`
+    tasks/setup.yaml     #     install logic
+    tasks/teardown.yaml  #     uninstall logic
+    vars/main.yaml       #     role defaults
+    templates/           #     rendered configs (values.yaml, haproxy.cfg, ...)
+    README.md            #     what / why / how documentation
+  tasks/                 #   shared, reusable task libraries
 docs/                    # documentation (see below)
+makefile                 # wraps ansible-playbook for common layer tags
 ```
+
+The playbook references roles by name (`include_role: name: base`), resolved from `ansible/roles/` because that is the playbook's own `roles/` directory.
 
 ## Role conventions
 
@@ -67,11 +74,11 @@ Every role must follow the same structure:
 
 ## Tags
 
-- Every play and role in the playbook is tagged with its layer: `base`, `kubernetes`, `networking`, `monitor`, `reverse-proxy`, plus component tags (`kubectl`, `helm`, `traefik`, `headlamp`, `dashboard`, `trivy`).
+- Every play and role in the playbook is tagged with its layer: `base`, `kubernetes`, `networking`, `monitor`, `reverse_proxy`, plus component tags (`kubectl`, `helm`, `traefik`, `headlamp`, `dashboard`, `trivy`).
 - Tag your additions so `make kubernetes`, `make monitor`, etc. keep working. Confirm with:
 
   ```bash
-  ansible-playbook -i inventory/main.yaml playbooks/homelab.yaml --list-tags
+  ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --list-tags
   ```
 
 ## Commits and PRs

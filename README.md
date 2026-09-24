@@ -26,11 +26,11 @@ Every layer is an [Ansible role](#components). Each role can be installed or uni
 
 | Layer | Role | What it does |
 | --- | --- | --- |
-| Base | [base](roles/base/README.md) | Preflight checks, `homelab` group/user, home directory |
-| Kubernetes | [k8s-tool-kubectl](roles/k8s-tool-kubectl/README.md), [k8s-tool-helm](roles/k8s-tool-helm/README.md), [k8s-core](roles/k8s-core/README.md) | Kubectl + Helm CLI tools, MicroK8s cluster with hardened addons |
-| Networking | [k8s-extension-traefik](roles/k8s-extension-traefik/README.md) | Traefik ingress gateway, dashboard, rate limiting, HTTPS |
-| Monitoring | [k8s-extension-headlamp](roles/k8s-extension-headlamp/README.md) | Headlamp dashboard with Trivy vulnerability scanning |
-| Reverse proxy | [reverse-proxy](roles/reverse-proxy/README.md), [podman](roles/podman/README.md) | HAProxy container as the only public entry point, locked down with iptables |
+| Base | [base](ansible/roles/base/README.md) | Preflight checks, `homelab` group/user, home directory |
+| Kubernetes | [k8s_tool_kubectl](ansible/roles/k8s_tool_kubectl/README.md), [k8s_tool_helm](ansible/roles/k8s_tool_helm/README.md), [k8s_core](ansible/roles/k8s_core/README.md) | Kubectl + Helm CLI tools, MicroK8s cluster with hardened addons |
+| Networking | [k8s-extension-traefik](ansible/roles/k8s-extension-traefik/README.md) | Traefik ingress gateway, dashboard, rate limiting, HTTPS |
+| Monitoring | [k8s-extension-headlamp](ansible/roles/k8s-extension-headlamp/README.md) | Headlamp dashboard with Trivy vulnerability scanning |
+| Reverse proxy | [reverse_proxy](ansible/roles/reverse_proxy/README.md), [podman](ansible/roles/podman/README.md) | HAProxy container as the only public entry point, locked down with iptables |
 
 ## Getting Started
 
@@ -59,10 +59,10 @@ python3 -m pip install -r requirements.txt
 > The **controller** host group is mandatory although other groups are optional.
 
 ```bash
-cp inventory/main.example.yaml inventory/main.yaml
+cp ansible/inventory/main.example.yaml ansible/inventory/main.yaml
 ```
 
-Edit `inventory/main.yaml` and set the IP address (or url), `ansible_port`, `ansible_user` and `ansible_ssh_private_key_file` for your host. Remove host groups that you do not intend to use.
+Edit `ansible/inventory/main.yaml` and set the IP address (or url), `ansible_port`, `ansible_user` and `ansible_ssh_private_key_file` for your host. Remove host groups that you do not intend to use.
 
 ### Configure secrets
 
@@ -83,20 +83,20 @@ export $(cat .env | tr '\n' ' ')
 | `HOMELAB_DOMAIN_URL` | no | Public domain served by the homelab |
 | `HOMELAB_DOMAIN_HTTPS_EMAIL` | no | Email for Let's Encrypt certificates |
 
-The `config.yaml` holds every non-secret setting and has working defaults, so it needs no editing to get started. See [docs/intro.md](docs/intro.md) for the full reference (including `HOMELAB_DOMAIN_HTTPS_ENABLED` and `HOMELAB_SECURITY_TRIVY_ENABLED`).
+The `ansible/config.yaml` holds every non-secret setting and has working defaults, so it needs no editing to get started. See [docs/intro.md](docs/intro.md) for the full reference (including `HOMELAB_DOMAIN_HTTPS_ENABLED` and `HOMELAB_SECURITY_TRIVY_ENABLED`).
 
 ## Usage
 
 Install homelab on the target host:
 
 ```bash
-ansible-playbook -i inventory/main.yaml playbooks/homelab.yaml
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml
 ```
 
 Uninstall homelab on the target host:
 
 ```bash
-ansible-playbook -i inventory/main.yaml playbooks/homelab.yaml -e uninstall=true
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml -e uninstall=true
 ```
 
 The repo also ships a `makefile` for targeting individual layers (e.g. `make networking`). See [docs/intro.md#usage](docs/intro.md#usage) for details.
