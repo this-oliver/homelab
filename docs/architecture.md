@@ -130,7 +130,7 @@ See [docs/intro.md](intro.md) for a full reference of every key.
 - **Single entry point.** Only HAProxy is exposed on public ports. Kubernetes NodePorts are firewalled to loopback with iptables rules persisted in `/etc/iptables` (`iptables-persistent`).
 - **Owner-based forwarding.** The HAProxy container runs as its own unprivileged system user; iptables allows that user's outbound connections to the NodePorts and drops everyone else's.
 - **Dashboards behind basic auth.** Traefik's dashboard and Headlamp are protected by `homelab.admin.username`/`homelab.admin.password` rendered into a Kubernetes basic-auth secret.
-- **Hardened cluster defaults.** MicroK8s boots with `cis-hardening`, `dns`, `hostpath-storage` and `rbac` addons; Trivy scans workloads for vulnerabilities when enabled.
+- **Hardened cluster defaults.** MicroK8s boots with the `cis-hardening`, `dns`, `hostpath-storage` and `rbac` addons (`hostpath-storage` on controllers only, since a single node must own the hostpath provisioner); Trivy scans workloads for vulnerabilities when enabled.
 - **Optional HTTPS.** With a domain and ACME email set, Traefik issues Let's Encrypt certificates and HTTP traffic redirects to HTTPS.
 - **No secrets in code.** Credentials are injected from environment variables and never committed.
 

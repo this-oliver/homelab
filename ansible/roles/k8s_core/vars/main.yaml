@@ -1,5 +1,13 @@
 k8s_core_addons:
-  - cis-hardening
-  - dns
-  - hostpath-storage
-  - rbac
+  - name: cis-hardening
+    controllers: true
+    workers: true
+  - name: dns
+    controllers: true
+    workers: true
+  - name: hostpath-storage
+    controllers: true
+    workers: false
+  - name: rbac
+    controllers: true
+    workers: true
