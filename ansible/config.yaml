@@ -27,11 +27,17 @@ homelab:
       enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_DOMAIN_HTTPS_ENABLED') | bool | default(True) }}"
       email: "{{ lookup('ansible.builtin.env', 'HOMELAB_DOMAIN_HTTPS_EMAIL') | regex_replace('^\"|\"$', '') }}"
 
+  # OPTIONAL. Configures the cluster for security scans.
   security:
     trivy:
       enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_SECURITY_TRIVY_ENABLED') | bool | default(True) }}"
 
 # ── MISC ─────────────────────────────────────────────────────────
 
-# OPTIONAL. Uninstalls homelab if set to true.
+# INTERNAL. Read in two places, both of them the install side:
+#   - homelab.yaml routes on it, so `-e uninstall=true` picks the teardown body.
+#   - each role's tasks/main.yaml dispatches setup vs teardown on it, so an
+#     install needs it false.
+# The teardown body needs no play var: it names tasks_from: teardown.yaml on each
+# role instead. Leave this false; you never edit it.
 uninstall: false

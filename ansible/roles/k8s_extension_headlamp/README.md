@@ -57,4 +57,4 @@ ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags moni
 
 ## Uninstall
 
-Uninstalls the `trivy-operator` release, then the `headlamp` release, via the shared `tasks/helm.yaml`. Note the monitoring play (`ansible/homelab.yaml`) runs regardless of `uninstall`, letting the shared Helm task decide what to remove.
+Uninstalls the `trivy-operator` release, then the `headlamp` release, via the shared `tasks/helm.yaml`. Opt-in, not part of the default teardown: it is tagged `monitor` without the `uninstall` tag, so run `--tags monitor` (or `make uninstall-monitor`) before the default teardown — `helm ... uninstall` needs the cluster that `k8s_core` removes.

@@ -1,0 +1,52 @@
+---
+# Uninstall body. Loaded by homelab.yaml on `-e uninstall=true`, or run directly.
+#
+# Every role is included with `tasks_from: teardown.yaml`, so this playbook
+# names the teardown path itself and no task needs a `when` of its own. That
+# bypasses each role's tasks/main.yaml dispatch, which is also why no
+# `uninstall: true` play var is needed here: the variable stays false in
+# config.yaml and only the install body reads it.
+
+- name: Teardown homelab
+  hosts: controllers
+  vars_files:
+    - config.yaml
+  pre_tasks:
+    - name: Resolve homelab directory to an absolute path
+      ansible.builtin.include_tasks:
+        file: tasks/resolve_path.yaml
+        apply:
+          tags: [always]
+      tags: [always]
+  tasks:
+    - name: Reverse proxy
+      ansible.builtin.include_role:
+        name: reverse_proxy
+        tasks_from: teardown.yaml
+        apply:
+          tags: [uninstall, reverse_proxy]
+      tags: [uninstall, reverse_proxy]
+
+    - name: Dashboard - Headlamp
+      ansible.builtin.include_role:
+        name: k8s_extension_headlamp
+        tasks_from: teardown.yaml
+        apply:
+          tags: [monitor, dashboard, headlamp, trivy]
+      tags: [monitor, dashboard, headlamp, trivy]
+
+    - name: Network Gateway - Traefik
+      ansible.builtin.include_role:
+        name: k8s_extension_traefik
+        tasks_from: teardown.yaml
+        apply:
+          tags: [networking, traefik]
+      tags: [networking, traefik]
+
+    - name: Kubernetes
+      ansible.builtin.include_role:
+        name: k8s_core
+        tasks_from: teardown.yaml
+        apply:
+          tags: [uninstall, kubernetes, kubectl, helm]
+      tags: [uninstall, kubernetes, kubectl, helm]

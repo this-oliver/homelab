@@ -77,4 +77,4 @@ Reverses everything:
 3. Removes the iptables owner-rule, source-allow and drop rules (both IPv4 and IPv6), persisting the cleared state.
 4. Removes the `haproxy` system user.
 
-The `podman` apt package is removed by the `podman` role's teardown in the same play. Because external access checks are now gone too, uninstall Traefik only after fully removing this layer.
+The `podman` apt package is removed by the `podman` role's teardown in the same play. This role is the first task of the uninstall playbook, so the HAProxy layer goes before the cluster and the NodePorts it proxies; Traefik's teardown is opt-in and must be run first if you want the release removed too.
