@@ -4,6 +4,8 @@
 
 Installs and configures the Kubernetes cluster — MicroK8s via Snap — enables its hardened addons, writes a KubeConfig the operator (and future roles) can use, and applies the kernel settings Raspberry Pi hosts need.
 
+This role also has a [`worker.yaml` task](tasks/worker.yaml) that adds worker nodes to the cluster.
+
 ## Why
 
 MicroK8s is the cluster substrate everything else runs on: Traefik, Headlamp, Trivy and user apps are all deployed into it. This role makes the cluster repeatable (snap channel locked to `homelab.k8s.version`) and secure (CIS hardening + RBAC addons on by default).
@@ -18,7 +20,7 @@ flowchart TD
     exists -- yes --> extract[Skip install, reuse existing snap]
     exists -- no --> install[install snapd + microk8s snap]
     install --> start[microk8s start + wait-ready]
-    start --> addons[enable addons]
+    start --> addons[enable addons for this node role]
     addons --> extract
     extract --> config[extract `microk8s config`<br/>write .kube/config.yaml]
     config --> raspi{is_raspi?}
@@ -31,13 +33,14 @@ flowchart TD
 Environments it handles specially:
 
 - **Existing MicroK8s** — if the snap is already installed, install steps are skipped; the KubeConfig is still (re)written from the running cluster.
+- **Node roles** — each addon in `k8s_core_addons` carries a flag per inventory group (`controllers`, `workers`). On a controller the host is tagged `k8s_core_node_role: controllers` and only the addons with `controllers: true` are enabled; every other host is tagged `workers` and gets the `workers: true` addons. Both flags are required on every entry — a missing flag is a templating error, not a silent skip. `hostpath-storage` is controller-only because only a single node may run the hostpath provisioner.
 - **Raspberry Pi** — installs `linux-modules-extra-raspi` (Ubuntu < 24.04) and appends `cgroup_enable=memory cgroup_memory=1` to the boot cmdline (`/boot/firmware/cmdline.txt` / `nobtcmd.txt`), rebooting once if the parameters changed. See the [MicroK8s Raspberry Pi guide](https://canonical.com/microk8s/docs/install-raspberry-pi).
 
 ## Variables
 
 | Variable | Default | Description |
 | --- | --- | --- |
-| `addons` | `cis-hardening`, `dns`, `hostpath-storage`, `rbac` | MicroK8s addons enabled on first install. |
+| `k8s_core_addons` | `cis-hardening`, `dns`, `hostpath-storage`, `rbac` | MicroK8s addons enabled on first install. Each entry is `{name, controllers, workers}`; the flag matching the host's node role decides whether it is enabled there. |
 | `homelab.k8s.version` | `1.36` (from `config.yaml`) | Snap channel for MicroK8s. |
 | `homelab.dir` | `~/homelab` (from `config.yaml`) | Parent of `~/.kube`. |
 

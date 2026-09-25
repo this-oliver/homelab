@@ -1,7 +1,7 @@
 INVENTORY ?= ansible/inventory/main.yaml
 ANSIBLE_PLAYBOOK := ansible-playbook -i $(INVENTORY)
 
-.PHONY: all base kubernetes networking reverse_proxy monitor uninstall uninstall-%
+.PHONY: all base kubernetes monitor networking reverse_proxy uninstall uninstall-% worker
 
 all:
 	$(ANSIBLE_PLAYBOOK) ansible/homelab.yaml
@@ -26,3 +26,6 @@ uninstall:
 
 uninstall-%:
 	$(ANSIBLE_PLAYBOOK) ansible/homelab.yaml -e "uninstall=true" --tags $*
+
+worker:
+	$(ANSIBLE_PLAYBOOK) ansible/homelab.yaml --tags worker

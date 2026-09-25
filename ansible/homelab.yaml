@@ -20,7 +20,7 @@
       tags: [base]
 
 - name: Provision kubernetes
-  hosts: controllers
+  hosts: controllers,workers
   vars_files:
     - config.yaml
   pre_tasks:
@@ -153,3 +153,16 @@
             apply:
               tags: [reverse_proxy]
           tags: [reverse_proxy]
+
+- name: Provision workers
+  hosts: workers
+  vars_files:
+    - config.yaml
+  tasks:
+    - name: Join worker node to the cluster
+      when: not (uninstall | bool)
+      ansible.builtin.include_tasks:
+        file: roles/k8s_core/tasks/worker.yaml
+        apply:
+          tags: [kubernetes, worker]
+      tags: [kubernetes, worker]

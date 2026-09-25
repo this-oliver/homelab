@@ -1,0 +1,29 @@
+---
+- name: Check if the worker is already part of a cluster
+  ansible.builtin.stat:
+    path: /var/snap/microk8s/current/var/lock/clustered.lock
+  register: k8s_core_worker_clustered
+
+- name: Generate a one-time join token on the controller
+  become: true
+  delegate_to: "{{ groups.controllers[0] }}"
+  ansible.builtin.command: microk8s add-node --format short
+  register: k8s_core_worker_add_node
+  changed_when: k8s_core_worker_add_node.rc == 0
+  when: not (k8s_core_worker_clustered.stat.exists | bool)
+
+- name: Extract cluster agent port and join path
+  ansible.builtin.set_fact:
+    k8s_core_worker_join_port: "{{ k8s_core_worker_add_node.stdout | regex_search('microk8s join [^:]+:(\\d+)', '\\1') | first }}"
+    k8s_core_worker_join_path: "{{ k8s_core_worker_add_node.stdout | regex_search('microk8s join \\S+:\\d+(/\\S+)', '\\1') | first }}"
+  when: not (k8s_core_worker_clustered.stat.exists | bool)
+
+- name: Join the cluster as a worker
+  become: true
+  ansible.builtin.command: >-
+    microk8s join
+    {{ hostvars[groups.controllers[0]].get('ansible_host', groups.controllers[0]) }}:{{ k8s_core_worker_join_port }}{{ k8s_core_worker_join_path }}
+    --worker
+  register: k8s_core_worker_join_result
+  changed_when: "'Successfully joined the cluster' in k8s_core_worker_join_result.stdout"
+  when: not (k8s_core_worker_clustered.stat.exists | bool)

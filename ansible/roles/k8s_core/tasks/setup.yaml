@@ -73,11 +73,21 @@
       register: k8s_core_ready
       changed_when: k8s_core_ready.rc != 0
 
+    - name: Set the node role of this host
+      ansible.builtin.set_fact:
+        k8s_core_node_role: >-
+          {{ 'controllers' if inventory_hostname in (groups.controllers | default([])) else 'workers' }}
+
+    - name: Set list of addons to enable for this host
+      ansible.builtin.set_fact:
+        k8s_core_addons_to_enable: >-
+          {{ k8s_core_addons | selectattr(k8s_core_node_role, 'equalto', true) | map(attribute='name') | list }}
+
     - name: Enable microk8s common modules
       ansible.builtin.command: "microk8s enable {{ addon }}"
       register: k8s_core_addon_enabled
       changed_when: k8s_core_addon_enabled.rc != 0
-      loop: "{{ k8s_core_addons }}"
+      loop: "{{ k8s_core_addons_to_enable }}"
       loop_control:
         loop_var: addon
 

@@ -64,6 +64,9 @@ cp ansible/inventory/main.example.yaml ansible/inventory/main.yaml
 
 Edit `ansible/inventory/main.yaml` and set the IP address (or url), `ansible_port`, `ansible_user` and `ansible_ssh_private_key_file` for your host. Remove host groups that you do not intend to use.
 
+> [!NOTE]
+> Adding a **worker** host group will set up additional worker nodes to your cluster.
+
 ### Configure secrets
 
 ```bash
