@@ -1,4 +1,4 @@
-# Role: k8s-extension-headlamp
+# Role: k8s_extension_headlamp
 
 ## What
 

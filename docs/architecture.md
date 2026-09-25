@@ -29,11 +29,11 @@ flowchart LR
     end
 
     subgraph P3[Networking - controllers]
-        traefik[k8s-extension-traefik<br/>ingress gateway]
+        traefik[k8s_extension_traefik<br/>ingress gateway]
     end
 
     subgraph P4[Monitoring - controllers]
-        headlamp[k8s-extension-headlamp<br/>Headlamp + Trivy]
+        headlamp[k8s_extension_headlamp<br/>Headlamp + Trivy]
     end
 
     subgraph P5[Reverse proxy - controllers]
@@ -142,8 +142,8 @@ See [docs/intro.md](intro.md) for a full reference of every key.
 | k8s_tool_kubectl (kubectl CLI) | [roles/k8s_tool_kubectl/README.md](../ansible/roles/k8s_tool_kubectl/README.md) |
 | k8s_tool_helm (Helm CLI) | [roles/k8s_tool_helm/README.md](../ansible/roles/k8s_tool_helm/README.md) |
 | k8s_core (MicroK8s) | [roles/k8s_core/README.md](../ansible/roles/k8s_core/README.md) |
-| k8s-extension-traefik (ingress) | [roles/k8s-extension-traefik/README.md](../ansible/roles/k8s-extension-traefik/README.md) |
-| k8s-extension-headlamp (dashboard + Trivy) | [roles/k8s-extension-headlamp/README.md](../ansible/roles/k8s-extension-headlamp/README.md) |
+| k8s_extension_traefik (ingress) | [roles/k8s_extension_traefik/README.md](../ansible/roles/k8s_extension_traefik/README.md) |
+| k8s_extension_headlamp (dashboard + Trivy) | [roles/k8s_extension_headlamp/README.md](../ansible/roles/k8s_extension_headlamp/README.md) |
 | podman (container runtime) | [roles/podman/README.md](../ansible/roles/podman/README.md) |
 | reverse_proxy (HAProxy) | [roles/reverse_proxy/README.md](../ansible/roles/reverse_proxy/README.md) |
 
