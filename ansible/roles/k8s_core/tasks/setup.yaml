@@ -80,6 +80,7 @@
       loop: "{{ k8s_core_addons }}"
       loop_control:
         loop_var: addon
+      when: inventory_hostname in groups.controllers
 
 - name: Update Kubeconfig file
   block:
