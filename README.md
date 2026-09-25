@@ -109,8 +109,6 @@ ansible-playbook -i ansible/inventory/main.yaml ansible/homelab_uninstall.yaml -
 ansible-playbook -i ansible/inventory/main.yaml ansible/homelab_uninstall.yaml --tags networking
 ```
 
-The `makefile` wraps these for individual layers (e.g. `make networking`, `make uninstall-kubernetes`). See [docs/intro.md#usage](docs/intro.md#usage) for details.
-
 ## Documentation
 
 - [docs/README.md](docs/README.md) — documentation index

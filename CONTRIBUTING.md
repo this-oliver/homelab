@@ -20,8 +20,6 @@ ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --list-task
 ansible-playbook -i ansible/inventory/main.yaml ansible/homelab_uninstall.yaml --tags uninstall --list-tasks
 ```
 
-Tip: the `makefile` wraps these invocations for the common tags (`make base`, `make kubernetes`, `make monitor`, `make uninstall-kubernetes`, ...), so `make all` is the same as the plain `ansible-playbook` call above.
-
 There is no test suite that mutates real infrastructure — check your changes against `--syntax-check` and `--list-tasks`, and review the rendered task graph when you touch ordering.
 
 ## Project layout
@@ -42,7 +40,6 @@ ansible/                            # all Ansible code lives here
     README.md                  #       what / why / how documentation
   tasks/                       #   shared, reusable task libraries
 docs/                          # documentation (see below)
-makefile                       # wraps ansible-playbook for common layer tags
 ```
 
 The playbooks reference roles by name (`include_role: name: base`), resolved from `ansible/roles/` because that is the playbook's own `roles/` directory.

@@ -115,18 +115,7 @@ The install playbook runs its plays in dependency order, so the reverse proxy is
 
 ### Install individual layers
 
-The playbook is tagged per layer, and a `makefile` wraps the common combinations:
-
-```bash
-make base          # preflight checks + base system setup
-make kubernetes    # kubectl, helm, MicroK8s
-make networking    # Traefik ingress gateway
-make monitor       # Headlamp dashboard + Trivy
-make reverse_proxy # HAProxy reverse proxy + podman
-make all           # everything (equivalent to the plain command above)
-```
-
-The underlying tagged commands are:
+The playbook is tagged per layer:
 
 ```bash
 ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags base
