@@ -29,8 +29,8 @@ Each role lives in its own directory with a self-contained `README.md`.
 | [k8s_tool_kubectl](../ansible/roles/k8s_tool_kubectl/README.md) | Kubectl CLI via snap |
 | [k8s_tool_helm](../ansible/roles/k8s_tool_helm/README.md) | Helm CLI via snap |
 | [k8s_core](../ansible/roles/k8s_core/README.md) | MicroK8s cluster, addons, kubeconfig |
-| [k8s-extension-traefik](../ansible/roles/k8s-extension-traefik/README.md) | Traefik ingress gateway and dashboard |
-| [k8s-extension-headlamp](../ansible/roles/k8s-extension-headlamp/README.md) | Headlamp dashboard + Trivy vulnerability scanning |
+| [k8s_extension_traefik](../ansible/roles/k8s_extension_traefik/README.md) | Traefik ingress gateway and dashboard |
+| [k8s_extension_headlamp](../ansible/roles/k8s_extension_headlamp/README.md) | Headlamp dashboard + Trivy vulnerability scanning |
 | [podman](../ansible/roles/podman/README.md) | Podman container runtime |
 | [reverse_proxy](../ansible/roles/reverse_proxy/README.md) | HAProxy reverse proxy and firewall lockdown |
 
