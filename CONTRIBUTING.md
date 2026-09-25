@@ -60,7 +60,7 @@ Every role must follow the same structure:
    ```
 
 2. **Keep logic in `setup.yaml` / `teardown.yaml`.** `main.yaml` stays a thin dispatcher.
-3. **Run preflight checks first.** Roles that are not strictly install-once should `include_tasks: ../../../tasks/preflight.yaml` at the top of setup so credential/OS mistakes fail fast (see `k8s-extension-*` roles for examples).
+3. **Run preflight checks first.** Roles that are not strictly install-once should `include_tasks: ../../../tasks/preflight.yaml` at the top of setup so credential/OS mistakes fail fast (see `k8s_extension_*` roles for examples).
 4. **Share Helm work.** Anything installed via Helm must use `tasks/helm.yaml` and pass a `helm_release` variable matching the contract validated there. Do not hand-roll `kubernetes.core.helm` calls.
 5. **Put user-tweakable values in `config.yaml`.** Role defaults in `vars/main.yaml` should be internal wiring (port numbers, addon lists, chart versions), not knobs the user cares about.
 6. **Never hard-code secrets.** Credentials must come from `homelab.admin.*` / `homelab.domain.*`, which `config.yaml` reads from the environment.

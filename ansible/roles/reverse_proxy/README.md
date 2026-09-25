@@ -57,7 +57,7 @@ Both backends send the PROXY protocol (`send-proxy`), health-check Traefik every
 ## Dependencies
 
 - `podman` role — included from `setup.yaml`; provides the container runtime.
-- `k8s-extension-traefik` — the NodePorts (`30080`/`30443`) and their PROXY protocol config must exist first; that's why this play runs last.
+- `k8s_extension_traefik` — the NodePorts (`30080`/`30443`) and their PROXY protocol config must exist first; that's why this play runs last.
 - `iptables-persistent` — installed by the role so rules survive reboots.
 
 ## Tags
