@@ -1,0 +1,2 @@
+# see: https://snapcraft.io/helm
+k8s_tool_helm_version: latest/stable # 4.2.4

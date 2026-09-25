@@ -1,0 +1,9 @@
+- name: Install Helm
+  ansible.builtin.include_tasks:
+    file: setup.yaml
+  when: not (uninstall | bool)
+
+- name: Uninstall Helm
+  ansible.builtin.include_tasks:
+    file: teardown.yaml
+  when: uninstall | bool

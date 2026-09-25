@@ -1,0 +1,9 @@
+- name: Uninstall {{ k8s_extension_headlamp_helm_release.name }}
+  ansible.builtin.include_tasks: ../../../tasks/helm.yaml
+  vars:
+    helm_release: "{{ k8s_extension_headlamp_helm_release }}"
+
+- name: Uninstall {{ k8s_extension_headlamp_trivy_helm_release.name }}
+  ansible.builtin.include_tasks: ../../../tasks/helm.yaml
+  vars:
+    helm_release: "{{ k8s_extension_headlamp_trivy_helm_release }}"

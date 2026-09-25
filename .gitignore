@@ -1,0 +1,15 @@
+# --- Global -------------------
+# Allow all example files (i.e. .env.example or inventory.example.yaml)
+!*.example.*
+
+# --- Env -------------------
+.env*
+!.env.example
+
+# --- Ansible -------------------
+.ansible
+ansible/inventory/*
+!ansible/inventory/main.example.yaml
+
+# --- Python -------------------
+.venv

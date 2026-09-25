@@ -1,0 +1,11 @@
+- name: Install Kubernetes
+  when: not (uninstall | bool)
+  ansible.builtin.include_tasks:
+    file: setup.yaml
+  tags: [kubernetes]
+
+- name: Uninstall Kubernetes
+  when: uninstall | bool
+  ansible.builtin.include_tasks:
+    file: teardown.yaml
+  tags: [kubernetes]

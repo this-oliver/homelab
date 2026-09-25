@@ -1,0 +1,4 @@
+- name: Reboot to apply Microk8s changes
+  become: true
+  ansible.builtin.reboot:
+    reboot_timeout: 120
