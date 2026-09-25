@@ -27,7 +27,7 @@ Every layer is an [Ansible role](#components). Each role can be installed or uni
 | Layer | Role | What it does |
 | --- | --- | --- |
 | Base | [base](ansible/roles/base/README.md) | Preflight checks, `homelab` group/user, home directory |
-| Kubernetes | [k8s_tool_kubectl](ansible/roles/k8s_tool_kubectl/README.md), [k8s_tool_helm](ansible/roles/k8s_tool_helm/README.md), [k8s_core](ansible/roles/k8s_core/README.md) | Kubectl + Helm CLI tools, MicroK8s cluster with hardened addons |
+| Kubernetes | [k8s_tool_kubectl](ansible/roles/k8s_tool_kubectl/README.md), [k8s_tool_helm](ansible/roles/k8s_tool_helm/README.md), [k8s_core](ansible/roles/k8s_core/README.md) | Kubectl + Helm CLI tools, MicroK8s cluster with hardened addons. Optionally, installs worker nodes. |
 | Networking | [k8s-extension-traefik](ansible/roles/k8s-extension-traefik/README.md) | Traefik ingress gateway, dashboard, rate limiting, HTTPS |
 | Monitoring | [k8s-extension-headlamp](ansible/roles/k8s-extension-headlamp/README.md) | Headlamp dashboard with Trivy vulnerability scanning |
 | Reverse proxy | [reverse_proxy](ansible/roles/reverse_proxy/README.md), [podman](ansible/roles/podman/README.md) | HAProxy container as the only public entry point, locked down with iptables |
@@ -63,6 +63,9 @@ cp ansible/inventory/main.example.yaml ansible/inventory/main.yaml
 ```
 
 Edit `ansible/inventory/main.yaml` and set the IP address (or url), `ansible_port`, `ansible_user` and `ansible_ssh_private_key_file` for your host. Remove host groups that you do not intend to use.
+
+> [!NOTE]
+> Adding a **worker** host group will set up additional worker nodes to your cluster.
 
 ### Configure secrets
 
