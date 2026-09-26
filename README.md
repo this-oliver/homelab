@@ -88,7 +88,7 @@ export $(cat .env | tr '\n' ' ')
 | `HOMELAB_DOMAIN_URL` | no | Public domain served by the homelab |
 | `HOMELAB_DOMAIN_HTTPS_EMAIL` | no | Email for Let's Encrypt certificates |
 
-The `ansible/config.yaml` holds every non-secret setting and has working defaults, so it needs no editing to get started. See [docs/intro.md](docs/intro.md) for the full reference (including `HOMELAB_DOMAIN_HTTPS_ENABLED` and `HOMELAB_SECURITY_TRIVY_ENABLED`).
+The `ansible/config.yaml` holds every non-secret setting and has working defaults, so it needs no editing to get started. See [docs/guide-admin.md](docs/guide-admin.md) for the full reference (including `HOMELAB_DOMAIN_HTTPS_ENABLED` and `HOMELAB_SECURITY_TRIVY_ENABLED`).
 
 ## Usage
 
@@ -119,7 +119,7 @@ ansible-playbook -i ansible/inventory/main.yaml ansible/homelab_uninstall.yaml -
 ## Documentation
 
 - [docs/README.md](docs/README.md) — documentation index
-- [docs/intro.md](docs/intro.md) — step-by-step getting started and usage in depth
+- [docs/guide-admin.md](docs/guide-admin.md) — step-by-step getting started and usage in depth
 - [docs/architecture.md](docs/architecture.md) — how the stack is wired together
 - [CONTRIBUTING.md](CONTRIBUTING.md) — contributing guide
 - [docs/examples/demo.yaml](docs/examples/demo.yaml) — example app you can deploy after install

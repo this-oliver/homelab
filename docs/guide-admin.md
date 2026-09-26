@@ -15,7 +15,7 @@ Everything is declared in Ansible, so the same commands install, update and remo
 
 ## Pre-requisites
 
-You need two machines involved:
+You need atleast two machines involved:
 
 | Machine | Requirement |
 | --- | --- |
@@ -136,19 +136,7 @@ Uninstall the reverse proxy, the cluster and the cluster tooling:
 ansible-playbook -i ansible/inventory/main.yaml ansible/homelab_uninstall.yaml --tags uninstall
 ```
 
-Or uninstall a single layer:
-
-```bash
-make uninstall-kubernetes   # short for --tags kubernetes
-make uninstall-helm         # short for --tags helm
-```
-
-The Helm-managed releases are **not** part of the default teardown — removing them is opt-in, one layer at a time:
-
-The underlying commands are `ansible/homelab_uninstall.yaml` with the layer tag, e.g. `--tags monitor`, `--tags ingress`, `--tags helm`.
-
-> [!IMPORTANT]
-> Run those two **before** `make uninstall`. Removing a release shells out to `helm ... uninstall` against a running cluster, and the default teardown deletes that cluster.
+The Helm-managed releases, like Traefik or Headlamp, are removed when `kubernetes` or `helm` is teared down. To specifically target these releases, you'll need to run `ansible/homelab_uninstall.yaml` playbook with the release tag, e.g. `--tags monitor`, `--tags ingress`, `--tags helm` or even `--tags traefik,headlamp`.
 
 The `base` role's teardown removes only the generated summary readme. The `homelab` group and directory are the foundation everything else assumes, so they are never removed.
 
@@ -161,12 +149,6 @@ The last play writes a summary of what it just built to `~/homelab/README.md` on
 
 ```bash
 cat ~/homelab/README.md
-```
-
-Everything above the notes section at the bottom is regenerated on every run; anything you write between the two `notes` markers survives. Regenerate it on its own without touching the rest of the stack:
-
-```bash
-ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags summary
 ```
 
 Your host now runs MicroK8s. Point `kubectl` at it by exporting the kubeconfig on the host:

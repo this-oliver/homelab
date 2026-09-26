@@ -175,7 +175,7 @@ flowchart TB
 - **`ansible/config.yaml`** — non-secret settings (`homelab.dir`, `homelab.k8s.version`, domain, security toggles, and the `uninstall` flag that selects each role's setup or teardown path). Secret fields are `lookup`ed from the environment rather than hard-coded.
 - **`.env`** — the actual secrets: `HOMELAB_ADMIN_*` (required) and `HOMELAB_DOMAIN_*`, `HOMELAB_SECURITY_TRIVY_ENABLED` (optional). Applied to the playbook session via `export`.
 
-See [docs/intro.md](intro.md) for a full reference of every key.
+See [docs/guide-admin.md](guide-admin.md) for a full reference of every key.
 
 ## Security model
 
@@ -199,5 +199,5 @@ See [docs/intro.md](intro.md) for a full reference of every key.
 
 ## Next steps
 
-- [docs/intro.md](intro.md) — from zero to a running homelab
+- [docs/guide-admin.md](guide-admin.md) — from zero to a running homelab
 - [README.md](../README.md) — quickstart overview

@@ -115,7 +115,7 @@ chore(dep): bumps W
 Documentation follows a **what / why / how** structure and prefers diagrams over prose for relationships:
 
 - **`README.md`** — high-level: what the project is, how it works (architecture diagram), and a quickstart. No deep reference material.
-- **`docs/intro.md`** — getting started and usage in depth, with full configuration and environment variable references.
+- **`docs/guide-admin.md`** — getting started and usage in depth, with full configuration and environment variable references.
 - **`docs/architecture.md`** — how the layers interoperate, traffic flow, install/uninstall lifecycle, security model.
 - **Every role has a `README.md`** using the standard template (see below).
 

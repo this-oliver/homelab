@@ -15,7 +15,7 @@ flowchart LR
 
 | Document | Use it when... |
 | --- | --- |
-| [Introduction](intro.md) | You want to install, configure or uninstall the homelab, or understand every configuration option. |
+| [Guide for admins](guide-admin.md) | You want to install, configure or uninstall the homelab, or understand every configuration option. |
 | [Architecture](architecture.md) | You want to understand how the layers interoperate, how traffic flows, or how install/uninstall works. |
 | [Role readmes](#roles) | You want to understand or modify a single Ansible role. |
 
