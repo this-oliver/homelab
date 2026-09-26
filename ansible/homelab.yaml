@@ -1,7 +1,10 @@
 ---
-# Install body. Loaded by homelab.yaml, or run directly. It runs the layers in
-# dependency order so the reverse proxy is never installed before the ingress
-# gateway it fronts.
+# Install body. It runs the layers in dependency order so the reverse proxy is
+# never installed before the ingress gateway it fronts.
+
+- name: Teardown homelab cluster
+  ansible.builtin.import_playbook: homelab_uninstall.yaml
+  when: uninstall | default(false) | bool
 
 - name: Bootstrap nodes
   hosts: all
@@ -32,7 +35,7 @@
       tags: [kubernetes, kubectl, helm]
       when: not (uninstall | default(false) | bool)
 
-- name: Setup homelab controllers
+- name: Provision homelab controllers
   hosts: controllers
   vars_files:
     - config.yaml
@@ -71,7 +74,7 @@
       tags: [reverse_proxy]
       when: not (uninstall | default(false) | bool)
 
-- name: Setup homelab workers
+- name: Provision homelab workers
   hosts: workers
   vars_files:
     - config.yaml
@@ -83,7 +86,3 @@
           tags: [kubernetes, worker]
       tags: [kubernetes, worker]
       when: not (uninstall | default(false) | bool)
-
-- name: Teardown homelab cluster
-  ansible.builtin.import_playbook: homelab_uninstall.yaml
-  when: uninstall | default(false) | bool
