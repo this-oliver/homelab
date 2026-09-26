@@ -1,3 +1,7 @@
+- name: Preflight checks
+  ansible.builtin.include_tasks: ../../../tasks/preflight.yaml
+  when: not (preflight_passed | default(false) | bool)
+
 - name: Install Headlamp
   ansible.builtin.include_tasks:
     file: setup.yaml
