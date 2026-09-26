@@ -66,8 +66,8 @@ cp ansible/inventory/main.example.yaml ansible/inventory/main.yaml
 
 Ansible uses the inventory to define and group hosts (i.e. servers, computers, Raspberry Pis). A host is defined with an IP address (or domain), a port, a username and credential (password or SSH key). Our homelab relies on two types of hosts:
 
-- `controllers` - [REQUIRED] A **single** controller node that will host the Kubernetes cluster.
-- `workers` - [OPTIONAL] One or more worker nodes that add compute to the `controllers` host (i.e. the Kubernetes cluster).
+- `controller` - [REQUIRED] A **single** controller node that will host the Kubernetes cluster.
+- `workers` - [OPTIONAL] One or more worker nodes that add compute to the `controller` host (i.e. the Kubernetes cluster).
 
 ### Configure secrets
 

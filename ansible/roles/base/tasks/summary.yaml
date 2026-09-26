@@ -14,7 +14,7 @@
         cmd: kubectl version -o json
       environment:
         KUBECONFIG: "{{ base_summary_kubeconfig }}"
-      delegate_to: "{{ groups.controllers[0] }}"
+      delegate_to: "{{ groups.controller[0] }}"
       register: base_summary_api_version
       changed_when: false
       failed_when: false
@@ -25,7 +25,7 @@
         cmd: kubectl config current-context
       environment:
         KUBECONFIG: "{{ base_summary_kubeconfig }}"
-      delegate_to: "{{ groups.controllers[0] }}"
+      delegate_to: "{{ groups.controller[0] }}"
       register: base_summary_context
       changed_when: false
       failed_when: false
@@ -34,7 +34,7 @@
     - name: Get the installed Helm releases
       ansible.builtin.command:
         cmd: helm list --all-namespaces -o json
-      delegate_to: "{{ groups.controllers[0] }}"
+      delegate_to: "{{ groups.controller[0] }}"
       register: base_summary_releases
       changed_when: false
       failed_when: false
@@ -45,7 +45,7 @@
         cmd: kubectl get nodes -o json
       environment:
         KUBECONFIG: "{{ base_summary_kubeconfig }}"
-      delegate_to: "{{ groups.controllers[0] }}"
+      delegate_to: "{{ groups.controller[0] }}"
       register: base_summary_nodes
       changed_when: false
       failed_when: false
@@ -54,7 +54,7 @@
     - name: Get the deployed ingress routes
       ansible.builtin.command:
         cmd: kubectl get ingressroute.traefik.io --all-namespaces -o json
-      delegate_to: "{{ groups.controllers[0] }}"
+      delegate_to: "{{ groups.controller[0] }}"
       environment:
         KUBECONFIG: "{{ base_summary_kubeconfig }}"
       register: base_summary_routes

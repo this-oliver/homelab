@@ -13,6 +13,15 @@
 # invocation regardless of --tags, since admin credentials are required by
 # nearly every component (auth middleware, ingress, reverse proxy, etc.).
 
+- name: Assert single controller host
+  ansible.builtin.assert:
+    quiet: true
+    that:
+      - groups['controller'] is defined
+      - groups['controller'] | length == 1
+    fail_msg: |-
+      Invalid inventory: The `controller` group must contain exactly ONE host; found {{ groups['controller'] | default([]) | length }}.
+
 - name: Assert target OS is Ubuntu
   ansible.builtin.assert:
     quiet: true

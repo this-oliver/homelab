@@ -42,7 +42,7 @@ flowchart TD
 Environments it handles specially:
 
 - **Existing MicroK8s** — if the snap is already installed, install steps are skipped; the KubeConfig is still (re)written from the running cluster.
-- **Node roles** — each addon in `k8s_core_addons` carries a flag per inventory group (`controllers`, `workers`). On a controller the host is tagged `k8s_core_node_role: controllers` and only the addons with `controllers: true` are enabled; every other host is tagged `workers` and gets the `workers: true` addons. Both flags are required on every entry — a missing flag is a templating error, not a silent skip. `hostpath-storage` is controller-only because only a single node may run the hostpath provisioner.
+- **Node roles** — each addon in `k8s_core_addons` carries a flag per inventory group (`controller`, `workers`). On a controller the host is tagged `k8s_core_node_role: controller` and only the addons with `controller: true` are enabled; every other host is tagged `workers` and gets the `workers: true` addons. Both flags are required on every entry — a missing flag is a templating error, not a silent skip. `hostpath-storage` is controller-only because only a single node may run the hostpath provisioner.
 - **Raspberry Pi** — installs `linux-modules-extra-raspi` (Ubuntu < 24.04) and appends `cgroup_enable=memory cgroup_memory=1` to the boot cmdline (`/boot/firmware/cmdline.txt` / `nobtcmd.txt`), rebooting once if the parameters changed. See the [MicroK8s Raspberry Pi guide](https://canonical.com/microk8s/docs/install-raspberry-pi).
 
 ## Variables
@@ -51,7 +51,7 @@ Environments it handles specially:
 | --- | --- | --- |
 | `homelab.k8s.version` | `1.36` (from `config.yaml`) | Snap channel for MicroK8s and `kubectl` cli. |
 | `homelab.dir` | `~/homelab` (from `config.yaml`) | Parent of `~/.kube`. |
-| `k8s_core_addons` | `cis-hardening`, `dns`, `hostpath-storage`, `rbac` | MicroK8s addons enabled on first install. Each entry is `{name, controllers, workers}`; the flag matching the host's node role decides whether it is enabled there. |
+| `k8s_core_addons` | `cis-hardening`, `dns`, `hostpath-storage`, `rbac` | MicroK8s addons enabled on first install. Each entry is `{name, controller, workers}`; the flag matching the host's node role decides whether it is enabled there. |
 | `k8s_core_helm_version` | `latest/stable` | Snap channel for Helm. |
 
 ## Dependencies

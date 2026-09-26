@@ -6,7 +6,7 @@
 
 - name: Generate a one-time join token on the controller
   become: true
-  delegate_to: "{{ groups.controllers[0] }}"
+  delegate_to: "{{ groups.controller[0] }}"
   ansible.builtin.command: microk8s add-node --format short
   register: k8s_core_worker_add_node
   changed_when: k8s_core_worker_add_node.rc == 0
@@ -22,7 +22,7 @@
   become: true
   ansible.builtin.command: >-
     microk8s join
-    {{ hostvars[groups.controllers[0]].get('ansible_host', groups.controllers[0]) }}:{{ k8s_core_worker_join_port }}{{ k8s_core_worker_join_path }}
+    {{ hostvars[groups.controller[0]].get('ansible_host', groups.controller[0]) }}:{{ k8s_core_worker_join_port }}{{ k8s_core_worker_join_path }}
     --worker
   register: k8s_core_worker_join_result
   changed_when: "'Successfully joined the cluster' in k8s_core_worker_join_result.stdout"

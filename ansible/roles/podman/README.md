@@ -31,7 +31,7 @@ None.
 ## Dependencies
 
 - None at install time.
-- Consumers: `reverse_proxy` (nested role include in its setup). It runs on `controllers` hosts via the `reverse_proxy` play.
+- Consumers: `reverse_proxy` (nested role include in its setup). It runs on `controller` hosts via the `reverse_proxy` play.
 
 ## Tags
 

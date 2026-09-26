@@ -3,14 +3,14 @@ k8s_core_helm_version: latest/stable # 4.2.4
 
 k8s_core_addons:
   - name: cis-hardening
-    controllers: true
+    controller: true
     workers: true
   - name: dns
-    controllers: true
+    controller: true
     workers: true
   - name: hostpath-storage
-    controllers: true
+    controller: true
     workers: false
   - name: rbac
-    controllers: true
+    controller: true
     workers: true
