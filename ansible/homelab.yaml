@@ -15,8 +15,8 @@
       ansible.builtin.include_tasks:
         file: tasks/resolve_path.yaml
         apply:
-          tags: [untagged, base, kubernetes, kubectl, helm, worker]
-      tags: [untagged, base, kubernetes, kubectl, helm, worker]
+          tags: [base, kubernetes, kubectl, helm, worker]
+      tags: [base, kubernetes, kubectl, helm, worker]
   tasks:
     - name: Base setup
       ansible.builtin.include_role:
@@ -44,8 +44,8 @@
       ansible.builtin.include_tasks:
         file: tasks/resolve_path.yaml
         apply:
-          tags: [untagged, networking, traefik, monitor, headlamp, dashboard, trivy, reverse_proxy]
-      tags: [untagged, networking, traefik, monitor, headlamp, dashboard, trivy, reverse_proxy]
+          tags: [networking, traefik, monitor, headlamp, dashboard, trivy, reverse_proxy]
+      tags: [networking, traefik, monitor, headlamp, dashboard, trivy, reverse_proxy]
   tasks:
     - name: Network Gateway - Traefik
       ansible.builtin.include_role:

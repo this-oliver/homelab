@@ -32,8 +32,8 @@
         name: k8s_extension_headlamp
         tasks_from: teardown.yaml
         apply:
-          tags: [monitor, dashboard, headlamp, trivy]
-      tags: [monitor, dashboard, headlamp, trivy]
+          tags: [dashboard, headlamp, trivy]
+      tags: [dashboard, headlamp, trivy]
 
     - name: Network Gateway - Traefik
       ansible.builtin.include_role:

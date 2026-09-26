@@ -96,6 +96,9 @@ Install homelab on the target host:
 ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml
 ```
 
+> [!TIP]
+> You can use `--tags` to target specific installations (or uninstallations). To see the supported tags, run `ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --list-tags`.
+
 Uninstall homelab on the target host:
 
 ```bash
