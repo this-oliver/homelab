@@ -50,3 +50,11 @@
         apply:
           tags: [uninstall, kubernetes, kubectl, helm]
       tags: [uninstall, kubernetes, kubectl, helm]
+
+    - name: Homelab summary
+      ansible.builtin.include_role:
+        name: base
+        tasks_from: teardown.yaml
+        apply:
+          tags: [uninstall, summary]
+      tags: [uninstall, summary]

@@ -29,7 +29,7 @@ Every layer is an [Ansible role](#components). Installs and uninstalls live in t
 
 | Layer | Role | What it does |
 | --- | --- | --- |
-| Base | [base](ansible/roles/base/README.md) | Preflight checks, `homelab` group/user, home directory |
+| Base | [base](ansible/roles/base/README.md) | Preflight checks, `homelab` group/user, home directory, generated summary readme |
 | Kubernetes | [k8s_core](ansible/roles/k8s_core/README.md) | Kubectl + Helm CLI tools, MicroK8s cluster with hardened addons, Worker nodes for more compute |
 | Ingress | [k8s_extension_traefik](ansible/roles/k8s_extension_traefik/README.md) | Traefik ingress gateway, dashboard, rate limiting, HTTPS |
 | Monitoring | [k8s_extension_headlamp](ansible/roles/k8s_extension_headlamp/README.md) | Headlamp dashboard with Trivy vulnerability scanning |
@@ -97,6 +97,8 @@ Install homelab on the target host:
 ```bash
 ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml
 ```
+
+The last play writes a summary of what it built to `~/homelab/README.md` on the host: the dashboard URLs, the versions actually deployed, the cluster's nodes and ingress routes, and how to reach the kubeconfig. Regenerate it on its own with `--tags summary`; anything you write in its notes section survives re-runs.
 
 > [!TIP]
 > You can use `--tags` to target specific installations (or uninstallations). To see the supported tags, run `ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --list-tags`.

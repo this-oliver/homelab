@@ -12,7 +12,7 @@ This page explains *how* the homelab is wired together: how the playbooks order 
 
 ## Playbook and role ordering
 
-`ansible/homelab.yaml` is the install playbook, and the entry point: five plays, run in order, each tagged so you can install a single layer with `--tags`.
+`ansible/homelab.yaml` is the install playbook, and the entry point. It layers six components on each other, in dependency order, each tagged so you can install a single layer with `--tags`.
 
 ```mermaid
 flowchart LR
@@ -22,7 +22,7 @@ flowchart LR
         base --> preflight
     end
 
-    subgraph P2[Kubernetes - controllers]
+    subgraph P2[Kubernetes - all hosts]
         core[k8s_core<br/>MicroK8s]
     end
 
@@ -40,16 +40,23 @@ flowchart LR
         haproxy --> podman
     end
 
-    P1 --> P2 --> P3 --> P4 --> P5
+    subgraph P6[Summary - all hosts]
+        summary[base/summary.yaml<br/>generated readme]
+        query[reads the cluster live<br/>kubectl / helm / HTTP probe]
+        summary --> query
+    end
+
+    P1 --> P2 --> P3 --> P4 --> P5 --> P6
 ```
 
 Key points:
 
-- **Play 1** (`base`) runs on every host. The role has no `teardown.yaml`, so it never appears in the uninstall playbook.
-- **Play 2** installs the Kubernetes tooling (kubectl, then helm) before the cluster itself (MicroK8s), because the cluster role assumes those tools exist.
-- **Plays 3–5** each wrap a single extension role. The reverse proxy is deliberately installed last, after the Traefik NodePorts it proxies already exist.
+- **Base** runs on every host. It validates preconditions and prepares the host directory, group and basic tooling.
+- **Kubernetes** installs the Kubernetes tooling (kubectl, then helm) before the cluster itself (MicroK8s), because the cluster role assumes those tools exist.
+- **Ingress, monitoring and the reverse proxy** each wrap a single extension role and run on the controllers. The reverse proxy is deliberately installed last of those, after the Traefik NodePorts it proxies already exist.
+- **Summary** writes the generated `README.md` into `homelab.dir`. It has to run last and read the cluster live: role-local `vars/main.yaml` files only exist while their own role is executing, so by the time a final play runs there is nothing left to read but the cluster itself. See [the role readme](../ansible/roles/base/README.md) for what it queries.
 
-`ansible/homelab_uninstall.yaml` is a single play that removes the same roles in reverse dependency order, so the reverse proxy goes first and the cluster last. The work itself is not gated on a flag: `uninstall: true` is a play var of that playbook, which is what switches each role's `tasks/main.yaml` onto its teardown path.
+`ansible/homelab_uninstall.yaml` is a single play that removes the same layers in reverse dependency order, so the summary and the reverse proxy go first and the cluster last. The work itself is not gated on a flag: `uninstall: true` is a play var of that playbook, which is what switches each role's `tasks/main.yaml` onto its teardown path.
 
 The expected output (install):
 
@@ -70,11 +77,14 @@ The `uninstall` tag marks the default teardown. The Helm-managed extensions deli
 ```mermaid
 flowchart TD
     Run["homelab_uninstall.yaml"] --> Sel{which tags?}
+    Sel -- "uninstall" --> D0[base summary readme]
     Sel -- "uninstall" --> D1[reverse_proxy<br/>k8s_core<br/>helm<br/>kubectl]
     Sel -- monitor --> D2[Headlamp + Trivy releases]
     Sel -- ingress --> D3[Traefik release]
+    Sel -- summary --> D4[base summary readme]
     D2 -.->|run before this| D1
     D3 -.->|run before this| D1
+    D0 -.->|written last on install,<br/>so removed first| D1
 ```
 
 Run the opt-in teardowns first: `helm ... uninstall` (in `ansible/tasks/helm.yaml`) talks to the cluster that the default teardown deletes.
@@ -180,7 +190,7 @@ See [docs/intro.md](intro.md) for a full reference of every key.
 
 | Role | Readme |
 | --- | --- |
-| base (foundation) | [roles/base/README.md](../ansible/roles/base/README.md) |
+| base (foundation + summary) | [roles/base/README.md](../ansible/roles/base/README.md) |
 | k8s_core (MicroK8s) | [roles/k8s_core/README.md](../ansible/roles/k8s_core/README.md) |
 | k8s_extension_traefik (ingress) | [roles/k8s_extension_traefik/README.md](../ansible/roles/k8s_extension_traefik/README.md) |
 | k8s_extension_headlamp (dashboard + Trivy) | [roles/k8s_extension_headlamp/README.md](../ansible/roles/k8s_extension_headlamp/README.md) |

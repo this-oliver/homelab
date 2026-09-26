@@ -4,3 +4,9 @@
 - name: Setup homelab basics
   ansible.builtin.include_tasks: setup.yaml
   tags: [setup]
+
+- name: Uninstall homelab summary
+  when: uninstall | bool
+  ansible.builtin.include_tasks:
+    file: teardown.yaml
+  tags: [summary]
