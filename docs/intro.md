@@ -120,7 +120,7 @@ The playbook is tagged per layer:
 ```bash
 ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags base
 ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags kubernetes
-ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags networking
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags ingress
 ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags monitor
 ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags reverse_proxy
 ```
@@ -142,12 +142,7 @@ make uninstall-helm         # short for --tags helm
 
 The Helm-managed releases are **not** part of the default teardown — removing them is opt-in, one layer at a time:
 
-```bash
-make uninstall-monitor      # Headlamp + Trivy releases
-make uninstall-networking   # Traefik release
-```
-
-The underlying commands are `ansible/homelab_uninstall.yaml` with the layer tag, e.g. `--tags monitor`, `--tags networking`, `--tags helm`.
+The underlying commands are `ansible/homelab_uninstall.yaml` with the layer tag, e.g. `--tags monitor`, `--tags ingress`, `--tags helm`.
 
 > [!IMPORTANT]
 > Run those two **before** `make uninstall`. Removing a release shells out to `helm ... uninstall` against a running cluster, and the default teardown deletes that cluster.

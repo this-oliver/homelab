@@ -25,17 +25,18 @@ flowchart TD
     probe[Detect Raspberry Pi + existing microk8s] --> facts[set is_raspi / has_microk8s facts]
     facts --> kubeconfig[Create .kube dir + empty config<br/>export KUBECONFIG via /etc/environment]
     kubeconfig --> exists{has_microk8s?}
-    exists -- yes --> extract[Skip install, reuse existing snap]
+    exists -- yes --> config[extract `microk8s config`<br/>write .kube/config.yaml]
     exists -- no --> install[install snapd + microk8s snap]
     install --> start[microk8s start + wait-ready]
     start --> addons[enable addons for this node role]
-    addons --> extract
-    extract --> config[extract `microk8s config`<br/>write .kube/config.yaml]
+    addons --> config
     config --> raspi{is_raspi?}
     raspi -- yes --> cgroup[add cgroup kernel params<br/>linux-modules-extra-raspi]
     cgroup --> reboot[reboot if cmdline changed]
-    raspi -- no --> done((done))
-    reboot --> done
+    reboot --> kubectl[installs kubectl cli]
+    raspi -- no --> kubectl
+    kubectl --> helm[installs helm cli]
+    helm --> done((done))
 ```
 
 Environments it handles specially:
@@ -55,6 +56,7 @@ Environments it handles specially:
 
 ## Dependencies
 
+- `tasks/preflight.yaml`, `tasks/helm.yaml` — shared libraries.
 - Requires `snapd` (installed by the role when missing).
 
 ## Tags

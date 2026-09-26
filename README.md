@@ -1,6 +1,6 @@
 # Homelab
 
-A self-hosted homelab that provisions a single Ubuntu host into a Kubernetes cluster with a web dashboard, an ingress gateway and a firewall-tightened reverse proxy — all driven by Ansible.
+A self-hosted homelab that provisions an Ubuntu host into a Kubernetes cluster with an ingress gateway, a firewall-tightened reverse proxy and a web dashboard — all driven by Ansible.
 
 ## How it works
 
@@ -10,13 +10,16 @@ One command provisions the whole stack. Ansible connects to your host and layers
 flowchart LR
     Client[Your browser / apps] -->|HTTP and HTTPS<br/>ports 80 / 443| HAProxy[HAProxy<br/>reverse proxy]
 
-    subgraph host[Ubuntu host]
+    subgraph controller[Ubuntu - Controller Host]
         HAProxy -->|PROXY protocol| Traefik[Traefik<br/>ingress gateway]
         Traefik -->|IngressRoute| Headlamp[Headlamp<br/>web dashboard]
         Traefik -->|IngressRoute| Apps[Your apps]
-        Headlamp --> MicroK8s[MicroK8s cluster]
+        Headlamp --> MicroK8s[Kubernetes Cluster]
         Apps --> MicroK8s
-        Trivy[Trivy<br/>vulnerability scanner] --> MicroK8s
+    end
+    
+    subgraph worker[Ubuntu - Worker Hosts]
+        MicroK8s --> MicroK8sWorker[Optional Worker Nodes]
     end
 ```
 
@@ -27,8 +30,8 @@ Every layer is an [Ansible role](#components). Installs and uninstalls live in t
 | Layer | Role | What it does |
 | --- | --- | --- |
 | Base | [base](ansible/roles/base/README.md) | Preflight checks, `homelab` group/user, home directory |
-| Kubernetes | [k8s_core](ansible/roles/k8s_core/README.md) | Kubectl + Helm CLI tools, MicroK8s cluster with hardened addons |
-| Networking | [k8s_extension_traefik](ansible/roles/k8s_extension_traefik/README.md) | Traefik ingress gateway, dashboard, rate limiting, HTTPS |
+| Kubernetes | [k8s_core](ansible/roles/k8s_core/README.md) | Kubectl + Helm CLI tools, MicroK8s cluster with hardened addons, Worker nodes for more compute |
+| Ingress | [k8s_extension_traefik](ansible/roles/k8s_extension_traefik/README.md) | Traefik ingress gateway, dashboard, rate limiting, HTTPS |
 | Monitoring | [k8s_extension_headlamp](ansible/roles/k8s_extension_headlamp/README.md) | Headlamp dashboard with Trivy vulnerability scanning |
 | Reverse proxy | [reverse_proxy](ansible/roles/reverse_proxy/README.md), [podman](ansible/roles/podman/README.md) | HAProxy container as the only public entry point, locked down with iptables |
 
@@ -55,17 +58,16 @@ python3 -m pip install -r requirements.txt
 
 ### Configure the inventory
 
-> [!IMPORTANT]
-> The **controller** host group is mandatory although other groups are optional.
+Create a `ansible/inventory/main.yaml` file that defines the inventory that Ansible will use when running playbooks. Use the [`ansible/inventory/main.example.yaml`](ansible/inventory/main.example.yaml) file as an example for how the homelab expects the inventory hosts to look:
 
 ```bash
 cp ansible/inventory/main.example.yaml ansible/inventory/main.yaml
 ```
 
-Edit `ansible/inventory/main.yaml` and set the IP address (or url), `ansible_port`, `ansible_user` and `ansible_ssh_private_key_file` for your host. Remove host groups that you do not intend to use.
+Ansible uses the inventory to define and group hosts (i.e. servers, computers, Raspberry Pis). A host is defined with an IP address (or domain), a port, a username and credential (password or SSH key). Our homelab relies on two types of hosts:
 
-> [!NOTE]
-> Adding a **worker** host group will set up additional worker nodes to your cluster.
+- `controllers` - [REQUIRED] A **single** controller node that will host the Kubernetes cluster.
+- `workers` - [OPTIONAL] One or more worker nodes that add compute to the `controllers` host (i.e. the Kubernetes cluster).
 
 ### Configure secrets
 
@@ -109,7 +111,7 @@ That removes the reverse proxy, the cluster and the cluster tooling. The Helm re
 
 ```bash
 ansible-playbook -i ansible/inventory/main.yaml ansible/homelab_uninstall.yaml --tags monitor
-ansible-playbook -i ansible/inventory/main.yaml ansible/homelab_uninstall.yaml --tags networking
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab_uninstall.yaml --tags ingress
 ```
 
 ## Documentation

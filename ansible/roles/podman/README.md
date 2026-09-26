@@ -6,7 +6,7 @@ Installs the Podman container runtime on the host via `apt`.
 
 ## Why
 
-Podman is the runtime behind the HAProxy reverse proxy container. It's factored as its own role because it's a host-level dependency that other roles may adopt, and keeping container-host concerns separate from the proxy logic keeps `reverse_proxy` focused on networking.
+Podman is the runtime behind the HAProxy reverse proxy container. It's factored as its own role because it's a host-level dependency that other roles may adopt, and keeping container-host concerns separate from the proxy logic keeps `reverse_proxy` focused on ingress.
 
 ## How
 

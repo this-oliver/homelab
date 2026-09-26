@@ -2,7 +2,7 @@
 
 ## What
 
-Runs a TCP-mode HAProxy container (via Podman, host networking) on ports `80`/`443` and locks the Kubernetes ingress NodePorts (`30080`/`30443`) down to that proxy with iptables. HAProxy forwards every connection to Traefik using the PROXY protocol.
+Runs a TCP-mode HAProxy container (via Podman, host ingress) on ports `80`/`443` and locks the Kubernetes ingress NodePorts (`30080`/`30443`) down to that proxy with iptables. HAProxy forwards every connection to Traefik using the PROXY protocol.
 
 ## Why
 

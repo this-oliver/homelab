@@ -2,7 +2,7 @@
 
 ## What
 
-Bootstraps the target host before anything else is installed: runs the mandatory preflight checks, creates the shared `homelab` group, adds the connecting user to it, creates the homelab directory and installs basic system tools (`curl`).
+Bootstraps the target host before anything else is installed: runs the mandatory preflight checks, creates the shared `homelab` group, adds the connecting user to it, creates the homelab directory and installs basic system tools.
 
 ## Why
 
@@ -33,8 +33,6 @@ The install playbook invokes this role unconditionally:
 ```
 
 ## Variables
-
-None (role-local). It consumes `homelab.dir` from `config.yaml`.
 
 | Variable | Source | Description |
 | --- | --- | --- |

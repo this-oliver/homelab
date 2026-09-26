@@ -49,13 +49,13 @@ See [tasks/helm.yaml](../../tasks/helm.yaml) for the shared `helm_release` contr
 
 ## Tags
 
-- `networking`
+- `ingress`
 - `traefik`
 
 ```bash
-ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags networking
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags ingress
 ```
 
 ## Uninstall
 
-Uninstalls the `traefik` Helm release (and its namespace artifacts) via the shared `tasks/helm.yaml`. Opt-in, not part of the default teardown: it is tagged `networking` without the `uninstall` tag, so run `--tags networking` (or `make uninstall-networking`) before the default teardown — `helm ... uninstall` needs the cluster that `k8s_core` removes, and the reverse proxy depends on these NodePorts.
+Uninstalls the `traefik` Helm release (and its namespace artifacts) via the shared `tasks/helm.yaml`. Opt-in, not part of the default teardown: it is tagged `ingress` without the `uninstall` tag, so run `--tags ingress`  before the default teardown — `helm ... uninstall` needs the cluster that `k8s_core` removes, and the reverse proxy depends on these NodePorts.
