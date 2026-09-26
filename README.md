@@ -31,7 +31,7 @@ Every layer is an [Ansible role](#components). Installs and uninstalls live in t
 | --- | --- | --- |
 | Base | [base](ansible/roles/base/README.md) | Preflight checks, `homelab` group/user, home directory |
 | Kubernetes | [k8s_core](ansible/roles/k8s_core/README.md) | Kubectl + Helm CLI tools, MicroK8s cluster with hardened addons, Worker nodes for more compute |
-| Networking | [k8s_extension_traefik](ansible/roles/k8s_extension_traefik/README.md) | Traefik ingress gateway, dashboard, rate limiting, HTTPS |
+| Ingress | [k8s_extension_traefik](ansible/roles/k8s_extension_traefik/README.md) | Traefik ingress gateway, dashboard, rate limiting, HTTPS |
 | Monitoring | [k8s_extension_headlamp](ansible/roles/k8s_extension_headlamp/README.md) | Headlamp dashboard with Trivy vulnerability scanning |
 | Reverse proxy | [reverse_proxy](ansible/roles/reverse_proxy/README.md), [podman](ansible/roles/podman/README.md) | HAProxy container as the only public entry point, locked down with iptables |
 
@@ -111,7 +111,7 @@ That removes the reverse proxy, the cluster and the cluster tooling. The Helm re
 
 ```bash
 ansible-playbook -i ansible/inventory/main.yaml ansible/homelab_uninstall.yaml --tags monitor
-ansible-playbook -i ansible/inventory/main.yaml ansible/homelab_uninstall.yaml --tags networking
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab_uninstall.yaml --tags ingress
 ```
 
 ## Documentation

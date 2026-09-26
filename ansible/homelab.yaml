@@ -44,16 +44,16 @@
       ansible.builtin.include_tasks:
         file: tasks/resolve_path.yaml
         apply:
-          tags: [networking, traefik, monitor, headlamp, dashboard, trivy, reverse_proxy]
-      tags: [networking, traefik, monitor, headlamp, dashboard, trivy, reverse_proxy]
+          tags: [ingress, traefik, monitor, headlamp, dashboard, trivy, reverse_proxy]
+      tags: [ingress, traefik, monitor, headlamp, dashboard, trivy, reverse_proxy]
   tasks:
-    - name: Network Gateway - Traefik
+    - name: Ingress Gateway - Traefik
       ansible.builtin.include_role:
         name: k8s_extension_traefik
         tasks_from: setup.yaml
         apply:
-          tags: [networking, traefik]
-      tags: [networking, traefik]
+          tags: [ingress, traefik]
+      tags: [ingress, traefik]
       when: not (uninstall | default(false) | bool)
 
     - name: Dashboard - Headlamp

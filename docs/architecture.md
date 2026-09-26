@@ -72,7 +72,7 @@ flowchart TD
     Run["homelab_uninstall.yaml"] --> Sel{which tags?}
     Sel -- "uninstall" --> D1[reverse_proxy<br/>k8s_core<br/>helm<br/>kubectl]
     Sel -- monitor --> D2[Headlamp + Trivy releases]
-    Sel -- networking --> D3[Traefik release]
+    Sel -- ingress --> D3[Traefik release]
     D2 -.->|run before this| D1
     D3 -.->|run before this| D1
 ```
@@ -81,7 +81,7 @@ Run the opt-in teardowns first: `helm ... uninstall` (in `ansible/tasks/helm.yam
 
 ### Two playbooks, no selector flag
 
-Which direction you want is decided by *which playbook you run*, not by a variable: `ansible/homelab.yaml` installs, `ansible/homelab_uninstall.yaml` tears down. Inside a playbook, tags pick the layer (`--tags networking`, `--tags uninstall`, ...). Nothing reads `uninstall` to choose a playbook, so a run never loads the other direction's tasks and never prints a skipped-task line for them.
+Which direction you want is decided by *which playbook you run*, not by a variable: `ansible/homelab.yaml` installs, `ansible/homelab_uninstall.yaml` tears down. Inside a playbook, tags pick the layer (`--tags ingress`, `--tags uninstall`, ...). Nothing reads `uninstall` to choose a playbook, so a run never loads the other direction's tasks and never prints a skipped-task line for them.
 
 The one place the flag is still honoured is inside the roles: `homelab_uninstall.yaml` sets `uninstall: true` as a play var, which is what switches each role's `tasks/main.yaml` onto its teardown path. The same variable on `homelab.yaml` is a mistake, so its first task rejects it — tagged `always` so a tag filter cannot skip past the check:
 

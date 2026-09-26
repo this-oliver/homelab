@@ -47,7 +47,7 @@ The playbooks reference roles by name (`include_role: name: base`), resolved fro
 Two rules keep the runs quiet:
 
 1. **No playbook dispatches on the `uninstall` flag.** Which playbook you want is the whole point of having two of them: `homelab.yaml` installs, `homelab_uninstall.yaml` tears down. `homelab_uninstall.yaml` sets `uninstall: true` as a play var, and neither playbook gates its own tasks on the flag, so a run only executes the work you asked for. Opt a teardown out of the default run by leaving the `uninstall` tag off the task, not by adding a `when`. `homelab.yaml` fails fast on `-e uninstall=true` (the first task of the first play, tagged `always` so a tag filter cannot skip it) — keep that guard, and keep the playbooks independent, so neither one can be made to run the other's direction.
-2. **Layer selection is tags, not flags.** `--tags base`, `--tags networking`, `--tags uninstall` etc. This is why a tag filter is safe at all: an untagged task would be *skipped* by any filter, so tag every play, `pre_tasks` entry, `include_role` and `apply` block.
+2. **Layer selection is tags, not flags.** `--tags base`, `--tags ingress`, `--tags uninstall` etc. This is why a tag filter is safe at all: an untagged task would be *skipped* by any filter, so tag every play, `pre_tasks` entry, `include_role` and `apply` block.
 
 ## Role conventions
 
@@ -84,7 +84,7 @@ Every role must follow the same structure:
 
 ## Tags
 
-- Every play and role is tagged with its layer: `base`, `kubernetes`, `networking`, `monitor`, `reverse_proxy`, plus component tags (`kubectl`, `helm`, `traefik`, `headlamp`, `dashboard`, `trivy`). `ansible/homelab.yaml` and `ansible/homelab_uninstall.yaml` share that vocabulary, so `make kubernetes` and `make uninstall-kubernetes` mean the same layer.
+- Every play and role is tagged with its layer: `base`, `kubernetes`, `ingress`, `monitor`, `reverse_proxy`, plus component tags (`kubectl`, `helm`, `traefik`, `headlamp`, `dashboard`, `trivy`). `ansible/homelab.yaml` and `ansible/homelab_uninstall.yaml` share that vocabulary, so `make kubernetes` and `make uninstall-kubernetes` mean the same layer.
 - In the uninstall playbook the `uninstall` tag marks the default teardown. A role without that tag is opt-in, reached only by passing its own layer tag.
 - Tag your additions so `make kubernetes`, `make monitor`, etc. keep working. Every `include_role` needs the same tag list on `tags:` and on `apply.tags:` — the first gates whether the role is included, the second stamps the tag onto the role's own tasks.
 - **`apply` goes inside the include's arguments**, at the same indent as `name:`/`file:`, not as a sibling of the module key. It is an argument of `include_role`/`include_tasks` (ansible reads it from `task.args`), and as a sibling it is a hard parse error: `conflicting action statements: ansible.builtin.include_role, apply`.

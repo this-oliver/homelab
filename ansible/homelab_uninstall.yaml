@@ -35,13 +35,13 @@
           tags: [dashboard, headlamp, trivy]
       tags: [dashboard, headlamp, trivy]
 
-    - name: Network Gateway - Traefik
+    - name: Ingress Gateway - Traefik
       ansible.builtin.include_role:
         name: k8s_extension_traefik
         tasks_from: teardown.yaml
         apply:
-          tags: [networking, traefik]
-      tags: [networking, traefik]
+          tags: [ingress, traefik]
+      tags: [ingress, traefik]
 
     - name: Kubernetes
       ansible.builtin.include_role:
