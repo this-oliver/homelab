@@ -1,8 +1,19 @@
+- name: Check whether Podman is installed
+  become: true
+  ansible.builtin.command:
+    cmd: command -v podman
+  register: reverse_proxy_podman_bin
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
 - name: Stop and remove HAProxy container
   become: true
   containers.podman.podman_container:
-    name: "{{ reverse_proxy_config.container.image }}"
+    name: "{{ reverse_proxy_config.container.name }}"
+    image: "{{ reverse_proxy_config.container.image }}"
     state: absent
+  when: reverse_proxy_podman_bin.rc == 0
 
 - name: Remove HAProxy config directory
   ansible.builtin.file:
