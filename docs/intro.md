@@ -72,7 +72,7 @@ The list of hosts is inventory; everything else about *what* gets installed live
 | `homelab.domain.https.enabled` | no | `true` | Whether to serve the domain over HTTPS (requires a valid `https.email`). |
 | `homelab.domain.https.email` | no | from env | Email used by Let's Encrypt for certificate management. Required if HTTPS is enabled and a domain is set. |
 | `homelab.security.trivy.enabled` | no | `true` | Install the Trivy operator and surface scan results in the Headlamp dashboard. |
-| `uninstall` | no | `false` | Set to `true` to tear the stack down instead of installing it. |
+| `uninstall` | no | `false` | Internal. Selects each role's `setup` or `teardown` path. `ansible/homelab_uninstall.yaml` sets it to `true` for you; leave it alone. |
 
 ### 4. Configure environmental variables (secrets)
 
@@ -101,6 +101,8 @@ export $(cat .env | tr '\n' ' ')
 
 ## Usage
 
+Two playbooks do the work: `ansible/homelab.yaml` provisions the stack and `ansible/homelab_uninstall.yaml` tears it down. Neither one gates its own tasks on a flag, so a run only executes the half you asked for.
+
 ### Install
 
 Install (or update) the full stack on the target host:
@@ -109,22 +111,11 @@ Install (or update) the full stack on the target host:
 ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml
 ```
 
-The playbook runs the plays in dependency order, so the reverse proxy is never installed before the ingress gateway it protects.
+The install playbook runs its plays in dependency order, so the reverse proxy is never installed before the ingress gateway it protects.
 
 ### Install individual layers
 
-The playbook is tagged per layer, and a `makefile` wraps the common combinations:
-
-```bash
-make base          # preflight checks + base system setup
-make kubernetes    # kubectl, helm, MicroK8s
-make networking    # Traefik ingress gateway
-make monitor       # Headlamp dashboard + Trivy
-make reverse_proxy # HAProxy reverse proxy + podman
-make all           # everything (equivalent to the plain command above)
-```
-
-The underlying tagged commands are:
+The playbook is tagged per layer:
 
 ```bash
 ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags base
@@ -136,19 +127,35 @@ ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags reve
 
 ### Uninstall
 
-Uninstall the full stack:
+Uninstall the reverse proxy, the cluster and the cluster tooling:
 
 ```bash
-ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml -e uninstall=true
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab_uninstall.yaml --tags uninstall
 ```
 
 Or uninstall a single layer:
 
 ```bash
-make uninstall-kubernetes   # short for --tags kubernetes -e uninstall=true
+make uninstall-kubernetes   # short for --tags kubernetes
+make uninstall-helm         # short for --tags helm
 ```
 
-The `base` role has no teardown — it is the foundation everything else assumes.
+The Helm-managed releases are **not** part of the default teardown — removing them is opt-in, one layer at a time:
+
+```bash
+make uninstall-monitor      # Headlamp + Trivy releases
+make uninstall-networking   # Traefik release
+```
+
+The underlying commands are `ansible/homelab_uninstall.yaml` with the layer tag, e.g. `--tags monitor`, `--tags networking`, `--tags helm`.
+
+> [!IMPORTANT]
+> Run those two **before** `make uninstall`. Removing a release shells out to `helm ... uninstall` against a running cluster, and the default teardown deletes that cluster.
+
+The `base` role has no teardown — it is the foundation everything else assumes, so it is never removed.
+
+> [!NOTE]
+> The two playbooks are independent: `homelab.yaml` installs, `homelab_uninstall.yaml` tears down, and tags pick the layer within each. There is no flag that switches direction — an old script that still passes `-e uninstall=true` to `homelab.yaml` fails immediately and points here.
 
 ### After install
 
@@ -177,6 +184,7 @@ kubectl apply -f docs/examples/demo.yaml
 - **`Unsupported operating system`** — the playbook only supports Ubuntu. Check the host's distribution and version.
 - **HTTPS fail without an email** — setting `homelab.domain.url` with HTTPS enabled requires `HOMELAB_DOMAIN_HTTPS_EMAIL`. Disable HTTPS or provide the email.
 - **Changes appear not to apply** — MicroK8s roles skip install when the snap already exists (`has_microk8s`). To re-provision, uninstall that layer first, then install again.
+- **`ansible/homelab.yaml` fails with "`uninstall` is not a switch on this playbook"** — expected: you (or an old script) passed `-e uninstall=true`. Teardown is `ansible/homelab_uninstall.yaml --tags uninstall`; drop the flag.
 
 ## Next steps
 

@@ -1,5 +1,12 @@
 ---
-- name: Bootstrap all nodes
+# Install body. It runs the layers in dependency order so the reverse proxy is
+# never installed before the ingress gateway it fronts.
+
+- name: Teardown homelab cluster
+  ansible.builtin.import_playbook: homelab_uninstall.yaml
+  when: uninstall | default(false) | bool
+
+- name: Bootstrap nodes
   hosts: all
   vars_files:
     - config.yaml
@@ -8,50 +15,27 @@
       ansible.builtin.include_tasks:
         file: tasks/resolve_path.yaml
         apply:
-          tags: [base]
-      tags: [base]
+          tags: [base, kubernetes, kubectl, helm, worker]
+      tags: [base, kubernetes, kubectl, helm, worker]
   tasks:
-    - name: Basic
-      when: not (uninstall | bool)
+    - name: Base setup
       ansible.builtin.include_role:
         name: base
         apply:
           tags: [base]
       tags: [base]
+      when: not (uninstall | default(false) | bool)
 
-- name: Provision kubernetes
-  hosts: controllers,workers
-  vars_files:
-    - config.yaml
-  pre_tasks:
-    - name: Resolve homelab directory to an absolute path
-      ansible.builtin.include_tasks:
-        file: tasks/resolve_path.yaml
+    - name: Kubernetes
+      ansible.builtin.include_role:
+        name: k8s_core
+        tasks_from: setup.yaml
         apply:
           tags: [kubernetes, kubectl, helm]
       tags: [kubernetes, kubectl, helm]
-  tasks:
-    - name: Install Kubernetes base
-      when: not (uninstall | bool)
-      block:
-        - name: Kubernetes
-          ansible.builtin.include_role:
-            name: k8s_core
-            apply:
-              tags: [kubernetes, kubectl, helm]
-          tags: [kubernetes, kubectl, helm]
+      when: not (uninstall | default(false) | bool)
 
-    - name: Uninstall Kubernetes base
-      when: uninstall | bool
-      block:
-        - name: Kubernetes
-          ansible.builtin.include_role:
-            name: k8s_core
-            apply:
-              tags: [kubernetes, kubectl, helm]
-          tags: [kubernetes, kubectl, helm]
-
-- name: Provision networking stack
+- name: Provision homelab controllers
   hosts: controllers
   vars_files:
     - config.yaml
@@ -60,81 +44,45 @@
       ansible.builtin.include_tasks:
         file: tasks/resolve_path.yaml
         apply:
-          tags: [networking]
-      tags: [networking]
+          tags: [networking, traefik, monitor, headlamp, dashboard, trivy, reverse_proxy]
+      tags: [networking, traefik, monitor, headlamp, dashboard, trivy, reverse_proxy]
   tasks:
-    - name: Install networking stack
-      when: not (uninstall | bool)
-      block:
-        - name: Traefik
-          ansible.builtin.include_role:
-            name: k8s_extension_traefik
-            apply:
-              tags: [networking, traefik]
+    - name: Network Gateway - Traefik
+      ansible.builtin.include_role:
+        name: k8s_extension_traefik
+        tasks_from: setup.yaml
+        apply:
           tags: [networking, traefik]
+      tags: [networking, traefik]
+      when: not (uninstall | default(false) | bool)
 
-- name: Provision monitoring
-  hosts: controllers
-  vars_files:
-    - config.yaml
-  pre_tasks:
-    - name: Resolve homelab directory to an absolute path
-      ansible.builtin.include_tasks:
-        file: tasks/resolve_path.yaml
+    - name: Dashboard - Headlamp
+      ansible.builtin.include_role:
+        name: k8s_extension_headlamp
+        tasks_from: setup.yaml
         apply:
-          tags: [monitor]
-      tags: [monitor]
-  tasks:
-    - name: Monitoring
-      block:
-        - name: Headlamp dashboard for kubernetes
-          ansible.builtin.include_role:
-            name: k8s_extension_headlamp
-            apply:
-              tags: [monitor, headlamp, dashboard, trivy]
           tags: [monitor, headlamp, dashboard, trivy]
+      tags: [monitor, headlamp, dashboard, trivy]
+      when: not (uninstall | default(false) | bool)
 
-- name: Provision reverse proxy
-  hosts: controllers
-  vars_files:
-    - config.yaml
-  pre_tasks:
-    - name: Resolve homelab directory to an absolute path
-      ansible.builtin.include_tasks:
-        file: tasks/resolve_path.yaml
+    - name: Reverse proxy
+      ansible.builtin.include_role:
+        name: reverse_proxy
+        tasks_from: setup.yaml
         apply:
           tags: [reverse_proxy]
       tags: [reverse_proxy]
-  tasks:
-    - name: Install reverse proxy
-      when: not (uninstall | bool)
-      block:
-        - name: Reverse proxy
-          ansible.builtin.include_role:
-            name: reverse_proxy
-            apply:
-              tags: [reverse_proxy]
-          tags: [reverse_proxy]
+      when: not (uninstall | default(false) | bool)
 
-    - name: Uninstall reverse proxy
-      when: uninstall | bool
-      block:
-        - name: Reverse proxy
-          ansible.builtin.include_role:
-            name: reverse_proxy
-            apply:
-              tags: [reverse_proxy]
-          tags: [reverse_proxy]
-
-- name: Provision workers
+- name: Provision homelab workers
   hosts: workers
   vars_files:
     - config.yaml
   tasks:
     - name: Join worker node to the cluster
-      when: not (uninstall | bool)
       ansible.builtin.include_tasks:
         file: roles/k8s_core/tasks/worker.yaml
         apply:
           tags: [kubernetes, worker]
       tags: [kubernetes, worker]
+      when: not (uninstall | default(false) | bool)

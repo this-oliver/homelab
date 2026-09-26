@@ -24,11 +24,10 @@ flowchart TD
 
 Preflight always runs (tagged `always`), so even targeted runs like `--tags traefik` still gate on Ubuntu, admin credentials, a valid domain URL and a valid HTTPS email.
 
-The playbook only invokes this role when `uninstall` is false:
+The install playbook invokes this role unconditionally:
 
 ```yaml
 - name: Basic
-  when: not (uninstall | bool)
   ansible.builtin.include_role:
     name: base
 ```
@@ -57,4 +56,4 @@ ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags base
 
 ## Uninstall
 
-None. The base layer is the foundation the whole stack assumes; it has no `teardown.yaml` and is never run with the `uninstall` flag. To reclaim the host, wipe it or reinstall the OS.
+None. The base layer is the foundation the whole stack assumes; it has no `teardown.yaml` and is not listed in `ansible/homelab_uninstall.yaml` at all. To reclaim the host, wipe it or reinstall the OS.

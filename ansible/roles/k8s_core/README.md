@@ -69,4 +69,4 @@ ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags kube
 
 ## Uninstall
 
-Removes the `microk8s` snap, the `kubectl` cli, the `helm` cli and deletes the KubeConfig file (`{{ homelab.dir }}/.kube/config.yaml`). In the playbook this runs before the CLI tooling is removed, so the cluster is always uninstalled cleanly.
+Removes the `microk8s` snap, the `kubectl` cli, the `helm` cli and deletes the KubeConfig file (`{{ homelab.dir }}/.kube/config.yaml`). In the playbook this runs, as art of the default teardown (`--tags uninstall`), before the CLI tooling is removed, so the cluster is always uninstalled cleanly.

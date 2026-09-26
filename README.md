@@ -20,7 +20,7 @@ flowchart LR
     end
 ```
 
-Every layer is an [Ansible role](#components). Each role can be installed or uninstalled independently via an `uninstall` flag and `--tags`. See [docs/architecture.md](docs/architecture.md) for the full breakdown.
+Every layer is an [Ansible role](#components). Installs and uninstalls live in two separate playbooks, and each role is targeted with `--tags`. See [docs/architecture.md](docs/architecture.md) for the full breakdown.
 
 ## Components
 
@@ -96,13 +96,21 @@ Install homelab on the target host:
 ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml
 ```
 
+> [!TIP]
+> You can use `--tags` to target specific installations (or uninstallations). To see the supported tags, run `ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --list-tags`.
+
 Uninstall homelab on the target host:
 
 ```bash
-ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml -e uninstall=true
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab_uninstall.yaml --tags uninstall
 ```
 
-The repo also ships a `makefile` for targeting individual layers (e.g. `make networking`). See [docs/intro.md#usage](docs/intro.md#usage) for details.
+That removes the reverse proxy, the cluster and the cluster tooling. The Helm releases (Headlamp, Trivy, Traefik) are opt-in and need a live cluster, so remove them first:
+
+```bash
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab_uninstall.yaml --tags monitor
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab_uninstall.yaml --tags networking
+```
 
 ## Documentation
 

@@ -1,17 +1,18 @@
 # Architecture
 
-This page explains *how* the homelab is wired together: how the playbook orders its roles, how a request flows from the internet into a pod, and how uninstall reverses the whole thing.
+This page explains *how* the homelab is wired together: how the playbooks order their roles, how a request flows from the internet into a pod, and how uninstall reverses the whole thing.
 
 ## Design goals
 
 - **One host, many layers.** Everything runs on a single Ubuntu host. Kubernetes, the ingress gateway, the dashboards and the reverse proxy are distinct layers with clearly separated responsibilities.
-- **Deterministic install and uninstall.** A single `uninstall` flag (`ansible/config.yaml`) toggles every role between its `setup` and `teardown` task files. No manual cleanup.
+- **Deterministic install and uninstall.** Every role has a `setup` and a `teardown` task file, and the `uninstall` flag in `ansible/config.yaml` picks between them. No manual cleanup.
+- **One playbook per direction.** `ansible/homelab.yaml` installs and `ansible/homelab_uninstall.yaml` tears down. Neither one gates the other's work on a flag, so a run executes only what you asked for instead of skipping half the tasks.
 - **Central configuration.** Host identity lives in the Ansible inventory; *what* gets installed lives in `ansible/config.yaml`; *secrets* live only in environment variables.
 - **Defense in depth.** The only public entry point is an HAProxy container. Kubernetes NodePorts are firewalled to loopback, and dashboards are behind basic auth.
 
 ## Playbook and role ordering
 
-`ansible/homelab.yaml` is one playbook, five plays, run in order. Each play is tagged so you can install (or uninstall) a single layer with `--tags`.
+`ansible/homelab.yaml` is the install playbook, and the entry point: five plays, run in order, each tagged so you can install a single layer with `--tags`.
 
 ```mermaid
 flowchart LR
@@ -44,15 +45,57 @@ flowchart LR
 
 Key points:
 
-- **Play 1** (`base`) runs on every host and is guarded by `when: not (uninstall | bool)` at the play level — the base layer is never uninstalled.
-- **Play 2** installs the Kubernetes tooling (kubectl, then helm) before the cluster itself (MicroK8s), because the cluster role assumes those tools exist. On uninstall the order reverses: MicroK8s first, then the tools are removed.
+- **Play 1** (`base`) runs on every host. The role has no `teardown.yaml`, so it never appears in the uninstall playbook.
+- **Play 2** installs the Kubernetes tooling (kubectl, then helm) before the cluster itself (MicroK8s), because the cluster role assumes those tools exist.
 - **Plays 3–5** each wrap a single extension role. The reverse proxy is deliberately installed last, after the Traefik NodePorts it proxies already exist.
+
+`ansible/homelab_uninstall.yaml` is a single play that removes the same roles in reverse dependency order, so the reverse proxy goes first and the cluster last. The work itself is not gated on a flag: `uninstall: true` is a play var of that playbook, which is what switches each role's `tasks/main.yaml` onto its teardown path.
 
 The expected output (install):
 
 ```bash
 ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml
 ```
+
+The expected output (uninstall):
+
+```bash
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab_uninstall.yaml --tags uninstall
+```
+
+### Which teardowns run by default
+
+The `uninstall` tag marks the default teardown. The Helm-managed extensions deliberately do not carry it, so a plain `--tags uninstall` run leaves them alone and they are removed only when their own tag is passed:
+
+```mermaid
+flowchart TD
+    Run["homelab_uninstall.yaml"] --> Sel{which tags?}
+    Sel -- "uninstall" --> D1[reverse_proxy<br/>k8s_core<br/>helm<br/>kubectl]
+    Sel -- monitor --> D2[Headlamp + Trivy releases]
+    Sel -- networking --> D3[Traefik release]
+    D2 -.->|run before this| D1
+    D3 -.->|run before this| D1
+```
+
+Run the opt-in teardowns first: `helm ... uninstall` (in `ansible/tasks/helm.yaml`) talks to the cluster that the default teardown deletes.
+
+### Two playbooks, no selector flag
+
+Which direction you want is decided by *which playbook you run*, not by a variable: `ansible/homelab.yaml` installs, `ansible/homelab_uninstall.yaml` tears down. Inside a playbook, tags pick the layer (`--tags networking`, `--tags uninstall`, ...). Nothing reads `uninstall` to choose a playbook, so a run never loads the other direction's tasks and never prints a skipped-task line for them.
+
+The one place the flag is still honoured is inside the roles: `homelab_uninstall.yaml` sets `uninstall: true` as a play var, which is what switches each role's `tasks/main.yaml` onto its teardown path. The same variable on `homelab.yaml` is a mistake, so its first task rejects it — tagged `always` so a tag filter cannot skip past the check:
+
+```yaml
+- name: Refuse to tear down from the install playbook
+  ansible.builtin.fail:
+    msg: >-
+      `uninstall` is not a switch on this playbook. To remove the stack, run
+      ansible-playbook -i <inventory> ansible/homelab_uninstall.yaml --tags uninstall
+  when: uninstall | bool
+  tags: [always]
+```
+
+Without it, `homelab.yaml -e uninstall=true` would not be a harmless no-op: every role would run its teardown in *install* order, so the cluster would be deleted before the Helm releases that need it, and the reverse proxy would be left running.
 
 ## Request flow
 
@@ -79,12 +122,14 @@ Every role follows the same dispatch pattern in its `main.yaml`:
 
 ```mermaid
 flowchart TD
-    Run[Playbook runs a role] --> Gate{uninstall flag?}
+    Run[Playbook includes a role] --> Gate{uninstall flag?}
     Gate -- false --> Setup[include_tasks setup.yaml]
     Gate -- true --> Teardown[include_tasks teardown.yaml]
     Setup --> Done((Done))
     Teardown --> Done
 ```
+
+The flag is a play var, so the branch is picked once per playbook rather than per task — and the roles are shared by both playbooks, which is why no task needs a `when` of its own.
 
 Helm-managed components (Traefik, Headlamp, Trivy) share `ansible/tasks/helm.yaml`, which is idempotent: it checks whether the Helm repo/release already exists and only installs or uninstalls when something needs to change.
 
@@ -111,13 +156,13 @@ Configuration is split by sensitivity:
 ```mermaid
 flowchart TB
     Env[.env / environment variables] --> Config[ansible/config.yaml parses lookups]
-    Inv[ansible/inventory/main.yaml] --> Playbook[ansible/homelab.yaml]
+    Inv[ansible/inventory/main.yaml] --> Playbook[ansible/homelab.yaml<br/>ansible/homelab_uninstall.yaml]
     Config --> Playbook
     Playbook --> Roles[ansible/roles]
 ```
 
 - **`ansible/inventory/main.yaml`** — which hosts get which services (`controllers` group).
-- **`ansible/config.yaml`** — non-secret settings (`homelab.dir`, `homelab.k8s.version`, domain, security toggles). Secret fields are `lookup`ed from the environment rather than hard-coded.
+- **`ansible/config.yaml`** — non-secret settings (`homelab.dir`, `homelab.k8s.version`, domain, security toggles, and the `uninstall` flag that selects each role's setup or teardown path). Secret fields are `lookup`ed from the environment rather than hard-coded.
 - **`.env`** — the actual secrets: `HOMELAB_ADMIN_*` (required) and `HOMELAB_DOMAIN_*`, `HOMELAB_SECURITY_TRIVY_ENABLED` (optional). Applied to the playbook session via `export`.
 
 See [docs/intro.md](intro.md) for a full reference of every key.

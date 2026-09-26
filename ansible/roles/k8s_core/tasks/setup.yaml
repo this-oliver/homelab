@@ -163,7 +163,7 @@
   block:
     - name: Check if helm is installed
       ansible.builtin.command: which helm
-      register: k8s_tool_helm_installed
+      register: k8s_core_helm_installed
       failed_when: false
       changed_when: false
       check_mode: false
@@ -174,4 +174,4 @@
         classic: true
         channel: "{{ k8s_core_helm_version }}"
         name: helm
-      when: k8s_tool_helm_installed.stdout == ''
+      when: k8s_core_helm_installed.stdout == ''
