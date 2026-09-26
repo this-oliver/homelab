@@ -25,7 +25,7 @@ Each role lives in its own directory with a self-contained `README.md`.
 
 | Role | Responsibility |
 | --- | --- |
-| [base](../ansible/roles/base/README.md) | Preflight checks and host foundation (group, user, directory) |
+| [base](../ansible/roles/base/README.md) | Preflight checks and host foundation (group, user, directory), plus the generated summary readme |
 | [k8s_core](../ansible/roles/k8s_core/README.md) | MicroK8s cluster, addons, kubeconfig, Kubectl CLI, Helm CLI via snap |
 | [k8s_extension_traefik](../ansible/roles/k8s_extension_traefik/README.md) | Traefik ingress gateway and dashboard |
 | [k8s_extension_headlamp](../ansible/roles/k8s_extension_headlamp/README.md) | Headlamp dashboard + Trivy vulnerability scanning |

@@ -86,3 +86,24 @@
           tags: [kubernetes, worker]
       tags: [kubernetes, worker]
       when: not (uninstall | default(false) | bool)
+
+- name: Publish homelab summary
+  hosts: all
+  vars_files:
+    - config.yaml
+  pre_tasks:
+    - name: Resolve homelab directory to an absolute path
+      ansible.builtin.include_tasks:
+        file: tasks/resolve_path.yaml
+        apply:
+          tags: [summary]
+      tags: [summary]
+  tasks:
+    - name: Homelab summary
+      ansible.builtin.include_role:
+        name: base
+        tasks_from: summary.yaml
+        apply:
+          tags: [summary]
+      tags: [summary]
+      when: not (uninstall | default(false) | bool)

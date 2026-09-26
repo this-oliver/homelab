@@ -9,6 +9,7 @@ This guide takes you from nothing to a running homelab. The [README](../README.m
 - A Traefik ingress gateway with a password-protected dashboard
 - A Headlamp web dashboard with Trivy vulnerability scanning
 - An HAProxy reverse proxy as the only entry from the internet, locked to loopback ports with iptables
+- A generated `~/homelab/README.md` summarising the URLs, versions and topology of what was installed
 
 Everything is declared in Ansible, so the same commands install, update and remove the stack in a repeatable order.
 
@@ -125,6 +126,8 @@ ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags moni
 ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags reverse_proxy
 ```
 
+The full run also writes the summary readme; to regenerate just that, use `--tags summary`.
+
 ### Uninstall
 
 Uninstall the reverse proxy, the cluster and the cluster tooling:
@@ -147,12 +150,24 @@ The underlying commands are `ansible/homelab_uninstall.yaml` with the layer tag,
 > [!IMPORTANT]
 > Run those two **before** `make uninstall`. Removing a release shells out to `helm ... uninstall` against a running cluster, and the default teardown deletes that cluster.
 
-The `base` role has no teardown — it is the foundation everything else assumes, so it is never removed.
+The `base` role's teardown removes only the generated summary readme. The `homelab` group and directory are the foundation everything else assumes, so they are never removed.
 
 > [!NOTE]
 > The two playbooks are independent: `homelab.yaml` installs, `homelab_uninstall.yaml` tears down, and tags pick the layer within each. There is no flag that switches direction — an old script that still passes `-e uninstall=true` to `homelab.yaml` fails immediately and points here.
 
 ### After install
+
+The last play writes a summary of what it just built to `~/homelab/README.md` on the controller: the dashboard URLs, the versions actually deployed, the cluster's nodes and its ingress routes, and how to reach the kubeconfig. Open it on the host:
+
+```bash
+cat ~/homelab/README.md
+```
+
+Everything above the notes section at the bottom is regenerated on every run; anything you write between the two `notes` markers survives. Regenerate it on its own without touching the rest of the stack:
+
+```bash
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags summary
+```
 
 Your host now runs MicroK8s. Point `kubectl` at it by exporting the kubeconfig on the host:
 
@@ -165,7 +180,7 @@ Dashboards:
 - **Traefik** — `http://<host>/traefik/dashboard/` (or `https://<domain>/traefik/`)
 - **Headlamp** — `http://<host>/dashboard/` (or `https://<domain>/dashboard/`)
 
-Both are protected by the admin credentials from `ansible/config.yaml`.
+The Traefik dashboard is behind the basic auth built from `homelab.admin.*`. Headlamp has its own login and asks for cluster credentials on first visit.
 
 Try deploying the bundled example app to confirm the ingress path works end to end:
 

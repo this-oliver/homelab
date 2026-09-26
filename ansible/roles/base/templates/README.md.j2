@@ -1,0 +1,138 @@
+{%- set node_type = 'controller' if base_summary_host_type == 'controllers' else 'worker' -%}
+{%- set api_stdout = base_summary_api_version.stdout | default('', true) -%}
+{%- set api = (api_stdout | from_json) if api_stdout else {} -%}
+{%- set k8s_version = ((api.get('serverVersion') or {}).get('gitVersion') or 'unknown') -%}
+{%- set releases_stdout = base_summary_releases.stdout | default('', true) -%}
+{%- set releases_raw = (releases_stdout | from_json) if releases_stdout else [] -%}
+{%- set nodes_stdout = base_summary_nodes.stdout | default('', true) -%}
+{%- set nodes_raw = ((nodes_stdout | from_json) if nodes_stdout else {}).get('items') or [] -%}
+{%- set routes_stdout = base_summary_routes.stdout | default('', true) -%}
+{%- set routes_raw = ((routes_stdout | from_json) if routes_stdout else {}).get('items') or [] -%}
+{#- Normalise the Helm output. `chart` is "<release>-<version>", so the pinned chart
+    version has to be recovered by stripping the release name back off. -#}
+{%- set releases = [] -%}
+{%- for release in releases_raw -%}
+{%-   set release_name = release.get('name', '') -%}
+{%-   set _ = releases.append({
+        'name': release_name,
+        'namespace': release.get('namespace', ''),
+        'version': release.get('chart', '') | regex_replace('^' ~ (release_name | regex_escape) ~ '-', ''),
+        'app_version': release.get('app_version', ''),
+        'status': release.get('status', '')}) -%}
+{%- endfor -%}
+{#- Normalise the node list down to what the document actually shows. -#}
+{%- set nodes = [] -%}
+{%- for node in nodes_raw -%}
+{%-   set labels = (node.get('metadata') or {}).get('labels') or {} -%}
+{%-   set conditions = (node.get('status') or {}).get('conditions') or [] -%}
+{%-   set addresses = (node.get('status') or {}).get('addresses') or [] -%}
+{%-   set is_controller = ('node.kubernetes.io/microk8s-controlplane' in labels) or ('node-role.kubernetes.io/control-plane' in labels) or ('node-role.kubernetes.io/master' in labels) -%}
+{%-   set _ = nodes.append({
+        'name': (node.get('metadata') or {}).get('name', ''),
+        'role': 'controller' if is_controller else 'worker',
+        'version': ((node.get('status') or {}).get('nodeInfo') or {}).get('kubeletVersion', ''),
+        'address': (addresses | selectattr('type', 'equalto', 'InternalIP') | map(attribute='address') | join(', ')) or '',
+        'ready': (conditions | selectattr('type', 'equalto', 'Ready') | map(attribute='status') | join(', ')) or 'Unknown'}) -%}
+{%- endfor -%}
+{%- set controllers = nodes | selectattr('role', 'equalto', 'controller') | list -%}
+{%- set workers = nodes | selectattr('role', 'equalto', 'worker') | list -%}
+{#- What the ingress is actually serving, read back off the IngressRoute objects
+    rather than assumed from the values the charts were rendered with. -#}
+{%- set routes = [] -%}
+{%- for route in routes_raw -%}
+{%-   set spec = route.get('spec') or {} -%}
+{%-   set tls = (spec.get('tls') or {}).get('certResolver', '') -%}
+{%-   for route_rule in (spec.get('routes') or []) -%}
+{%-     set match = route_rule.get('match', '') -%}
+{%-     set path = match | regex_search('PathPrefix\\(`([^`]*)`\\)', '\\1') | default([], true) | join('') -%}
+{%-     set host = match | regex_search('Host\\(`([^`]*)`\\)', '\\1') | default([], true) | join('') -%}
+{%-     set service = (route_rule.get('services') or [{}])[0].get('name', '') -%}
+{%-     set middlewares = [] -%}
+{%-     for middleware in (route_rule.get('middlewares') or []) -%}
+{%-       set _ = middlewares.append(middleware.get('name', '')) -%}
+{%-     endfor -%}
+{%-     set _ = routes.append({
+          'name': (route.get('metadata') or {}).get('name', ''),
+          'namespace': (route.get('metadata') or {}).get('namespace', ''),
+          'path': path or '/',
+          'host': host or base_summary_origin,
+          'service': service,
+          'entrypoints': spec.get('entryPoints') or [],
+          'middlewares': middlewares,
+          'tls': tls}) -%}
+{%-   endfor -%}
+{%- endfor -%}
+{%- set ready_labels = {'True': 'Ready', 'False': 'NotReady'} -%}
+{%- set releases_by_name = {} -%}
+{%- for release in releases -%}
+{%-   set _ = releases_by_name.update({release.name: release}) -%}
+{%- endfor -%}
+{%- set headlamp = releases_by_name.get('headlamp', {}) -%}
+{%- set traefik = releases_by_name.get('traefik', {}) -%}
+{%- set base_url = base_summary_scheme ~ '://' ~ base_summary_origin -%}
+{%- set headlamp_url = base_url ~ '/dashboard/' -%}
+{%- set traefik_url = base_url ~ '/traefik/dashboard/' -%}
+# Homelab
+
+> Last updated (auto-generated): {{ now().strftime('%Y-%m-%d %H:%M %Z') | trim }}
+
+Welcome!
+
+This is a **{{ node_type }} node** in a self-hosted Kubernetes cluster configured via [this-oliver/homelab](https://github.com/this-oliver/homelab).
+
+## General
+
+{% if node_type == 'controller' %}
+Kubernetes (MicroK8s):
+
+- Version: `{{ k8s_version }}`
+- Kubeconfig: {{ base_summary_kubeconfig }}
+- Worker Nodes: {{ workers | length }}
+
+{% if nodes %}
+Nodes:
+{% for node in nodes -%}
+- `{{ node.name }}` (k8s {{ node.version }}) - { role: {{ node.role }}, address: {{ node.address }}, ready: {{ ready_labels.get(node.ready, node.ready) }} }
+{% endfor %}
+{% else %}
+No nodes reported. The cluster is not running, or the kubeconfig at {{ base_summary_kubeconfig }} is not readable.
+{% endif %}
+
+## Access
+
+Services:
+
+- Headlamp dashboard ({{ headlamp.get('version', '') or 'version not detected' }}): {{ headlamp_url }}
+- Traefik dashboard ({{ traefik.get('version', '') or 'version not detected' }}): {{ traefik_url }}
+- TLS configured:
+
+Good to know:
+- Headlamp uses RBAC - create a token with `kubectl create token headlamp-admin -n kube-system`
+- Traefik dashboard sits behind basic auth — sign in as `{{ homelab.admin.username }}`.
+- The only public entry point is HAProxy on ports `80` and `443`. Everything behind it lives on NodePorts that are firewalled to loopback.
+
+### Helm releases
+
+{% if releases %}
+Releases:
+{% for release in releases -%}
+- {{ release.name }} ({{ release.version }}) - | { namespace: {{ release.namespace }}, version: {{ release.app_version | default('—', true) }}, status: {{ release.status }} }
+{% endfor %}
+{% else %}
+No Helm releases reported. The cluster is not running, or Helm cannot reach it.
+{% endif %}
+
+### Ingress routes
+
+{% if routes %}
+Routes:
+{% for route in routes -%}
+- {{ route.host }}{{ route.path }} - { service: {{ route.service }}, entrypoints: {{ route.entrypoints | join(', ') | default('—', true) }}, middlewares: {{ route.middlewares | join(', ') | default('—', true) }} | {{ route.tls | default('—', true) }} }
+{% endfor %}
+{% else %}
+IngressRoute objects reported.
+{% endif %}
+
+{% else %}
+This is awkward... there's not much you can do here because it's a 'worker' node. Visit the 'controller' node to see what's going on.
+{% endif %}
