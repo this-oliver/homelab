@@ -76,7 +76,7 @@
     - name: Set the node role of this host
       ansible.builtin.set_fact:
         k8s_core_node_role: >-
-          {{ 'controllers' if inventory_hostname in (groups.controllers | default([])) else 'workers' }}
+          {{ 'controller' if inventory_hostname in (groups.controller | default([])) else 'workers' }}
 
     - name: Set list of addons to enable for this host
       ansible.builtin.set_fact:

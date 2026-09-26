@@ -1,4 +1,4 @@
-{%- set node_type = 'controller' if base_summary_host_type == 'controllers' else 'worker' -%}
+{%- set node_type = 'controller' if base_summary_host_type == 'controller' else 'worker' -%}
 {%- set api_stdout = base_summary_api_version.stdout | default('', true) -%}
 {%- set api = (api_stdout | from_json) if api_stdout else {} -%}
 {%- set k8s_version = ((api.get('serverVersion') or {}).get('gitVersion') or 'unknown') -%}
@@ -34,7 +34,7 @@
         'address': (addresses | selectattr('type', 'equalto', 'InternalIP') | map(attribute='address') | join(', ')) or '',
         'ready': (conditions | selectattr('type', 'equalto', 'Ready') | map(attribute='status') | join(', ')) or 'Unknown'}) -%}
 {%- endfor -%}
-{%- set controllers = nodes | selectattr('role', 'equalto', 'controller') | list -%}
+{%- set controller = nodes | selectattr('role', 'equalto', 'controller') | list -%}
 {%- set workers = nodes | selectattr('role', 'equalto', 'worker') | list -%}
 {#- What the ingress is actually serving, read back off the IngressRoute objects
     rather than assumed from the values the charts were rendered with. -#}

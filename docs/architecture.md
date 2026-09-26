@@ -26,15 +26,15 @@ flowchart LR
         core[k8s_core<br/>MicroK8s]
     end
 
-    subgraph P3[Networking - controllers]
+    subgraph P3[Networking - controller]
         traefik[k8s_extension_traefik<br/>ingress gateway]
     end
 
-    subgraph P4[Monitoring - controllers]
+    subgraph P4[Monitoring - controller]
         headlamp[k8s_extension_headlamp<br/>Headlamp + Trivy]
     end
 
-    subgraph P5[Reverse proxy - controllers]
+    subgraph P5[Reverse proxy - controller]
         haproxy[reverse_proxy<br/>HAProxy container]
         podman[podman]
         haproxy --> podman
@@ -53,7 +53,7 @@ Key points:
 
 - **Base** runs on every host. It validates preconditions and prepares the host directory, group and basic tooling.
 - **Kubernetes** installs the Kubernetes tooling (kubectl, then helm) before the cluster itself (MicroK8s), because the cluster role assumes those tools exist.
-- **Ingress, monitoring and the reverse proxy** each wrap a single extension role and run on the controllers. The reverse proxy is deliberately installed last of those, after the Traefik NodePorts it proxies already exist.
+- **Ingress, monitoring and the reverse proxy** each wrap a single extension role and run on the controller. The reverse proxy is deliberately installed last of those, after the Traefik NodePorts it proxies already exist.
 - **Summary** writes the generated `README.md` into `homelab.dir`. It has to run last and read the cluster live: role-local `vars/main.yaml` files only exist while their own role is executing, so by the time a final play runs there is nothing left to read but the cluster itself. See [the role readme](../ansible/roles/base/README.md) for what it queries.
 
 `ansible/homelab_uninstall.yaml` is a single play that removes the same layers in reverse dependency order, so the summary and the reverse proxy go first and the cluster last. The work itself is not gated on a flag: `uninstall: true` is a play var of that playbook, which is what switches each role's `tasks/main.yaml` onto its teardown path.
@@ -171,7 +171,7 @@ flowchart TB
     Playbook --> Roles[ansible/roles]
 ```
 
-- **`ansible/inventory/main.yaml`** — which hosts get which services (`controllers` group).
+- **`ansible/inventory/main.yaml`** — which hosts get which services (`controller` group).
 - **`ansible/config.yaml`** — non-secret settings (`homelab.dir`, `homelab.k8s.version`, domain, security toggles, and the `uninstall` flag that selects each role's setup or teardown path). Secret fields are `lookup`ed from the environment rather than hard-coded.
 - **`.env`** — the actual secrets: `HOMELAB_ADMIN_*` (required) and `HOMELAB_DOMAIN_*`, `HOMELAB_SECURITY_TRIVY_ENABLED` (optional). Applied to the playbook session via `export`.
 
@@ -182,7 +182,7 @@ See [docs/intro.md](intro.md) for a full reference of every key.
 - **Single entry point.** Only HAProxy is exposed on public ports. Kubernetes NodePorts are firewalled to loopback with iptables rules persisted in `/etc/iptables` (`iptables-persistent`).
 - **Owner-based forwarding.** The HAProxy container runs as its own unprivileged system user; iptables allows that user's outbound connections to the NodePorts and drops everyone else's.
 - **Dashboards behind basic auth.** Traefik's dashboard and Headlamp are protected by `homelab.admin.username`/`homelab.admin.password` rendered into a Kubernetes basic-auth secret.
-- **Hardened cluster defaults.** MicroK8s boots with the `cis-hardening`, `dns`, `hostpath-storage` and `rbac` addons (`hostpath-storage` on controllers only, since a single node must own the hostpath provisioner); Trivy scans workloads for vulnerabilities when enabled.
+- **Hardened cluster defaults.** MicroK8s boots with the `cis-hardening`, `dns`, `hostpath-storage` and `rbac` addons (`hostpath-storage` on controller only, since a single node must own the hostpath provisioner); Trivy scans workloads for vulnerabilities when enabled.
 - **Optional HTTPS.** With a domain and ACME email set, Traefik issues Let's Encrypt certificates and HTTP traffic redirects to HTTPS.
 - **No secrets in code.** Credentials are injected from environment variables and never committed.
 

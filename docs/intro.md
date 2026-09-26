@@ -45,10 +45,10 @@ Note: on modern Ubuntu, `python3-venv` may be a separate package. Install it wit
 cp ansible/inventory/main.example.yaml ansible/inventory/main.yaml
 ```
 
-The inventory defines the `controllers` group — the host(s) that get a Kubernetes cluster. Edit `ansible/inventory/main.yaml`:
+The inventory defines the `controller` group — the host(s) that get a Kubernetes cluster. Edit `ansible/inventory/main.yaml`:
 
 ```yaml
-controllers:
+controller:
   hosts:
     123.123.123.123: # or `homelab.com`
       ansible_port: 22

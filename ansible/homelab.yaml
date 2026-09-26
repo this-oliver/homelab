@@ -35,8 +35,8 @@
       tags: [kubernetes, kubectl, helm]
       when: not (uninstall | default(false) | bool)
 
-- name: Provision homelab controllers
-  hosts: controllers
+- name: Provision homelab controller
+  hosts: controller
   vars_files:
     - config.yaml
   pre_tasks:
