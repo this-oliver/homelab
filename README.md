@@ -27,7 +27,7 @@ Every layer is an [Ansible role](#components). Each role can be installed or uni
 | Layer | Role | What it does |
 | --- | --- | --- |
 | Base | [base](ansible/roles/base/README.md) | Preflight checks, `homelab` group/user, home directory |
-| Kubernetes | [k8s_tool_kubectl](ansible/roles/k8s_tool_kubectl/README.md), [k8s_tool_helm](ansible/roles/k8s_tool_helm/README.md), [k8s_core](ansible/roles/k8s_core/README.md) | Kubectl + Helm CLI tools, MicroK8s cluster with hardened addons |
+| Kubernetes | [k8s_core](ansible/roles/k8s_core/README.md) | Kubectl + Helm CLI tools, MicroK8s cluster with hardened addons |
 | Networking | [k8s_extension_traefik](ansible/roles/k8s_extension_traefik/README.md) | Traefik ingress gateway, dashboard, rate limiting, HTTPS |
 | Monitoring | [k8s_extension_headlamp](ansible/roles/k8s_extension_headlamp/README.md) | Headlamp dashboard with Trivy vulnerability scanning |
 | Reverse proxy | [reverse_proxy](ansible/roles/reverse_proxy/README.md), [podman](ansible/roles/podman/README.md) | HAProxy container as the only public entry point, locked down with iptables |

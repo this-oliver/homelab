@@ -9,3 +9,15 @@
   ansible.builtin.file:
     path: "{{ homelab.dir }}/.kube/config.yaml"
     state: absent
+
+- name: Uninstall Kubectl
+  become: true
+  community.general.snap:
+    name: kubectl
+    state: absent
+
+- name: Uninstall Helm
+  become: true
+  community.general.snap:
+    name: helm
+    state: absent

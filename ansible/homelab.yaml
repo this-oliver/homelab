@@ -28,32 +28,18 @@
       ansible.builtin.include_tasks:
         file: tasks/resolve_path.yaml
         apply:
-          tags: [kubernetes]
-      tags: [kubernetes]
+          tags: [kubernetes, kubectl, helm]
+      tags: [kubernetes, kubectl, helm]
   tasks:
     - name: Install Kubernetes base
       when: not (uninstall | bool)
       block:
-        - name: Kubectl
-          ansible.builtin.include_role:
-            name: k8s_tool_kubectl
-            apply:
-              tags: [kubernetes, kubectl]
-          tags: [kubernetes, kubectl]
-
-        - name: Helm
-          ansible.builtin.include_role:
-            name: k8s_tool_helm
-            apply:
-              tags: [kubernetes, helm]
-          tags: [kubernetes, helm]
-
         - name: Kubernetes
           ansible.builtin.include_role:
             name: k8s_core
             apply:
-              tags: [kubernetes]
-          tags: [kubernetes]
+              tags: [kubernetes, kubectl, helm]
+          tags: [kubernetes, kubectl, helm]
 
     - name: Uninstall Kubernetes base
       when: uninstall | bool
@@ -62,22 +48,8 @@
           ansible.builtin.include_role:
             name: k8s_core
             apply:
-              tags: [kubernetes]
-          tags: [kubernetes]
-
-        - name: Helm
-          ansible.builtin.include_role:
-            name: k8s_tool_helm
-            apply:
-              tags: [kubernetes, helm]
-          tags: [kubernetes, helm]
-
-        - name: Kubectl
-          ansible.builtin.include_role:
-            name: k8s_tool_kubectl
-            apply:
-              tags: [kubernetes, kubectl]
-          tags: [kubernetes, kubectl]
+              tags: [kubernetes, kubectl, helm]
+          tags: [kubernetes, kubectl, helm]
 
 - name: Provision networking stack
   hosts: controllers

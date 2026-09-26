@@ -22,10 +22,7 @@ flowchart LR
     end
 
     subgraph P2[Kubernetes - controllers]
-        kubectl[k8s_tool_kubectl]
-        helm[k8s_tool_helm]
         core[k8s_core<br/>MicroK8s]
-        kubectl --> helm --> core
     end
 
     subgraph P3[Networking - controllers]
@@ -139,8 +136,6 @@ See [docs/intro.md](intro.md) for a full reference of every key.
 | Role | Readme |
 | --- | --- |
 | base (foundation) | [roles/base/README.md](../ansible/roles/base/README.md) |
-| k8s_tool_kubectl (kubectl CLI) | [roles/k8s_tool_kubectl/README.md](../ansible/roles/k8s_tool_kubectl/README.md) |
-| k8s_tool_helm (Helm CLI) | [roles/k8s_tool_helm/README.md](../ansible/roles/k8s_tool_helm/README.md) |
 | k8s_core (MicroK8s) | [roles/k8s_core/README.md](../ansible/roles/k8s_core/README.md) |
 | k8s_extension_traefik (ingress) | [roles/k8s_extension_traefik/README.md](../ansible/roles/k8s_extension_traefik/README.md) |
 | k8s_extension_headlamp (dashboard + Trivy) | [roles/k8s_extension_headlamp/README.md](../ansible/roles/k8s_extension_headlamp/README.md) |
