@@ -2,13 +2,21 @@
 
 ## What
 
-Installs and configures the Kubernetes cluster — MicroK8s via Snap — enables its hardened addons, writes a KubeConfig the operator (and future roles) can use, and applies the kernel settings Raspberry Pi hosts need.
+Installs and configures:
+
+1. Kubernetes cluster — MicroK8s via Snap — enables its hardened addons, writes a KubeConfig the operator (and future roles) can use, and applies the kernel settings Raspberry Pi hosts need.
+2. `kubectl` CLI on the host via Snap, pinned to the Kubernetes version configured in `config.yaml` (`homelab.k8s.version`).
+3. `helm` CLI on the host via Snap (channel `latest/stable`), so Helm-based extension roles (Traefik, Headlamp, Trivy) can manage their chart releases.
 
 This role also has a [`worker.yaml` task](tasks/worker.yaml) that adds worker nodes to the cluster.
 
 ## Why
 
-MicroK8s is the cluster substrate everything else runs on: Traefik, Headlamp, Trivy and user apps are all deployed into it. This role makes the cluster repeatable (snap channel locked to `homelab.k8s.version`) and secure (CIS hardening + RBAC addons on by default).
+Kubernetes cluster - MicroK8s is the cluster substrate everything else runs on: Traefik, Headlamp, Trivy and user apps are all deployed into it. This role makes the cluster repeatable (snap channel locked to `homelab.k8s.version`) and secure (CIS hardening + RBAC addons on by default).
+
+`kubectl` cli - Kubectl is the operator's interface to the MicroK8s cluster. Installing it means that we have an interoperable way to operate the cluster instead of relying on the `kubectl` that comes with every flavor of Kubernetes (i.e. `microk8s kubectl`).
+
+`helm` cli - All Kubernetes extensions in this homelab are installed as Helm charts. Installing Helm and using it to manage extensions keeps the dependency explicit and interoperable rather than relying on the extension framework that comes with every flavor of Kubernetes (i.e. `microk8s enable trivy`).
 
 ## How
 
@@ -40,18 +48,20 @@ Environments it handles specially:
 
 | Variable | Default | Description |
 | --- | --- | --- |
-| `k8s_core_addons` | `cis-hardening`, `dns`, `hostpath-storage`, `rbac` | MicroK8s addons enabled on first install. Each entry is `{name, controllers, workers}`; the flag matching the host's node role decides whether it is enabled there. |
-| `homelab.k8s.version` | `1.36` (from `config.yaml`) | Snap channel for MicroK8s. |
+| `homelab.k8s.version` | `1.36` (from `config.yaml`) | Snap channel for MicroK8s and `kubectl` cli. |
 | `homelab.dir` | `~/homelab` (from `config.yaml`) | Parent of `~/.kube`. |
+| `k8s_core_addons` | `cis-hardening`, `dns`, `hostpath-storage`, `rbac` | MicroK8s addons enabled on first install. Each entry is `{name, controllers, workers}`; the flag matching the host's node role decides whether it is enabled there. |
+| `k8s_core_helm_version` | `latest/stable` | Snap channel for Helm. |
 
 ## Dependencies
 
-- `k8s_tool_kubectl` / `k8s_tool_helm` — installed first in the `kubernetes` play so the KubeConfig and tooling exist together.
 - Requires `snapd` (installed by the role when missing).
 
 ## Tags
 
 - `kubernetes`
+- `kubectl`
+- `helm`
 
 ```bash
 ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags kubernetes
@@ -59,4 +69,4 @@ ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags kube
 
 ## Uninstall
 
-Removes the `microk8s` snap and deletes the KubeConfig file (`{{ homelab.dir }}/.kube/config.yaml`). In the playbook this runs before the CLI tooling is removed, so the cluster is always uninstalled cleanly.
+Removes the `microk8s` snap, the `kubectl` cli, the `helm` cli and deletes the KubeConfig file (`{{ homelab.dir }}/.kube/config.yaml`). In the playbook this runs before the CLI tooling is removed, so the cluster is always uninstalled cleanly.
