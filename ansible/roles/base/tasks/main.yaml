@@ -1,7 +1,9 @@
 - name: Preflight checks
   ansible.builtin.include_tasks: ../../../tasks/preflight.yaml
+  when: not (preflight_passed | default(false) | bool)
 
 - name: Setup homelab basics
+  when: not (uninstall | bool)
   ansible.builtin.include_tasks: setup.yaml
   tags: [setup]
 
