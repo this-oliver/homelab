@@ -19,6 +19,15 @@ homelab:
     username: "{{ lookup('ansible.builtin.env', 'HOMELAB_ADMIN_USERNAME') | regex_replace('^\"|\"$', '') }}"
     password: "{{ lookup('ansible.builtin.env', 'HOMELAB_ADMIN_PASSWORD') | regex_replace('^\"|\"$', '') }}"
 
+  # Optional. Define which ports to listen to for incoming requests
+  # to your homelab + deployment. This config will be used to setup
+  # the reverse proxy that forwards external requests into the homelab.
+  ingress:
+    http:
+      port: "{{ lookup('ansible.builtin.env', 'HOMELAB_INGRESS_HTTP_PORT') | int | default(80) }}"
+    https:
+      port: "{{ lookup('ansible.builtin.env', 'HOMELAB_INGRESS_HTTPS_PORT') | int | default(443) }}"
+
   # OPTIONAL. When the homelab sits behind a public domain, set the
   # domain url.
   domain:
