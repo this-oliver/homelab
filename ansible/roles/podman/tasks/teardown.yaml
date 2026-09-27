@@ -1,5 +1,0 @@
-- name: Uninstall Podman
-  become: true
-  ansible.builtin.apt:
-    name: podman
-    state: absent
