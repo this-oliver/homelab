@@ -33,7 +33,7 @@ Every layer is an [Ansible role](#components). Installs and uninstalls live in t
 | Kubernetes | [k8s_core](ansible/roles/k8s_core/README.md) | Kubectl + Helm CLI tools, MicroK8s cluster with hardened addons, Worker nodes for more compute |
 | Ingress | [k8s_extension_traefik](ansible/roles/k8s_extension_traefik/README.md) | Traefik ingress gateway, dashboard, rate limiting, HTTPS |
 | Monitoring | [k8s_extension_headlamp](ansible/roles/k8s_extension_headlamp/README.md) | Headlamp dashboard with Trivy vulnerability scanning |
-| Reverse proxy | [reverse_proxy](ansible/roles/reverse_proxy/README.md), [podman](ansible/roles/podman/README.md) | HAProxy container as the only public entry point, locked down with iptables |
+| Reverse proxy | [reverse_proxy](ansible/roles/reverse_proxy/README.md) | HAProxy container as the only public entry point, locked down with iptables |
 
 ## Getting Started
 

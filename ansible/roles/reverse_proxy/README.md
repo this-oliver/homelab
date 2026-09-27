@@ -18,7 +18,7 @@ Together these mean the only practical path to the cluster's ingress traffic is 
 
 ```mermaid
 flowchart LR
-    pre[preflight checks] --> podman[install podman role]
+    pre[preflight checks] --> podman[install podman]
     podman --> dir[create haproxy dir<br/>homelab.dir/haproxy]
     dir --> cfg[template haproxy.cfg.j2]
     cfg --> user[create unprivileged haproxy system user]
@@ -56,7 +56,6 @@ Both backends send the PROXY protocol (`send-proxy`), health-check Traefik every
 
 ## Dependencies
 
-- `podman` role — included from `setup.yaml`; provides the container runtime.
 - `k8s_extension_traefik` — the NodePorts (`30080`/`30443`) and their PROXY protocol config must exist first; that's why this play runs last.
 - `iptables-persistent` — installed by the role so rules survive reboots.
 
