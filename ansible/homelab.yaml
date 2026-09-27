@@ -25,7 +25,7 @@
         apply:
           tags: [base, kubernetes, kubectl, helm, worker]
       tags: [base, kubernetes, kubectl, helm, worker]
-      when: not (preflight_passed | default(false) | bool)
+      when: not (uninstall | default(false) | bool) and not (preflight_passed | default(false) | bool)
   tasks:
     - name: Base setup
       ansible.builtin.include_role:
@@ -63,7 +63,7 @@
         apply:
           tags: [ingress, traefik, monitor, headlamp, dashboard, trivy, reverse_proxy]
       tags: [ingress, traefik, monitor, headlamp, dashboard, trivy, reverse_proxy]
-      when: not (preflight_passed | default(false) | bool)
+      when: not (uninstall | default(false) | bool) and not (preflight_passed | default(false) | bool)
   tasks:
     - name: Ingress Gateway - Traefik
       ansible.builtin.include_role:
@@ -103,7 +103,7 @@
         apply:
           tags: [kubernetes, worker]
       tags: [kubernetes, worker]
-      when: not (preflight_passed | default(false) | bool)
+      when: not (uninstall | default(false) | bool) and not (preflight_passed | default(false) | bool)
   tasks:
     - name: Join worker node to the cluster
       ansible.builtin.include_tasks:
@@ -124,13 +124,14 @@
         apply:
           tags: [summary]
       tags: [summary]
+      when: not (uninstall | default(false) | bool)
     - name: Preflight check
       ansible.builtin.include_tasks:
         file: tasks/preflight.yaml
         apply:
           tags: [summary]
       tags: [summary]
-      when: not (preflight_passed | default(false) | bool)
+      when: not (uninstall | default(false) | bool) and not (preflight_passed | default(false) | bool)
   tasks:
     - name: Homelab summary
       ansible.builtin.include_role:
