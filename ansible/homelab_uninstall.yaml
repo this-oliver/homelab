@@ -7,7 +7,7 @@
 # `uninstall: true` play var is needed here: the variable stays false in
 # config.yaml and only the install body reads it.
 
-- name: Teardown homelab
+- name: Teardown controller
   hosts: controller
   vars_files:
     - config.yaml
@@ -42,7 +42,19 @@
         apply:
           tags: [ingress, traefik]
       tags: [ingress, traefik]
-
+      
+- name: Teardown homelab
+  hosts: all
+  vars_files:
+    - config.yaml
+  pre_tasks:
+    - name: Resolve homelab directory to an absolute path
+      ansible.builtin.include_tasks:
+        file: tasks/resolve_path.yaml
+        apply:
+          tags: [always]
+      tags: [always]
+  tasks:
     - name: Kubernetes
       ansible.builtin.include_role:
         name: k8s_core
