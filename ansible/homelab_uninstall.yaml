@@ -42,7 +42,7 @@
         apply:
           tags: [ingress, traefik]
       tags: [ingress, traefik]
-      
+
 - name: Teardown homelab
   hosts: all
   vars_files:
