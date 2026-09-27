@@ -16,7 +16,7 @@
     src: haproxy.cfg.j2
     dest: "{{ reverse_proxy_config.dir }}/haproxy.cfg"
     group: homelab
-    mode: '660'
+    mode: '664'
 
 - name: Create HAProxy system user
   become: true
