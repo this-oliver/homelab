@@ -1,0 +1,49 @@
+# The default headlamp-admin account has cluster wide admin
+# permissions on everything which is BAD. To mitigate the
+# insane risk exposed, these resources create:
+#
+# - observer - A service acount bound to a role that can
+#   see all app deployment and cluster relates resources
+#   but cannot create or alter them.
+#
+# - fixer - A service account that can restart deployments
+#   and delete pods in the pursuit of fixing issues that
+#   simpley need a switch-off-and-on approach.
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: observer
+  namespace: kube-system
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fixer
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: observer
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: observer
+subjects:
+  - kind: ServiceAccount
+    name: observer
+    namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fixer
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: fixer
+subjects:
+  - kind: ServiceAccount
+    name: fixer
+    namespace: kube-system
