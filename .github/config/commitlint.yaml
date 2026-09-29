@@ -5,7 +5,7 @@ rules:
   type-enum:
     - 2
     - always
-    - [chore, docs, feat, fix]
+    - [chore, docs, feat, fix, refactor]
   body-max-length:
     - 1
     - always
