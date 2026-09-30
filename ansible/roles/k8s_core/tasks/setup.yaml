@@ -206,7 +206,7 @@
 
     - name: Remove microk8s default storage
       ansible.builtin.command:
-        cmd: kubectl delete storageclass/microk8s-hostpath
+        cmd: kubectl delete storageclass/microk8s-hostpath --ignore-not-found=true
       when: k8s_core_homelab_storage_class_created.changed
 
     - name: Clean up files
