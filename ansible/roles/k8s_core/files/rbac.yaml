@@ -44,9 +44,3 @@ rules:
     verbs:
       - patch
       - update
-  - apiGroups:
-      - '*'
-    resources:
-      - pods
-    verbs:
-      - delete
