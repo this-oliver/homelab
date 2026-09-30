@@ -1,0 +1,52 @@
+---
+# Keeps an eye on systems.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: observer
+rules:
+- apiGroups:
+  - '*'
+  resources:
+  - namespaces
+  - deployments
+  - pods
+  - services
+  - ingressroutes
+  - ingressroutetcps
+  - ingressrouteudps
+  - middlewares
+  - middlewaretcps
+  verbs:
+  - get
+  - list
+  - watch
+---
+# Restarts deployments when they fail. Destroys
+# pods when they become stubborn
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: fixer
+rules:
+- apiGroups:
+  - '*'
+  resources:
+  - deployments
+  - pods
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - '*'
+  resources:
+  - deployments
+  verbs:
+  - patch
+  - update
+- apiGroups:
+  - '*'
+  resources:
+  - pods
+  verbs:
+  - delete

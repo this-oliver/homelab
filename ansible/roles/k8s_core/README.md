@@ -7,6 +7,9 @@ Installs and configures:
 1. Kubernetes cluster — MicroK8s via Snap — enables its hardened addons, writes a KubeConfig the operator (and future roles) can use, and applies the kernel settings Raspberry Pi hosts need.
 2. `kubectl` CLI on the host via Snap, pinned to the Kubernetes version configured in `config.yaml` (`homelab.k8s.version`).
 3. `helm` CLI on the host via Snap (channel `latest/stable`), so Helm-based extension roles (Traefik, Headlamp, Trivy) can manage their chart releases.
+4. `observer` and `fixer` Cluster Roles that allow service accounts to perform usefull but limited actions in the cluser.
+  - `observer` is meant to keep an eye on deployed applications. The role can see deployment specific resources like `deployments`, `pods`, `services`, `ingressroutes` and more but it cannot alter the resources.
+  - `fixer` is meant to patch deployed application. The role can restart `deployments` and delete `pods` - it can also see the resources that it can alter. 
 
 This role also has a [`worker.yaml` task](tasks/worker.yaml) that adds worker nodes to the cluster.
 
