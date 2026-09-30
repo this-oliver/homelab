@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.1.0](https://github.com/this-oliver/homelab/compare/v2.0.0...v2.1.0) (2026-09-30)
+
+
+### Features
+
+* adds observer and fixer cluster roles and service accounts ([#44](https://github.com/this-oliver/homelab/issues/44)) ([e0d68db](https://github.com/this-oliver/homelab/commit/e0d68db18654bae27b07911a9eff96e29e452d00))
+* **kubernetes:** moves default persistant volume dir to homelab ([#42](https://github.com/this-oliver/homelab/issues/42)) ([d217aa1](https://github.com/this-oliver/homelab/commit/d217aa13a15d50ed37817b9ec136fc6b7a62f9e9))
+* **reverse-proxy:** configure http/https ports for reverse-proxy ([#38](https://github.com/this-oliver/homelab/issues/38)) ([2c84afe](https://github.com/this-oliver/homelab/commit/2c84afed98a09b391f94ae3e043df59992131282))
+
+
+### Bug Fixes
+
+* homelab uninstall play skips worker hosts ([#33](https://github.com/this-oliver/homelab/issues/33)) ([1d40e02](https://github.com/this-oliver/homelab/commit/1d40e02939a707c1e2e8dd008f6dc60b9932011a))
+* **reverse-proxy:** merge podman role into reverse_proxy role ([#39](https://github.com/this-oliver/homelab/issues/39)) ([163c85a](https://github.com/this-oliver/homelab/commit/163c85a40fe87224da5c32d19833127520f2eb4c))
+* **reverse-proxy:** proxy service account lacked access to haproxy file ([#37](https://github.com/this-oliver/homelab/issues/37)) ([99f3bcb](https://github.com/this-oliver/homelab/commit/99f3bcbb1e3847887ddb43a5d19b674a65014372))
+* skip pretasks in homelab when uninstalling ([#35](https://github.com/this-oliver/homelab/issues/35)) ([53be4ea](https://github.com/this-oliver/homelab/commit/53be4eaeacd612536c17bcec8f410aeb1ba26b3e))
+
 ## [2.0.0](https://github.com/this-oliver/homelab/compare/v1.0.0...v2.0.0) (2026-09-26)
 
 
