@@ -36,7 +36,8 @@ flowchart TD
     reboot --> kubectl[installs kubectl cli]
     raspi -- no --> kubectl
     kubectl --> helm[installs helm cli]
-    helm --> done((done))
+    helm --> storage[sets up default storage class]
+    storage --> done((done))
 ```
 
 Environments it handles specially:
@@ -53,6 +54,7 @@ Environments it handles specially:
 | `homelab.dir` | `~/homelab` (from `config.yaml`) | Parent of `~/.kube`. |
 | `k8s_core_addons` | `cis-hardening`, `dns`, `hostpath-storage`, `rbac` | MicroK8s addons enabled on first install. Each entry is `{name, controller, workers}`; the flag matching the host's node role decides whether it is enabled there. |
 | `k8s_core_helm_version` | `latest/stable` | Snap channel for Helm. |
+| `k8s_core_storage_dir` | `{{ homelab.dir }}/deployments/default-storage` | Directory for default storage |
 
 ## Dependencies
 

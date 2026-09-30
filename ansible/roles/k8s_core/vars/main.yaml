@@ -1,6 +1,3 @@
-# see: https://snapcraft.io/helm
-k8s_core_helm_version: latest/stable # 4.2.4
-
 k8s_core_addons:
   - name: cis-hardening
     controller: true
@@ -14,3 +11,8 @@ k8s_core_addons:
   - name: rbac
     controller: true
     workers: true
+
+# see: https://snapcraft.io/helm
+k8s_core_helm_version: latest/stable # 4.2.4
+
+k8s_core_storage_dir: "{{ homelab.dir }}/deployments/default-storage"
