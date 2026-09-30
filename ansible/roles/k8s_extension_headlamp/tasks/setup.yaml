@@ -9,7 +9,7 @@
   vars:
     helm_release: "{{ k8s_extension_headlamp_helm_release }}"
 
-- name: Install Observer and Fixer service accounts for ops
+- name: Install Observer and Fixer service accounts
   block:
     - name: Create a temporary directory
       ansible.builtin.tempfile:
