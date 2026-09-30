@@ -200,14 +200,15 @@
     - name: Create homelab storage class
       ansible.builtin.command:
         cmd: kubectl apply -f {{ k8s_core_homelab_storage_class_manifest.dest }}
-      when: k8s_core_homelab_storage_class_manifest.changed
       register: k8s_core_homelab_storage_class_created
       changed_when: k8s_core_homelab_storage_class_created.rc == 0
 
     - name: Remove microk8s default storage
       ansible.builtin.command:
         cmd: kubectl delete storageclass/microk8s-hostpath --ignore-not-found=true
-      when: k8s_core_homelab_storage_class_created.changed
+      when: k8s_core_homelab_storage_class_created.rc == 0
+      register: k8s_core_microk8s_hostpath_removed
+      changed_when: k8s_core_microk8s_hostpath_removed.rc == 0
 
     - name: Clean up files
       ansible.builtin.file:
