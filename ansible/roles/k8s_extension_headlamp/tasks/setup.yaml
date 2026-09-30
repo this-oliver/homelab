@@ -8,3 +8,27 @@
   ansible.builtin.include_tasks: ../../../tasks/helm.yaml
   vars:
     helm_release: "{{ k8s_extension_headlamp_helm_release }}"
+
+- name: Install Observer and Fixer service accounts
+  block:
+    - name: Create a temporary directory
+      ansible.builtin.tempfile:
+        state: directory
+      register: k8s_extension_headlamp_rbac_dir
+
+    - name: Copy Custom RBAC Resources
+      ansible.builtin.copy:
+        src: files/rbac.yaml
+        dest: "{{ k8s_extension_headlamp_rbac_dir.path }}/rbac.yaml"
+        mode: "440"
+
+    - name: Apply cluster RBAC
+      ansible.builtin.command: kubectl apply -f {{ k8s_extension_headlamp_rbac_dir.path }}/rbac.yaml
+      register: k8s_extension_headlamp_rbac_applied
+      changed_when: k8s_extension_headlamp_rbac_applied.stdout is search('(created|configured|deleted)')
+      check_mode: false
+
+    - name: Clean up rbac resources
+      ansible.builtin.file:
+        path: "{{ k8s_extension_headlamp_rbac_dir.path }}"
+        state: absent

@@ -214,3 +214,27 @@
       ansible.builtin.file:
         path: "{{ k8s_core_temp_storage_dir.path }}"
         state: absent
+
+- name: Install Observer and Fixer Cluster Roles
+  block:
+    - name: Create a temporary directory
+      ansible.builtin.tempfile:
+        state: directory
+      register: k8s_core_rbac_dir
+
+    - name: Copy Custom RBAC Resources
+      ansible.builtin.copy:
+        src: files/rbac.yaml
+        dest: "{{ k8s_core_rbac_dir.path }}/rbac.yaml"
+        mode: "440"
+
+    - name: Apply cluster RBAC
+      ansible.builtin.command: kubectl apply -f {{ k8s_core_rbac_dir.path }}/rbac.yaml
+      register: k8s_core_rbac_applied
+      changed_when: k8s_core_rbac_applied.stdout is search('(created|configured|deleted)')
+      check_mode: false
+
+    - name: Clean up rbac resources
+      ansible.builtin.file:
+        path: "{{ k8s_core_rbac_dir.path }}"
+        state: absent
