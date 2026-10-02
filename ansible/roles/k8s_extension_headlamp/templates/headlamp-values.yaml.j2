@@ -29,7 +29,7 @@ volumes:
       emptyDir: {}
 
 initContainers:
-{% if homelab.security.trivy.enabled %}
+{% if homelab.monitor.trivy.enabled %}
     - command:
         - /bin/sh
         - '-c'

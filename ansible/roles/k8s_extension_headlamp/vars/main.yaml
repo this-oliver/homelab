@@ -9,9 +9,31 @@ k8s_extension_headlamp_helm_release:
     url: https://kubernetes-sigs.github.io/headlamp/
   config: "{{ lookup('ansible.builtin.template', 'headlamp-values.yaml.j2') | from_yaml }}"
 
+k8s_extension_headlamp_opencost_helm_release:
+  name: prometheus
+  namespace: homelab
+  chart:
+    ref: opencost-charts/opencost
+    version: "29.35.0"
+  repo:
+    name: opencost-charts
+    url: https://opencost.github.io/opencost-helm-chart
+  config: "{{ lookup('ansible.builtin.template', 'prometheus-values.yaml.j2') | from_yaml }}"
+
+k8s_extension_headlamp_prometheus_helm_release:
+  name: prometheus
+  namespace: homelab
+  chart:
+    ref: prometheus-community/prometheus
+    version: "29.35.0"
+  repo:
+    name: prometheus-community
+    url: https://prometheus-community.github.io/helm-charts
+  config: "{{ lookup('ansible.builtin.template', 'prometheus-values.yaml.j2') | from_yaml }}"
+
 k8s_extension_headlamp_trivy_helm_release:
   name: trivy-operator
-  namespace: trivy
+  namespace: homelab
   chart:
     ref: aqua/trivy-operator
     version: "0.34.0"
