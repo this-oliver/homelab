@@ -1,3 +1,15 @@
+- name: Install {{ k8s_extension_headlamp_opencost_helm_release.name }}
+  ansible.builtin.include_tasks: ../../../tasks/helm.yaml
+  vars:
+    helm_release: "{{ k8s_extension_headlamp_opencost_helm_release }}"
+  when: homelab.security.opencost.enabled is true
+
+- name: Install {{ k8s_extension_headlamp_prometheus_helm_release.name }}
+  ansible.builtin.include_tasks: ../../../tasks/helm.yaml
+  vars:
+    helm_release: "{{ k8s_extension_headlamp_prometheus_helm_release }}"
+  when: homelab.security.prometheus.enabled is true
+
 - name: Install {{ k8s_extension_headlamp_trivy_helm_release.name }}
   ansible.builtin.include_tasks: ../../../tasks/helm.yaml
   vars:

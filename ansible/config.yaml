@@ -36,10 +36,14 @@ homelab:
       enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_DOMAIN_HTTPS_ENABLED') | bool | default(true, true) }}"
       email: "{{ lookup('ansible.builtin.env', 'HOMELAB_DOMAIN_HTTPS_EMAIL') | regex_replace('^\"|\"$', '') }}"
 
-  # OPTIONAL. Configures the cluster for security scans.
-  security:
+  # OPTIONAL. Configures monitor operations for cluster
+  monitor:
+    opencost:
+      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_MONITOR_OPENCOST_ENABLED') | bool | default(True) }}"
+    prometheus:
+      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_MONITOR_PROMETHEUS_ENABLED') | bool | default(True) }}"
     trivy:
-      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_SECURITY_TRIVY_ENABLED') | bool | default(false) }}"
+      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_MONITOR_TRIVY_ENABLED') | bool | default(false) }}"
 
 # ── MISC ─────────────────────────────────────────────────────────
 
