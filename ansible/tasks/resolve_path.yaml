@@ -1,4 +1,10 @@
 ---
 - name: Resolve homelab directory to an absolute path
   ansible.builtin.set_fact:
-    homelab: "{{ homelab | combine({'general': {'dir': homelab.general.dir | regex_replace('^~', ansible_facts['user_dir']), 'k8s': {'version': homelab.general.k8s.version}}}) }}"
+    homelab: |
+      {{ homelab | combine({
+        'general': {
+          'dir': homelab.general.dir | regex_replace('^~', ansible_facts['user_dir']),
+          'k8s': {'version': homelab.general.k8s.version}
+        }
+      })}}
