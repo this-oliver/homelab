@@ -1,0 +1,76 @@
+# yaml-language-server: $schema=values.schema.json
+# Default values for prometheus.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+rbac:
+  create: true
+
+## Define serviceAccount names for components. Defaults to component's fully qualified name.
+##
+serviceAccounts:
+  server:
+    create: true
+    name: ""
+    annotations: {}
+
+server:
+  ## Prometheus server container name
+  ##
+  name: server
+
+  ## The URL prefix at which the container can be accessed. Useful in the case the '-web.external-url' includes a slug
+  ## so that the various internal URLs are still able to access as they are in the default case.
+  ## (Optional)
+  prefixURL: ""
+
+  ## External URL which can access prometheus
+  ## Maybe same with Ingress host name
+  baseURL: ""
+
+  ingress:
+    ## If true, Prometheus server Ingress will be created
+    ##
+    enabled: false
+
+    ingressClassName: ""
+
+    ## Prometheus server Ingress annotations
+    ##
+    annotations: {}
+    #   kubernetes.io/ingress.class: nginx
+    #   kubernetes.io/tls-acme: 'true'
+
+    ## Prometheus server Ingress additional labels
+    ##
+    extraLabels: {}
+
+    ## Redirect ingress to an additional defined port on the service
+    # servicePort: 8081
+
+    ## Prometheus server Ingress hostnames with optional path (passed through tpl)
+    ## Must be provided if Ingress is enabled
+    ##
+    hosts: []
+    #   - prometheus.domain.com
+    #   - domain.com/prometheus
+
+    path: /
+
+    # pathType determines the interpretation of the path matching
+    pathType: Prefix
+
+    ## Extra paths to prepend to every host configuration. This is useful when working with annotation based services. (passed through tpl)
+    extraPaths: []
+    # - path: /*
+    #   backend:
+    #     serviceName: ssl-redirect
+    #     servicePort: use-annotation
+
+    ## Prometheus server Ingress TLS configuration (hosts passed through tpl)
+    ## Secrets must be manually created in the namespace
+    ##
+    tls: []
+    #   - secretName: prometheus-server-tls
+    #     hosts:
+    #       - prometheus.domain.com

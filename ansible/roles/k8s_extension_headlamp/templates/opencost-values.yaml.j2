@@ -1,0 +1,513 @@
+# -- Overwrite the default name of the chart
+nameOverride: ""
+# -- Overwrite all resources name created by the chart
+fullnameOverride: ""
+# -- Override the deployment namespace
+namespaceOverride: ""
+# -- Override the default name of cluster - Can be found in /etc/kubernetes/admin.conf: clusters -> cluster -> name
+clusterName: "cluster.local"
+
+loglevel: info
+
+serviceAccount:
+  # -- Specifies whether a service account should be created
+  create: true
+  # --  Annotations to add to the service account
+  annotations: {}
+  # eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/eksctl-opencost
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+  # -- Whether pods running as this service account should have an API token automatically mounted
+  automountServiceAccountToken: true
+
+# Create cluster role policies
+rbac:
+  enabled: true
+
+opencost:
+  # -- MCP (Model Context Protocol) Server Configuration
+  # The MCP server provides AI agents with access to cost allocation and asset data
+  mcp:
+    # -- Enable MCP server for AI agent integration (default: true)
+    # Set to false to disable MCP server completely
+    enabled: true
+    # -- HTTP port for MCP server (default: 8081)
+    # Change this if port 8081 conflicts with other services
+    port: 8081
+    ingress:
+      # -- Ingress for MCP server
+      enabled: false
+      # -- Ingress controller which implements the resource
+      ingressClassName: ""
+      # -- Annotations for Ingress resource
+      annotations: {}
+        # kubernetes.io/tls-acme: "true"
+      # -- A list of host rules used to configure the Ingress
+      # @default -- See [values.yaml](values.yaml)
+      hosts:
+      - host: example.local
+        paths:
+        - path: /
+          pathType: Prefix
+      # -- Ingress TLS configuration
+      tls: []
+        #  - secretName: chart-example-tls
+        #    hosts:
+        #      - chart-example.local
+    # -- HTTPRoute for MCP server (Gateway API)
+    httpRoute:
+      # -- Enable HTTPRoute resource
+      enabled: false
+      # -- Gateway API parent references
+      # @default -- See [values.yaml](values.yaml)
+      parentRefs:
+        - name: ""
+          namespace: ""
+          sectionName: ""
+      # -- Hostnames for the HTTPRoute
+      hostnames: []
+        # - mcp.example.local
+      # -- Annotations for HTTPRoute resource
+      annotations: {}
+      # -- Labels for HTTPRoute resource
+      labels: {}
+      # -- HTTPRoute rules. Each rule supports an optional `filters` list at the rule level
+      # and per-backendRef `filters` for Gateway API filter configuration (e.g. basic auth
+      # via `ExtensionRef`, header modification via `RequestHeaderModifier`, etc.).
+      # @default -- See [values.yaml](values.yaml)
+      rules:
+        - matches:
+            - path:
+                type: PathPrefix
+                value: /
+          # filters:
+          #   - type: ExtensionRef
+          #     extensionRef:
+          #       group: gateway.envoyproxy.io
+          #       kind: SecurityPolicy
+          #       name: basic-auth-policy
+          backendRefs:
+            - name: ""  # Will default to service name
+              port: 8081
+              # filters:
+              #   - type: RequestHeaderModifier
+              #     requestHeaderModifier:
+              #       add:
+              #         - name: X-Custom-Header
+              #           value: my-value
+
+  exporter:
+    # API_PORT for the cost-model to listen on
+    apiPort: 9003
+    # debugPort: 40000 # for development purposes (debugging with delve) and not for production.
+    # -- The GCP Pricing API requires a key. This is supplied just for evaluation.
+    cloudProviderApiKey: ""
+    # -- Default cluster ID to use if cluster_id is not set in Prometheus metrics.
+    defaultClusterId: 'default-cluster'
+    # -- If clusterIdConfigmap is defined, use user-generated ConfigMap with key CLUSTER_ID as default cluster ID.
+    # -- This overrides the above defaultClusterId. Ensure the ConfigMap exists and contains the required CLUSTER_ID key.
+    # clusterIdConfigmap: cluster-id-configmap
+    image:
+      # -- Exporter container image registry
+      registry: ghcr.io
+      # -- Exporter container image name
+      repository: opencost/opencost
+      # -- Exporter container image tag
+      tag: "1.121.3@sha256:4cdd173253e5abba048dfe2cfa968707a5b59d774157d5356940d0d923a6c281"
+      # -- Exporter container image pull policy
+      pullPolicy: IfNotPresent
+      # -- Override the full image name for development purposes
+      fullImageName: null
+    # -- List of extra arguments for the command, e.g.: log-format=json
+    extraArgs: []
+    # -- Optional command to override the default container command
+    command: []
+    # -- Number of OpenCost replicas to run
+    replicas: 1
+    resources:
+      # -- CPU/Memory resource requests
+      requests:
+        cpu: '10m'
+        memory: '55Mi'
+      # -- CPU/Memory resource limits
+      limits:
+        memory: '1Gi'
+    # Startup probe configuration
+    startupProbe:
+      # -- Whether probe is enabled
+      enabled: true
+      # -- Probe path
+      path: /healthz
+      # -- Number of seconds before probe is initiated
+      initialDelaySeconds: 10
+      # -- Probe frequency in seconds
+      periodSeconds: 5
+      # -- Number of failures for probe to be considered failed
+      failureThreshold: 30
+      # -- Number of seconds after which the probe times out
+      timeoutSeconds: 1
+    # Liveness probe configuration
+    livenessProbe:
+      # -- Whether probe is enabled
+      enabled: true
+      # -- Probe path
+      path: /healthz
+      # -- Number of seconds before probe is initiated
+      initialDelaySeconds: 10
+      # -- Probe frequency in seconds
+      periodSeconds: 20
+      # -- Number of failures for probe to be considered failed
+      failureThreshold: 3
+      # -- Number of seconds after which the probe times out
+      timeoutSeconds: 1
+    # Readiness probe configuration
+    readinessProbe:
+      # -- Whether probe is enabled
+      enabled: true
+      # -- Probe path
+      path: /healthz
+      # -- Number of seconds before probe is initiated
+      initialDelaySeconds: 10
+      # -- Probe frequency in seconds
+      periodSeconds: 10
+      # -- Number of failures for probe to be considered failed
+      failureThreshold: 3
+      # -- Number of seconds after which the probe times out
+      timeoutSeconds: 1
+      # -- Minimum consecutive successes for the probe to be considered successful after having failed
+      successThreshold: 1
+    # -- The security options the container should be run with
+    securityContext: {}
+      # capabilities:
+      #   drop:
+      #   - ALL
+      # readOnlyRootFilesystem: true
+      # runAsNonRoot: true
+      # runAsUser: 1000
+
+    # Path of CSV file
+    csv_path: ""
+
+    prometheusDataSource:
+      # Set the resolution in second that prometheus queries will be performed at
+      queryResolutionSeconds: 300
+
+    # Collector DataSource collects cluster data without a dependency on Prometheus
+    # It is recommended that persistence is enabled alongside it to preserve the state
+    # between pod restarts
+    collectorDataSource:
+      enabled: false
+      # -- define the interval at which the collector scrapes for data points (10s, 15s, 1m)
+      scrapeInterval: 30s
+      # -- The port at which network pods are open to egress
+      networkPort: 3001
+      # -- The number of 10m intervals the Collector DataSource should maintain
+      retention10m: 36
+      # -- The number of 1h intervals the Collector DataSource should maintain
+      retention1h: 49
+      # -- The number of 1d intervals the Collector DataSource should maintain
+      retention1d: 15
+
+    # Persistent volume claim for storing the data. eg: csv file
+    persistence:
+      enabled: false
+      # -- The path that the PV will be mounted to the exporter at
+      mountPath: /mnt/export
+      # -- Annotations for persistent volume
+      annotations: {}
+      # -- Access mode for persistent volume
+      accessMode: ""
+      # -- Storage class for persistent volume
+      storageClass: ""
+      # -- Size for persistent volume
+      size: ""
+
+    # Inference cost tracking configuration for LLM workloads (e.g., vLLM via llm-d)
+    inferenceCostTracking:
+      # -- Enable inference cost tracking
+      enabled: false
+      # -- Pod label whose value is the vLLM model name. Must match the model_name label on vLLM Prometheus metrics
+      modelLabel: "llm-d.ai/model"
+      # -- Pod label key identifying shared infra pods (EPP, gateway)
+      sharedInfraLabel: "llm-d.ai/inference-shared"
+      # -- Label value that marks a pod as shared infra
+      sharedInfraLabelValue: "true"
+      # -- Background collection interval
+      collectionInterval: "2m"
+
+    aws:
+      # -- AWS secret access key
+      secret_access_key: ""
+      # -- AWS secret key id
+      access_key_id: ""
+    # -- A list of volume mounts to be added to the pod
+    extraVolumeMounts: []
+    # -- List of additional environment variables to set in the container
+    env: []
+    # -- Any extra environment variables you would like to pass on to the pod
+    extraEnv: {}
+      # FOO: BAR
+      # For example, if accessing mimir directly and getting 401 Unauthorized
+      # PROMETHEUS_HEADER_X_SCOPE_ORGID: anonymous
+    # -- Extra environment variables from secrets or configmaps
+    extraEnvFrom: []
+      # - configMapRef:
+      #     name: opencost-env
+      # - secretRef:
+      #     name: opencost-env-secret
+    # Admin token for write operations (e.g. POST /serviceKey, cloud config endpoints).
+    # Set ADMIN_TOKEN env from a chart-created secret or an existing secret.
+    adminToken:
+      # -- When true, the chart creates the admin-token Secret (if value is set) or mounts existingSecret as ADMIN_TOKEN. When false, ADMIN_TOKEN is not set and no secret is deployed.
+      enabled: false
+      # -- If set, the chart creates a Secret with this value and sets ADMIN_TOKEN from it (not recommended for production; use existingSecret instead).
+      value: ""
+      # -- Use an existing Secret for the admin token (recommended). Secret must contain the key below.
+      existingSecret: ""
+      # -- Key in the Secret that holds the admin token (used for both value-created and existing secrets).
+      secretKey: "ADMIN_TOKEN"
+    apiIngress:
+      # -- Ingress for OpenCost API
+      enabled: false
+      # -- Ingress controller which implements the resource
+      ingressClassName: ""
+      # -- Annotations for Ingress resource
+      annotations: {}
+        # kubernetes.io/tls-acme: "true"
+      # -- A list of host rules used to configure the Ingress
+      # @default -- See [values.yaml](values.yaml)
+      hosts:
+      - host: example.local
+        paths:
+        - path: /
+          pathType: Prefix
+      # -- Redirect ingress to an extraPort defined on the service such as oauth-proxy
+      servicePort: http
+      # servicePort: oauth-proxy
+      # -- Ingress TLS configuration
+      tls: []
+        #  - secretName: chart-example-tls
+        #    hosts:
+        #      - chart-example.local
+    # -- HTTPRoute for OpenCost API (Gateway API)
+    apiHttpRoute:
+      # -- Enable HTTPRoute resource
+      enabled: false
+      # -- Gateway API parent references
+      # @default -- See [values.yaml](values.yaml)
+      parentRefs:
+        - name: ""
+          namespace: ""
+          sectionName: ""
+      # -- Hostnames for the HTTPRoute
+      hostnames: []
+        # - api.example.local
+      # -- Annotations for HTTPRoute resource
+      annotations: {}
+      # -- Labels for HTTPRoute resource
+      labels: {}
+      # -- HTTPRoute rules. Each rule supports an optional `filters` list at the rule level
+      # and per-backendRef `filters` for Gateway API filter configuration (e.g. basic auth
+      # via `ExtensionRef`, header modification via `RequestHeaderModifier`, etc.).
+      # @default -- See [values.yaml](values.yaml)
+      rules:
+        - matches:
+            - path:
+                type: PathPrefix
+                value: /
+          # filters:
+          #   - type: ExtensionRef
+          #     extensionRef:
+          #       group: gateway.envoyproxy.io
+          #       kind: SecurityPolicy
+          #       name: basic-auth-policy
+          backendRefs:
+            - name: ""  # Will default to service name
+              port: 9003
+              # filters:
+              #   - type: RequestHeaderModifier
+              #     requestHeaderModifier:
+              #       add:
+              #         - name: X-Custom-Header
+              #           value: my-value
+  customPricing:
+    # -- Enables custom pricing configuration
+    enabled: false
+    # -- Customize the configmap name used for custom pricing
+    configmapName: custom-pricing-model
+    # -- Path for the pricing configuration.
+    configPath: /tmp/custom-config
+    # -- Configures the pricing model provided in the values file.
+    createConfigmap: true
+    # -- Sets the provider type for the custom pricing file.
+    provider: custom
+    # -- More information about these values here: https://www.opencost.io/docs/configuration/on-prem#custom-pricing-using-the-opencost-helm-chart
+    costModel:
+      description: Modified pricing configuration.
+      CPU: 1.25
+      spotCPU: 0.006655
+      RAM: 0.50
+      spotRAM: 0.000892
+      GPU: 0.95
+      storage: 0.25
+      zoneNetworkEgress: 0.01
+      regionNetworkEgress: 0.01
+      internetNetworkEgress: 0.12
+
+  retention1d: 15
+  retention1h: 49
+
+  carbonCost:
+    # -- Enable carbon cost exposed in the API
+    enabled: false
+
+  cloudCost:
+    # -- Enable cloud cost ingestion and querying, dependant on valid integration credentials
+    enabled: false
+    # -- Number of hours between each run of the Cloud Cost pipeline
+    refreshRateHours: 6
+    # -- Number of days into the past that a Cloud Cost standard run will query for
+    runWindowDays: 3
+    # -- The number of standard runs before a Month-to-Date run occurs
+    monthToDateInterval: 6
+    # -- The max number of days that any single query will be made to construct Cloud Costs
+    queryWindowDays: 7
+
+  metrics:
+    kubeStateMetrics:
+      # -- (bool) Enable emission of pod annotations
+      emitPodAnnotations: ~
+      # -- (bool) Enable emission of namespace annotations
+      emitNamespaceAnnotations: ~
+      # -- (bool) Enable emission of KSM v1 metrics
+      emitKsmV1Metrics: ~
+      # -- (bool) Enable only emission of KSM v1 metrics that do not exist in KSM 2 by default
+      emitKsmV1MetricsOnly: ~
+
+    serviceMonitor:
+      # -- Create ServiceMonitor resource for scraping metrics using PrometheusOperator
+      enabled: false
+      # -- Additional labels to add to the ServiceMonitor
+      additionalLabels: {}
+      # -- Specify if the ServiceMonitor will be deployed into a different namespace (blank deploys into same namespace as chart)
+      namespace: ""
+      # -- Interval at which metrics should be scraped
+      scrapeInterval: 30s
+      # -- Timeout after which the scrape is ended
+      scrapeTimeout: 10s
+      # -- HonorLabels chooses the metric's labels on collisions with target labels
+      honorLabels: true
+      # -- RelabelConfigs to apply to samples before scraping. Prometheus Operator automatically adds relabelings for a few standard Kubernetes fields
+      relabelings: []
+      # -- MetricRelabelConfigs to apply to samples before ingestion
+      metricRelabelings: []
+      # -- extra Endpoints to add to the ServiceMonitor.  Useful for scraping sidecars
+      extraEndpoints: []
+        # - port: oauth-metrics
+        #   path: /metrics
+      # -- HTTP scheme used for scraping. Defaults to `http`
+      scheme: http
+      # -- TLS configuration for scraping metrics
+      tlsConfig: {}
+        # caFile: /etc/prom-certs/root-cert.pem
+        # certFile: /etc/prom-certs/cert-chain.pem
+        # insecureSkipVerify: true
+        # keyFile: /etc/prom-certs/key.pem
+
+    config:
+      # -- Enables creating the metrics.json configuration as a ConfigMap
+      enabled: false
+      # -- Customize the configmap name used for metrics
+      configmapName: custom-metrics
+      # -- List of metrics to be disabled
+      disabledMetrics: []
+      # - <metric-to-be-disabled>
+      # - <metric-to-be-disabled>
+
+  prometheus:
+    # -- Secret name that contains credentials for Prometheus
+    secret_name: ~
+    # -- Existing secret name that contains credentials for Prometheus
+    existingSecretName: ~
+    # -- Prometheus Basic auth username
+    username: ""
+    # -- Key in the secret that references the username
+    username_key: DB_BASIC_AUTH_USERNAME
+    # -- Prometheus Basic auth password
+    password: ""
+    # -- Key in the secret that references the password
+    password_key: DB_BASIC_AUTH_PW
+    # -- Prometheus Bearer token
+    bearer_token: ""
+    bearer_token_key: DB_BEARER_TOKEN
+    # -- If true, opencost will use kube-rbac-proxy to authenticate with in cluster Prometheus for openshift
+    kubeRBACProxy: false
+    # -- Whether to disable SSL certificate verification
+    insecureSkipVerify: false
+    external:
+      # -- Use external Prometheus (eg. Grafana Cloud)
+      enabled: false
+      # -- External Prometheus url
+      url: "https://prometheus.example.com/prometheus"
+    internal:
+      # -- Use in-cluster Prometheus
+      enabled: true
+      # -- Service name of in-cluster Prometheus
+      serviceName: prometheus-server
+      # -- Namespace of in-cluster Prometheus
+      namespaceName: prometheus-system
+      # -- Service port of in-cluster Prometheus
+      port: 80
+      # -- Path to access the Prometheus API, this is neccesary if the Prometheus server is behind a reverse proxy(mimir) or has a different path.
+      path: ""
+      # -- Scheme to use for in-cluster Prometheus
+      scheme: http
+    amp:
+      # -- Use Amazon Managed Service for Prometheus (AMP)
+      enabled: false # If true, opencost will be configured to remote_write and query from Amazon Managed Service for Prometheus.
+      # -- Workspace ID for AMP
+      workspaceId: ""
+    thanos:
+      enabled: false
+      queryOffset: ''
+      maxSourceResolution: ''
+      internal:
+        enabled: true
+        serviceName: my-thanos-query
+        namespaceName: opencost
+        port: 10901
+        scheme: http
+      external:
+        enabled: false
+        url: 'https://thanos-query.example.com/thanos'
+
+  ui:
+    # -- Enable OpenCost UI
+    enabled: true
+
+    # -- A list of environment variables to be added to the pod
+    extraEnv: []
+
+    ingress:
+      # -- Ingress for OpenCost UI
+      enabled: false
+      # -- Ingress controller which implements the resource
+      ingressClassName: ""
+      # -- Annotations for Ingress resource
+      annotations: {}
+        # kubernetes.io/tls-acme: "true"
+      # -- A list of host rules used to configure the Ingress
+      # @default -- See [values.yaml](values.yaml)
+      hosts:
+      - host: example.local
+        paths:
+        - /
+      # -- Redirect ingress to an extraPort defined on the service such as oauth-proxy
+      servicePort: http-ui
+      # servicePort: oauth-proxy
+      # -- Ingress TLS configuration
+      tls: []
+        #  - secretName: chart-example-tls
+        #    hosts:
+        #      - chart-example.local
