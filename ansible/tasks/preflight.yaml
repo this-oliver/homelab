@@ -52,6 +52,7 @@
               the HOMELAB_ADMIN_USERNAME and HOMELAB_ADMIN_PASSWORD environment
               variables. [username: {{ homelab.monitor.traefik_dashboard.auth.username | checksum }},
               password: {{ homelab.monitor.traefik_dashboard.auth.password | checksum }}]
+      when: homelab.monitor.traefik_dashboard.enabled
 
     - name: Assert domain URL is a valid hostname when set
       ansible.builtin.assert:
