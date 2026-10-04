@@ -10,15 +10,15 @@ k8s_extension_headlamp_helm_release:
   config: "{{ lookup('ansible.builtin.template', 'headlamp-values.yaml.j2') | from_yaml }}"
 
 k8s_extension_headlamp_opencost_helm_release:
-  name: prometheus
+  name: opencost
   namespace: homelab
   chart:
     ref: opencost-charts/opencost
-    version: "29.35.0"
+    version: "2.5.32"
   repo:
     name: opencost-charts
     url: https://opencost.github.io/opencost-helm-chart
-  config: "{{ lookup('ansible.builtin.template', 'prometheus-values.yaml.j2') | from_yaml }}"
+  config: "{{ lookup('ansible.builtin.template', 'opencost-values.yaml.j2') | from_yaml }}"
 
 k8s_extension_headlamp_prometheus_helm_release:
   name: prometheus
