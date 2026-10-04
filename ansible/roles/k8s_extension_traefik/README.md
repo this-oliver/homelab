@@ -22,8 +22,8 @@ flowchart LR
 
 The `values.yaml.j2` template does most of the work:
 
-- **`https_enabled`** — gated on `homelab.domain.url`, `homelab.domain.https.enabled` and a valid ACME email. When enabled, Traefik creates a `defaultCertResolver` (Let's Encrypt) and the dashboard + ingress use the `websecure` entry point.
-- **Dashboard** — always enabled, served at `<domain>/traefik` or the host IP `/traefik` when no domain is set. Guarded by a Kubernetes basic-auth Secret rendered from `homelab.admin.*` plus the `rate-limit` middleware.
+- **`https_enabled`** — gated on `homelab.monitor.domain`, `homelab.gateway.https.enabled` and a valid ACME email. When enabled, Traefik creates a `defaultCertResolver` (Let's Encrypt) and the dashboard + ingress use the `websecure` entry point.
+- **Dashboard** — always enabled, served at `<domain>/traefik` or the host IP `/traefik` when no domain is set. Guarded by a Kubernetes basic-auth Secret rendered from `homelab.monitor.traefik_dashboard.auth.*` plus the `rate-limit` middleware.
 - **PROXY protocol** — `web`/`websecure` listen on NodePorts `30080`/`30443` with proxy protocol enabled, so the HAProxy reverse proxy can forward client IPs (see [reverse_proxy](../reverse_proxy/README.md)).
 - **RBAC** — Traefik gets a dedicated service account and cluster role.
 
@@ -36,7 +36,7 @@ The `values.yaml.j2` template does most of the work:
 | `helm_release.chart.ref` / `.version` | `traefik/traefik` / `41.0.2` | Chart and version. |
 | `helm_release.repo` | `traefik` @ `https://traefik.github.io/charts` | Helm repository. |
 | ports | `web` → NodePort `30080`, `websecure` → NodePort `30443` | NodePorts consumed by the reverse proxy. |
-| `homelab.admin.*` | from env | Dashboard basic-auth credentials. |
+| `homelab.monitor.traefik_dashboard.auth.*` | from env | Dashboard basic-auth credentials. |
 | `homelab.domain.*` | from env | Domain, HTTPS toggle and ACME email. |
 
 See [tasks/helm.yaml](../../tasks/helm.yaml) for the shared `helm_release` contract.

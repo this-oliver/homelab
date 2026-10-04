@@ -6,9 +6,9 @@
   ansible.builtin.set_fact:
     base_summary_host: "{{ inventory_hostname }}"
     base_summary_host_type: "{{ group_names[0] }}"
-    base_summary_kubeconfig: "{{ homelab.dir }}/.kube/config.yaml"
-    base_summary_tls: "{{ homelab.domain.url | length > 0 and homelab.domain.https.enabled | bool and homelab.domain.https.email | length > 0 }}"
-    base_summary_origin: "{{ (homelab.domain.url | length > 0) | ternary(homelab.domain.url, base_summary_host) }}"
+    base_summary_kubeconfig: "{{ homelab.general.dir }}/.kube/config.yaml"
+    base_summary_tls: "{{ homelab.monitor.domain | length > 0 and homelab.gateway.https.enabled | bool and homelab.gateway.https.email | length > 0 }}"
+    base_summary_origin: "{{ (homelab.monitor.domain | length > 0) | ternary(homelab.monitor.domain, base_summary_host) }}"
     base_summary_scheme: "{{ (base_summary_tls | default(false) | bool) | ternary('https', 'http') }}"
 
 - name: Get live cluster state
@@ -69,12 +69,12 @@
 - name: Render the homelab summary
   ansible.builtin.template:
     src: README.md.j2
-    dest: "{{ homelab.dir }}/README.md"
+    dest: "{{ homelab.general.dir }}/README.md"
     group: homelab
     mode: '660'
 
 - name: Print the access summary
   ansible.builtin.debug:
     msg: >-
-      Homelab summary written to {{ homelab.dir }}/README.md. SSH into the
+      Homelab summary written to {{ homelab.general.dir }}/README.md. SSH into the
       machine to start hacking.

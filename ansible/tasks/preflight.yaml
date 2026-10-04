@@ -44,38 +44,38 @@
       ansible.builtin.assert:
         quiet: true
         that:
-          - homelab.admin.username | length > 0
-          - homelab.admin.password | length > 0
+          - homelab.monitor.traefik_dashboard.auth.username | length > 0
+          - homelab.monitor.traefik_dashboard.auth.password | length > 0
         fail_msg: |-
           Missing credentials in vars/main.yaml:
-            - homelab.admin.username and homelab.admin.password must be set via
+            - homelab.monitor.traefik_dashboard.auth.username and homelab.monitor.traefik_dashboard.auth.password must be set via
               the HOMELAB_ADMIN_USERNAME and HOMELAB_ADMIN_PASSWORD environment
-              variables. [username: {{ homelab.admin.username | checksum }},
-              password: {{ homelab.admin.password | checksum }}]
+              variables. [username: {{ homelab.monitor.traefik_dashboard.auth.username | checksum }},
+              password: {{ homelab.monitor.traefik_dashboard.auth.password | checksum }}]
 
     - name: Assert domain URL is a valid hostname when set
       ansible.builtin.assert:
         quiet: true
         that:
-          - homelab.domain.url is match('^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$')
+          - homelab.monitor.domain is match('^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$')
         fail_msg: |-
-          Invalid homelab.domain.url: '{{ homelab.domain.url }}'
+          Invalid homelab.monitor.domain: '{{ homelab.monitor.domain }}'
             - Provide a bare hostname/domain without a scheme or path, e.g.
               'homelab.example.com' (env HOMELAB_DOMAIN_URL).
-      when: homelab.domain.url | length > 0
+      when: homelab.monitor.domain | length > 0
 
     - name: Assert HTTPS email is valid when https is enabled
       ansible.builtin.assert:
         quiet: true
         that:
-          - homelab.domain.https.email is match('^[^@\s]+@[^@\s]+\.[^@\s]+$')
+          - homelab.gateway.https.email is match('^[^@\s]+@[^@\s]+\.[^@\s]+$')
         fail_msg: |-
-          Invalid homelab.domain.https.email: '{{ homelab.domain.https.email }}'
+          Invalid homelab.gateway.https.email: '{{ homelab.gateway.https.email }}'
             - A valid email is required for Let's Encrypt certificate management
               when HTTPS is enabled (env HOMELAB_DOMAIN_HTTPS_EMAIL).
       when:
-        - homelab.domain.https.enabled | bool
-        - homelab.domain.url | length > 0
+        - homelab.gateway.https.enabled | bool
+        - homelab.monitor.domain | length > 0
 
     - name: Preflight - record passed homelab check
       ansible.builtin.set_fact:

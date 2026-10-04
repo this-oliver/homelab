@@ -22,14 +22,14 @@
   block:
     - name: Ensure .kube directory exists
       ansible.builtin.file:
-        path: "{{ homelab.dir }}/.kube"
+        path: "{{ homelab.general.dir }}/.kube"
         group: homelab
         state: directory
         mode: '760'
 
     - name: Ensure KubeConfig file exists
       ansible.builtin.file:
-        path: "{{ homelab.dir }}/.kube/config.yaml"
+        path: "{{ homelab.general.dir }}/.kube/config.yaml"
         group: homelab
         state: touch
         mode: '660'
@@ -39,7 +39,7 @@
       ansible.builtin.lineinfile:
         path: /etc/environment
         regexp: 'KUBECONFIG='
-        line: "KUBECONFIG=\"{{ homelab.dir }}/.kube/config.yaml\""
+        line: "KUBECONFIG=\"{{ homelab.general.dir }}/.kube/config.yaml\""
         create: true
         mode: '660'
 
@@ -99,7 +99,7 @@
     - name: Install Microk8s
       community.general.snap:
         classic: true
-        channel: "{{ homelab.k8s.version }}"
+        channel: "{{ homelab.general.k8s.version }}"
         name: microk8s
 
     - name: Start microk8s
@@ -121,7 +121,7 @@
     - name: Update Kubernetes Config file
       ansible.builtin.copy:
         content: "{{ k8s_core_kubeconfig_output.stdout }}"
-        dest: "{{ homelab.dir }}/.kube/config.yaml"
+        dest: "{{ homelab.general.dir }}/.kube/config.yaml"
         remote_src: true
         group: homelab
         mode: '660'
@@ -133,7 +133,7 @@
       become: true
       community.general.snap:
         classic: true
-        channel: "{{ homelab.k8s.version }}"
+        channel: "{{ homelab.general.k8s.version }}"
         name: kubectl
 
 - name: Install Helm tool

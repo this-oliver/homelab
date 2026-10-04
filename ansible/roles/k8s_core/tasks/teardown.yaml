@@ -7,7 +7,7 @@
 - name: Delete Kubernetes Config file
   become: true
   ansible.builtin.file:
-    path: "{{ homelab.dir }}/.kube/config.yaml"
+    path: "{{ homelab.general.dir }}/.kube/config.yaml"
     state: absent
 
 - name: Uninstall Kubectl

@@ -22,11 +22,11 @@ flowchart TD
     preflight --> setup[setup.yaml]
     setup --> group[ensure homelab group]
     setup --> user[add user to homelab group]
-    setup --> dir[ensure homelab.dir exists]
+    setup --> dir[ensure homelab.general.dir exists]
     setup --> tools[install curl]
     preflight --> summary[summary.yaml<br/>written last, see below]
     summary --> query[read live state<br/>kubectl / helm / HTTP probe]
-    query --> render[render README.md.j2<br/>to homelab.dir/README.md]
+    query --> render[render README.md.j2<br/>to homelab.general.dir/README.md]
 ```
 
 Preflight always runs (tagged `always`), so even targeted runs like `--tags traefik` still gate on Ubuntu, admin credentials, a valid domain URL and a valid HTTPS email.
@@ -58,7 +58,7 @@ ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags summ
 
 | Variable | Source | Description |
 | --- | --- | --- |
-| `homelab.dir` | `config.yaml` (default `~/homelab`) | Directory created and group-owned by the homelab group, and the parent of the generated `README.md`. |
+| `homelab.general.dir` | `config.yaml` (default `~/homelab`) | Directory created and group-owned by the homelab group, and the parent of the generated `README.md`. |
 | `homelab.domain.*` | `config.yaml` | Decides the origin and whether the reported URLs are `https` or `http`. |
 | `homelab.security.trivy.enabled` | `config.yaml` | Reported as the vulnerability-scanning status. |
 
@@ -81,7 +81,7 @@ ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags summ
 
 ## Uninstall
 
-`teardown.yaml` removes the generated `README.md` and nothing else. The `homelab` group, the user's membership in it and `homelab.dir` all stay, because the other teardowns write into that directory and a reinstall expects the foundation to still be there. Reclaiming those is out of scope for this role.
+`teardown.yaml` removes the generated `README.md` and nothing else. The `homelab` group, the user's membership in it and `homelab.general.dir` all stay, because the other teardowns write into that directory and a reinstall expects the foundation to still be there. Reclaiming those is out of scope for this role.
 
 It runs **first** in `ansible/homelab_uninstall.yaml`, tagged `uninstall` and `summary`. That position is the reverse of the install order — the summary is the last artifact written, so it is the first removed, and an interrupted teardown then never leaves a README describing a half-removed stack. To drop just the summary:
 

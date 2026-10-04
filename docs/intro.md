@@ -65,13 +65,13 @@ The list of hosts is inventory; everything else about *what* gets installed live
 
 | Key | Required | Default | Description |
 | --- | --- | --- | --- |
-| `homelab.dir` | no | `"~/homelab"` | Directory on the target host for homelab state (`.kube`, HAProxy config, certs). A leading `~` is resolved against the connecting user's home before any role runs. |
-| `homelab.k8s.version` | no | `1.36` | Kubernetes version consumed by the kubectl and k8s_core roles (snap channel). |
-| `homelab.admin.username` | **yes** | from env | Admin username for dashboards. Read from `HOMELAB_ADMIN_USERNAME`. |
-| `homelab.admin.password` | **yes** | from env | Admin password for dashboards. Read from `HOMELAB_ADMIN_PASSWORD`. |
-| `homelab.domain.url` | no | from env | Public domain served by the homelab, e.g. `homelab.example.com`. Without one, dashboards are served on the host IP. |
-| `homelab.domain.https.enabled` | no | `true` | Whether to serve the domain over HTTPS (requires a valid `https.email`). |
-| `homelab.domain.https.email` | no | from env | Email used by Let's Encrypt for certificate management. Required if HTTPS is enabled and a domain is set. |
+| `homelab.general.dir` | no | `"~/homelab"` | Directory on the target host for homelab state (`.kube`, HAProxy config, certs). A leading `~` is resolved against the connecting user's home before any role runs. |
+| `homelab.general.k8s.version` | no | `1.36` | Kubernetes version consumed by the kubectl and k8s_core roles (snap channel). |
+| `homelab.monitor.traefik_dashboard.auth.username` | **yes** | from env | Admin username for dashboards. Read from `HOMELAB_ADMIN_USERNAME`. |
+| `homelab.monitor.traefik_dashboard.auth.password` | **yes** | from env | Admin password for dashboards. Read from `HOMELAB_ADMIN_PASSWORD`. |
+| `homelab.monitor.domain` | no | from env | Public domain served by the homelab, e.g. `homelab.example.com`. Without one, dashboards are served on the host IP. |
+| `homelab.gateway.https.enabled` | no | `true` | Whether to serve the domain over HTTPS (requires a valid `https.email`). |
+| `homelab.gateway.https.email` | no | from env | Email used by Let's Encrypt for certificate management. Required if HTTPS is enabled and a domain is set. |
 | `homelab.security.trivy.enabled` | no | `true` | Install the Trivy operator and surface scan results in the Headlamp dashboard. |
 | `uninstall` | no | `false` | Internal. Selects each role's `setup` or `teardown` path. `ansible/homelab_uninstall.yaml` sets it to `true` for you; leave it alone. |
 
@@ -180,7 +180,7 @@ Dashboards:
 - **Traefik** — `http://<host>/traefik/dashboard/` (or `https://<domain>/traefik/`)
 - **Headlamp** — `http://<host>/dashboard/` (or `https://<domain>/dashboard/`)
 
-The Traefik dashboard is behind the basic auth built from `homelab.admin.*`. Headlamp has its own login and asks for cluster credentials on first visit.
+The Traefik dashboard is behind the basic auth built from `homelab.monitor.traefik_dashboard.auth.*`. Headlamp has its own login and asks for cluster credentials on first visit.
 
 Try deploying the bundled example app to confirm the ingress path works end to end:
 
@@ -192,7 +192,7 @@ kubectl apply -f docs/examples/demo.yaml
 
 - **`Missing credentials in vars/main.yaml`** — the `HOMELAB_ADMIN_USERNAME`/`HOMELAB_ADMIN_PASSWORD` env vars are not set, or the `export $(cat .env ...)` did not run in this shell.
 - **`Unsupported operating system`** — the playbook only supports Ubuntu. Check the host's distribution and version.
-- **HTTPS fail without an email** — setting `homelab.domain.url` with HTTPS enabled requires `HOMELAB_DOMAIN_HTTPS_EMAIL`. Disable HTTPS or provide the email.
+- **HTTPS fail without an email** — setting `homelab.monitor.domain` with HTTPS enabled requires `HOMELAB_DOMAIN_HTTPS_EMAIL`. Disable HTTPS or provide the email.
 - **Changes appear not to apply** — MicroK8s roles skip install when the snap already exists (`has_microk8s`). To re-provision, uninstall that layer first, then install again.
 - **`ansible/homelab.yaml` fails with "`uninstall` is not a switch on this playbook"** — expected: you (or an old script) passed `-e uninstall=true`. Teardown is `ansible/homelab_uninstall.yaml --tags uninstall`; drop the flag.
 
