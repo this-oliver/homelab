@@ -39,7 +39,7 @@ homelab:
   # OPTIONAL. Configures the cluster for security scans.
   security:
     trivy:
-      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_SECURITY_TRIVY_ENABLED') | bool | default(true, true) }}"
+      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_SECURITY_TRIVY_ENABLED') | bool | default(false) }}"
 
 # ── MISC ─────────────────────────────────────────────────────────
 
