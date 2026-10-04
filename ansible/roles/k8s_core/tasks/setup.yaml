@@ -216,6 +216,7 @@
         state: absent
 
 - name: Install Observer and Fixer Cluster Roles
+  when: inventory_hostname in (groups['controller'] | default([])) # only on controllers
   block:
     - name: Create a temporary directory
       ansible.builtin.tempfile:
