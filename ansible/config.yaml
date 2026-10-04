@@ -1,49 +1,69 @@
 # ── Homelab ─────────────────────────────────────────────────────────
 
 homelab:
-  # OPTIONAL. Path for the homelab directory. A leading `~` is resolved
-  # against the connecting user's home (the playbook rewrites it to an
-  # absolute path before any role runs).
-  dir: "~/homelab"
+  # General config
+  general:
+    k8s:
+      # [OPTIONAL] Kubernetes version used for the cluster.
+      version: 1.36
 
-  k8s:
-    # OPTIONAL. Kubernetes version consumed by the kubectl and kubernetes
-    # roles.
-    version: 1.36
+    # [OPTIONAL] Path for the homelab directory. A leading `~` is converted to an
+    # absolute path by resolving against the connecting user's home (the playbook
+    # rewrites it to an absolute path before any role runs).
+    dir: "~/homelab"
 
-  # REQUIRED. Credentials for admin account for services. Read from the
-  # environment so no secrets are committed to version control:
-  #   export HOMELAB_ADMIN_USERNAME=admin
-  #   export HOMELAB_ADMIN_PASSWORD=change-me
-  admin:
-    username: "{{ lookup('ansible.builtin.env', 'HOMELAB_ADMIN_USERNAME') | regex_replace('^\"|\"$', '') }}"
-    password: "{{ lookup('ansible.builtin.env', 'HOMELAB_ADMIN_PASSWORD') | regex_replace('^\"|\"$', '') }}"
-
-  # Optional. Define which ports to listen to for incoming requests
-  # to your homelab + deployment. This config will be used to setup
-  # the reverse proxy that forwards external requests into the homelab.
-  ingress:
+  # Network access to the cluster and its applications.
+  gateway:
     http:
-      port: "{{ lookup('ansible.builtin.env', 'HOMELAB_INGRESS_HTTP_PORT') | int | default(80, true) }}"
+      # [OPTIONAL] Enables HTTP. (Defualt: true)
+      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_NETWORK_HTTP_ENABLED') | bool | default(true, true) }}"
+      # [OPTIONAL] Defines the port to listen to for HTTP requests. (Defualt: 80)
+      port: "{{ lookup('ansible.builtin.env', 'HOMELAB_NETWORK_HTTP_PORT') | int | default(80, true) }}"
     https:
-      port: "{{ lookup('ansible.builtin.env', 'HOMELAB_INGRESS_HTTPS_PORT') | int | default(443, true) }}"
+      # [OPTIONAL] Enables HTTPS. (Defualt: true)
+      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_NETWORK_HTTPS_ENABLED') | bool | default(true, true) }}"
+      # [OPTIONAL] Defines the port to listen to for HTTPS requests. (Defualt: 443)
+      port: "{{ lookup('ansible.builtin.env', 'HOMELAB_NETWORK_HTTPS_PORT') | int | default(443, true) }}"
+      # [OPTIONAL] Defines the email to use when managing certificates.
+      email: "{{ lookup('ansible.builtin.env', 'HOMELAB_NETWORK_HTTPS_EMAIL') | regex_replace('^\"|\"$', '') }}"
 
-  # OPTIONAL. When the homelab sits behind a public domain, set the
-  # domain url.
-  domain:
-    url: "{{ lookup('ansible.builtin.env', 'HOMELAB_DOMAIN_URL') | regex_replace('^\"|\"$', '') }}"
-    https:
-      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_DOMAIN_HTTPS_ENABLED') | bool | default(true, true) }}"
-      email: "{{ lookup('ansible.builtin.env', 'HOMELAB_DOMAIN_HTTPS_EMAIL') | regex_replace('^\"|\"$', '') }}"
-
-  # OPTIONAL. Configures monitor operations for cluster
+  # Monitoring the cluster
   monitor:
-    opencost:
-      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_MONITOR_OPENCOST_ENABLED') | bool | default(true, true) }}"
-    prometheus:
-      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_MONITOR_PROMETHEUS_ENABLED') | bool | default(true, true) }}"
-    trivy:
-      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_MONITOR_TRIVY_ENABLED') | bool | default(false) }}"
+    # [OPTIONAL] Defines a domain that the cluster's dashboards will sit behind.
+    # By default, the dashboards are configured to sit behind the host's IP. (Default: null)
+    domain: "{{ lookup('ansible.builtin.env', 'HOMELAB_MONITOR_DOMAIN') | regex_replace('^\"|\"$', '') }}"
+
+    # Dashboard for cluster management.
+    headlamp_dashboard:
+      # [OPTIONAL] Enables the headlamp dashboard. (Defualt: true)
+      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_MONITOR_HEADLAMP_DASHBOARD_ENABLED') | bool | default(true, true) }}"
+
+      # A plugin that displays the cost of resources like pods.
+      opencost:
+        # [OPTIONAL] Enables the opencost plugin. (Defualt: true)
+        enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_MONITOR_HEADLAMP_DASHBOARD_OPENCOST_ENABLED') | bool | default(true, true) }}"
+
+      # A plugin that displays compute metrics (i.e. cpu and memory usage).
+      prometheus:
+        # [OPTIONAL] Enables the prometheus plugin. (Defualt: true)
+        enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_MONITOR_HEADLAMP_DASHBOARD_PROMETHEUS_ENABLED') | bool | default(true, true) }}"
+
+      # A plugin that scans the cluster for security vulnerabilities.
+      trivy:
+        # [OPTIONAL] Enables the trivy plugin. (Defualt: true)
+        enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_MONITOR_HEADLAMP_DASHBOARD_TRIVY_ENABLED') | bool | default(false) }}"
+
+    # Dashboard for traefik (networking) services and middlewares.
+    traefik_dashboard:
+      # [OPTIONAL] Enables the traefik dashboard. (Defualt: true)
+      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_MONITOR_TRAEFIK_DASHBOARD_ENABLED') | bool | default(true, true) }}"
+
+      # Credentials for admin account for services.
+      auth:
+        # [REQUIRED] Sets the username for authenticating to the traefik dashboard.
+        username: "{{ lookup('ansible.builtin.env', 'HOMELAB_MONITOR_TRAEFIK_DASHBOARD_AUTH_USERNAME') | regex_replace('^\"|\"$', '') }}"
+        # [REQUIRED] Sets the password for authenticating to the traefik dashboard.
+        password: "{{ lookup('ansible.builtin.env', 'HOMELAB_MONITOR_TRAEFIK_DASHBOARD_AUTH_PASSWORD') | regex_replace('^\"|\"$', '') }}"
 
 # ── MISC ─────────────────────────────────────────────────────────
 
