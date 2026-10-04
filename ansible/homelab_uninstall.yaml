@@ -11,6 +11,8 @@
   hosts: controller
   vars_files:
     - config.yaml
+  vars:
+    uninstall: true
   pre_tasks:
     - name: Resolve homelab directory to an absolute path
       ansible.builtin.include_tasks:
