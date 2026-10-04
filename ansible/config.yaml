@@ -24,22 +24,22 @@ homelab:
   # the reverse proxy that forwards external requests into the homelab.
   ingress:
     http:
-      port: "{{ lookup('ansible.builtin.env', 'HOMELAB_INGRESS_HTTP_PORT') | int | default(80) }}"
+      port: "{{ lookup('ansible.builtin.env', 'HOMELAB_INGRESS_HTTP_PORT') | int | default(80, true) }}"
     https:
-      port: "{{ lookup('ansible.builtin.env', 'HOMELAB_INGRESS_HTTPS_PORT') | int | default(443) }}"
+      port: "{{ lookup('ansible.builtin.env', 'HOMELAB_INGRESS_HTTPS_PORT') | int | default(443, true) }}"
 
   # OPTIONAL. When the homelab sits behind a public domain, set the
   # domain url.
   domain:
     url: "{{ lookup('ansible.builtin.env', 'HOMELAB_DOMAIN_URL') | regex_replace('^\"|\"$', '') }}"
     https:
-      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_DOMAIN_HTTPS_ENABLED') | bool | default(True) }}"
+      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_DOMAIN_HTTPS_ENABLED') | bool | default(true, true) }}"
       email: "{{ lookup('ansible.builtin.env', 'HOMELAB_DOMAIN_HTTPS_EMAIL') | regex_replace('^\"|\"$', '') }}"
 
   # OPTIONAL. Configures the cluster for security scans.
   security:
     trivy:
-      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_SECURITY_TRIVY_ENABLED') | bool | default(True) }}"
+      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_SECURITY_TRIVY_ENABLED') | bool | default(true, true) }}"
 
 # ── MISC ─────────────────────────────────────────────────────────
 
