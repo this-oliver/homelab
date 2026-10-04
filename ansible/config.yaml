@@ -39,9 +39,9 @@ homelab:
   # OPTIONAL. Configures monitor operations for cluster
   monitor:
     opencost:
-      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_MONITOR_OPENCOST_ENABLED') | bool | default(True) }}"
+      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_MONITOR_OPENCOST_ENABLED') | bool | default(true, true) }}"
     prometheus:
-      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_MONITOR_PROMETHEUS_ENABLED') | bool | default(True) }}"
+      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_MONITOR_PROMETHEUS_ENABLED') | bool | default(true, true) }}"
     trivy:
       enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_MONITOR_TRIVY_ENABLED') | bool | default(false) }}"
 
