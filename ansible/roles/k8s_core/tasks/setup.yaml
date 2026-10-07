@@ -174,7 +174,7 @@
       loop_control:
         loop_var: addon
 
-- name: Setup Persistent Storage
+- name: Setup persistent volume storage class
   when: inventory_hostname in (groups['controller'] | default([])) # only on controllers
   block:
     - name: Ensure storage directory exists
@@ -191,7 +191,7 @@
 
     - name: Render homelab storage class manifest
       ansible.builtin.template:
-        src: persistent-volume.yaml.j2
+        src: storage-class.yaml.j2
         dest: "{{ k8s_core_temp_storage_dir.path }}/storage-class.yaml"
         group: homelab
         mode: '660'
@@ -216,6 +216,7 @@
         state: absent
 
 - name: Install Observer and Fixer Cluster Roles
+  when: inventory_hostname in (groups['controller'] | default([])) # only on controllers
   block:
     - name: Create a temporary directory
       ansible.builtin.tempfile:
