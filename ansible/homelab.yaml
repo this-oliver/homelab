@@ -4,12 +4,14 @@
 
 - name: Teardown homelab cluster
   ansible.builtin.import_playbook: homelab_uninstall.yaml
-  when: uninstall | default(false) | bool
+  when: uninstall | bool
 
 - name: Bootstrap nodes
   hosts: all
   vars_files:
     - config.yaml
+  vars:
+    uninstall: false
   pre_tasks:
     - name: Resolve homelab directory to an absolute path
       ansible.builtin.include_tasks:
@@ -17,7 +19,7 @@
         apply:
           tags: [base, kubernetes, kubectl, helm, worker]
       tags: [base, kubernetes, kubectl, helm, worker]
-      when: not (uninstall | default(false) | bool)
+      when: not (uninstall | bool)
 
     - name: Preflight check
       ansible.builtin.include_tasks:
@@ -25,7 +27,7 @@
         apply:
           tags: [base, kubernetes, kubectl, helm, worker]
       tags: [base, kubernetes, kubectl, helm, worker]
-      when: not (uninstall | default(false) | bool) and not (preflight_passed | default(false) | bool)
+      when: not (uninstall | bool) and not (preflight_passed | default(false) | bool)
   tasks:
     - name: Base setup
       ansible.builtin.include_role:
@@ -33,7 +35,7 @@
         apply:
           tags: [base]
       tags: [base]
-      when: not (uninstall | default(false) | bool)
+      when: not (uninstall | bool)
 
     - name: Kubernetes
       ansible.builtin.include_role:
@@ -42,7 +44,7 @@
         apply:
           tags: [kubernetes, kubectl, helm]
       tags: [kubernetes, kubectl, helm]
-      when: not (uninstall | default(false) | bool)
+      when: not (uninstall | bool)
 
 - name: Provision homelab controller
   hosts: controller
@@ -55,7 +57,7 @@
         apply:
           tags: [ingress, traefik, monitor, headlamp, dashboard, trivy, reverse_proxy]
       tags: [ingress, traefik, monitor, headlamp, dashboard, trivy, reverse_proxy]
-      when: not (uninstall | default(false) | bool)
+      when: not (uninstall | bool)
 
     - name: Preflight check
       ansible.builtin.include_tasks:
@@ -63,7 +65,7 @@
         apply:
           tags: [ingress, traefik, monitor, headlamp, dashboard, trivy, reverse_proxy]
       tags: [ingress, traefik, monitor, headlamp, dashboard, trivy, reverse_proxy]
-      when: not (uninstall | default(false) | bool) and not (preflight_passed | default(false) | bool)
+      when: not (uninstall | bool) and not (preflight_passed | default(false) | bool)
   tasks:
     - name: Ingress Gateway - Traefik
       ansible.builtin.include_role:
@@ -72,7 +74,7 @@
         apply:
           tags: [ingress, traefik]
       tags: [ingress, traefik]
-      when: not (uninstall | default(false) | bool)
+      when: not (uninstall | bool)
 
     - name: Dashboard - Headlamp
       ansible.builtin.include_role:
@@ -81,7 +83,7 @@
         apply:
           tags: [monitor, headlamp, dashboard, trivy]
       tags: [monitor, headlamp, dashboard, trivy]
-      when: not (uninstall | default(false) | bool) and homelab.monitor.headlamp_dashboard.enabled
+      when: not (uninstall | bool) and homelab.monitor.headlamp_dashboard.enabled
 
     - name: Reverse proxy
       ansible.builtin.include_role:
@@ -90,7 +92,7 @@
         apply:
           tags: [reverse_proxy]
       tags: [reverse_proxy]
-      when: not (uninstall | default(false) | bool)
+      when: not (uninstall | bool)
 
 - name: Provision homelab workers
   hosts: workers
@@ -103,7 +105,7 @@
         apply:
           tags: [kubernetes, worker]
       tags: [kubernetes, worker]
-      when: not (uninstall | default(false) | bool) and not (preflight_passed | default(false) | bool)
+      when: not (uninstall | bool) and not (preflight_passed | default(false) | bool)
   tasks:
     - name: Join worker node to the cluster
       ansible.builtin.include_tasks:
@@ -111,7 +113,7 @@
         apply:
           tags: [kubernetes, worker]
       tags: [kubernetes, worker]
-      when: not (uninstall | default(false) | bool)
+      when: not (uninstall | bool)
 
 - name: Publish homelab summary
   hosts: all
@@ -124,14 +126,14 @@
         apply:
           tags: [summary]
       tags: [summary]
-      when: not (uninstall | default(false) | bool)
+      when: not (uninstall | bool)
     - name: Preflight check
       ansible.builtin.include_tasks:
         file: tasks/preflight.yaml
         apply:
           tags: [summary]
       tags: [summary]
-      when: not (uninstall | default(false) | bool) and not (preflight_passed | default(false) | bool)
+      when: not (uninstall | bool) and not (preflight_passed | default(false) | bool)
   tasks:
     - name: Homelab summary
       ansible.builtin.include_role:
@@ -140,4 +142,4 @@
         apply:
           tags: [summary]
       tags: [summary]
-      when: not (uninstall | default(false) | bool)
+      when: not (uninstall | bool)
