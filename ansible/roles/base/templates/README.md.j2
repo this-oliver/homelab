@@ -108,7 +108,7 @@ Services:
 
 Good to know:
 - Headlamp uses RBAC - create a token with `kubectl create token headlamp-admin -n kube-system`
-- Traefik dashboard sits behind basic auth — sign in as `{{ homelab.admin.username }}`.
+- Traefik dashboard sits behind basic auth — sign in as `{{ homelab.monitor.traefik_dashboard.auth.username }}`.
 - The only public entry point is HAProxy on ports `80` and `443`. Everything behind it lives on NodePorts that are firewalled to loopback.
 
 ### Helm releases

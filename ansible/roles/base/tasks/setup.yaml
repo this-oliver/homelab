@@ -13,7 +13,7 @@
 
 - name: Ensure homelab directory exists
   ansible.builtin.file:
-    path: "{{ homelab.dir }}"
+    path: "{{ homelab.general.dir }}"
     state: directory
     group: homelab
     mode: '760'

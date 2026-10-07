@@ -1,14 +1,14 @@
 reverse_proxy_config:
-  dir: "{{ homelab.dir }}/haproxy"
+  dir: "{{ homelab.general.dir }}/haproxy"
   container:
     name: reverse_proxy
     image: "docker.io/haproxy:3.4.4-alpine@sha256:c0afc4864dca9c68694cd1290433f0ee79b5c55be80f6745a165ffe373b9a564"
     user: haproxy
   http:
-    listen_port: "{{ homelab.ingress.http.port | int }}"
+    listen_port: "{{ homelab.gateway.http.port | int }}"
     node_port: 30080
   https:
-    listen_port: "{{ homelab.ingress.https.port | int }}"
+    listen_port: "{{ homelab.gateway.https.port | int }}"
     node_port: 30443
   firewall:
     loopback:

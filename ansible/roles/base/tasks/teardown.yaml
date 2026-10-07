@@ -1,11 +1,11 @@
 # Base teardown.
 #
 # Removes only the generated homelab summary. The `homelab` group, the user's
-# membership in it and `homelab.dir` itself all stay: every other teardown
+# membership in it and `homelab.general.dir` itself all stay: every other teardown
 # writes into that directory, and a reinstall expects the foundation to still
 # be there. Reclaiming those is out of scope for this role.
 
 - name: Remove the homelab summary
   ansible.builtin.file:
-    path: "{{ homelab.dir }}/README.md"
+    path: "{{ homelab.general.dir }}/README.md"
     state: absent

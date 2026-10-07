@@ -19,7 +19,7 @@ Together these mean the only practical path to the cluster's ingress traffic is 
 ```mermaid
 flowchart LR
     pre[preflight checks] --> podman[install podman]
-    podman --> dir[create haproxy dir<br/>homelab.dir/haproxy]
+    podman --> dir[create haproxy dir<br/>homelab.general.dir/haproxy]
     dir --> cfg[template haproxy.cfg.j2]
     cfg --> user[create unprivileged haproxy system user]
     user --> run[run HAProxy container<br/>host network, uid, NET_BIND_SERVICE<br/>restart unless-stopped]
@@ -46,7 +46,7 @@ Both backends send the PROXY protocol (`send-proxy`), health-check Traefik every
 
 | Variable | Default | Description |
 | --- | --- | --- |
-| `reverse_proxy.dir` | `{{ homelab.dir }}/haproxy` | HAProxy config directory on the host. |
+| `reverse_proxy.dir` | `{{ homelab.general.dir }}/haproxy` | HAProxy config directory on the host. |
 | `reverse_proxy.container.name` | `reverse_proxy` | Container name (host network, `NET_BIND_SERVICE` capability to bind 80/443). |
 | `reverse_proxy.container.image` | `docker.io/haproxy:3.4.4-alpine@sha256:...` | Pinned HAProxy image. |
 | `reverse_proxy.container.user` | `haproxy` | Unprivileged system user the container runs as and that iptables trusts. |

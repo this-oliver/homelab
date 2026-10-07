@@ -81,7 +81,7 @@
         apply:
           tags: [monitor, headlamp, dashboard, trivy]
       tags: [monitor, headlamp, dashboard, trivy]
-      when: not (uninstall | default(false) | bool)
+      when: not (uninstall | default(false) | bool) and homelab.monitor.headlamp_dashboard.enabled
 
     - name: Reverse proxy
       ansible.builtin.include_role:

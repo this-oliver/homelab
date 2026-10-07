@@ -15,4 +15,4 @@ k8s_core_addons:
 # see: https://snapcraft.io/helm
 k8s_core_helm_version: latest/stable # 4.2.4
 
-k8s_core_storage_dir: "{{ homelab.dir }}/deployments/default-storage"
+k8s_core_storage_dir: "{{ homelab.general.dir }}/deployments/default-storage"
