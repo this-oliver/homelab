@@ -44,3 +44,46 @@ rules:
     verbs:
       - patch
       - update
+---
+# Deploys applications... usually through devops
+# pipelines. Use with caution.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: devops
+rules:
+  - apiGroups: [apps]
+    resources:
+      - deployments
+    verbs:
+      - create
+      - update
+      - patch
+      - get
+      - list
+  - apiGroups: [''] # "" indicates the core API group
+    resources:
+      - configmaps
+      - persistentvolumeclaims
+      - pods
+      - services
+      - secrets
+    verbs:
+      - create
+      - update
+      - patch
+      - get
+      - list
+  - apiGroups: [traefik.io]
+    resources:
+      - ingressroutes
+      - ingressroutetcps
+      - ingressrouteudps
+      - middlewares
+      - middlewaretcps
+    verbs:
+      - create
+      - update
+      - patch
+      - list
+      - get
