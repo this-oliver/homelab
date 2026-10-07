@@ -6,7 +6,7 @@ metadata:
   annotations:
     storageclass.kubernetes.io/is-default-class: "true"
 provisioner: microk8s.io/hostpath
-reclaimPolicy: Delete
+reclaimPolicy: Retain
 parameters:
   pvDir: "{{ k8s_core_storage_dir }}"
 volumeBindingMode: WaitForFirstConsumer
