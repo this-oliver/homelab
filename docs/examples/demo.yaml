@@ -61,22 +61,43 @@ spec:
       port: 80
       targetPort: demo-app-http
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: demo-basic-auth
+type: kubernetes.io/basic-auth
+stringData:
+  username: admin # required field for kubernetes.io/basic-auth
+  password: password # required field for kubernetes.io/basic-auth
+---
 apiVersion: traefik.io/v1alpha1
-kind: IngressRoute
+kind: Middleware
+metadata:
+  name: demo-middleware-auth
+spec:
+  basicAuth:
+    secret: demo-basic-auth
+---
+# See: https://doc.traefik.io/traefik/reference/routing-configuration/kubernetes/ingress/
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
   name: demo-app
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: "websecure,web"
+    traefik.ingress.kubernetes.io/router.middlewares: "default-demo-middleware-auth@kubernetescrd" # Note: middlewares should follow this format - <NAMESPACE>-<MIDDLEWARE_NAME>@kubernetescrd
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.tls.certresolver: "defaultCertResolver"
 spec:
-  entryPoints:
-    - websecure
-    - web
-  routes:
-    - match: Host(`demo.oliverr.net`)
-      kind: Rule
-      middlewares:
-        - name: rate-limit
-        - name: https-redirect
-      services:
-        - name: demo-app
-          port: 80
-  tls:
-    certResolver: defaultCertResolver
+  ingressClassName: traefik
+  rules:
+  - host: demo.oliverr.net
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: demo-app
+            port:
+              number: 80
