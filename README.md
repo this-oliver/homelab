@@ -128,7 +128,7 @@ ansible-playbook -i ansible/inventory/main.yaml ansible/homelab_uninstall.yaml -
 ## Documentation
 
 - [docs/README.md](docs/README.md) — documentation index
+- [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) — contributing guide
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — how the stack is wired together
 - [docs/intro.md](docs/intro.md) — step-by-step getting started and usage in depth
-- [docs/architecture.md](docs/architecture.md) — how the stack is wired together
-- [CONTRIBUTING.md](CONTRIBUTING.md) — contributing guide
 - [docs/examples/demo.yaml](docs/examples/demo.yaml) — example app you can deploy after install
