@@ -44,11 +44,6 @@ docs/                          # documentation (see below)
 
 The playbooks reference roles by name (`include_role: name: base`), resolved from `ansible/roles/` because that is the playbook's own `roles/` directory.
 
-Two rules keep the runs quiet:
-
-1. **No playbook dispatches on the `uninstall` flag.** Which playbook you want is the whole point of having two of them: `homelab.yaml` installs, `homelab_uninstall.yaml` tears down. `homelab_uninstall.yaml` sets `uninstall: true` as a play var, and neither playbook gates its own tasks on the flag, so a run only executes the work you asked for. Opt a teardown out of the default run by leaving the `uninstall` tag off the task, not by adding a `when`. `homelab.yaml` fails fast on `-e uninstall=true` (the first task of the first play, tagged `always` so a tag filter cannot skip it) — keep that guard, and keep the playbooks independent, so neither one can be made to run the other's direction.
-2. **Layer selection is tags, not flags.** `--tags base`, `--tags ingress`, `--tags uninstall` etc. This is why a tag filter is safe at all: an untagged task would be *skipped* by any filter, so tag every play, `pre_tasks` entry, `include_role` and `apply` block.
-
 ## Role conventions
 
 Every role must follow the same structure:
