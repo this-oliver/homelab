@@ -65,10 +65,22 @@
           tags: [uninstall, k8s, kubernetes]
       tags: [uninstall, k8s, kubernetes]
 
-    - name: Homelab summary
+- name: Teardown homelab core
+  hosts: all
+  vars_files:
+    - config.yaml
+  pre_tasks:
+    - name: Resolve homelab directory to an absolute path
+      ansible.builtin.include_tasks:
+        file: tasks/resolve_path.yaml
+        apply:
+          tags: [always]
+      tags: [always]
+  tasks:
+    - name: Summary
       ansible.builtin.include_role:
         name: base
         tasks_from: teardown.yaml
         apply:
-          tags: [uninstall, summary]
-      tags: [uninstall, summary]
+          tags: [always]
+      tags: [always]

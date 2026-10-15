@@ -124,15 +124,15 @@
       ansible.builtin.include_tasks:
         file: tasks/resolve_path.yaml
         apply:
-          tags: [summary]
-      tags: [summary]
+          tags: [always]
+      tags: [always]
       when: not (uninstall | bool)
     - name: Preflight check
       ansible.builtin.include_tasks:
         file: tasks/preflight.yaml
         apply:
-          tags: [summary]
-      tags: [summary]
+          tags: [always]
+      tags: [always]
       when: not (uninstall | bool) and not (preflight_passed | default(false) | bool)
   tasks:
     - name: Homelab summary
@@ -140,6 +140,6 @@
         name: base
         tasks_from: summary.yaml
         apply:
-          tags: [summary]
-      tags: [summary]
+          tags: [always]
+      tags: [always]
       when: not (uninstall | bool)
