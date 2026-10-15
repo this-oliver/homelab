@@ -210,6 +210,7 @@
       register: k8s_core_microk8s_hostpath_removed
       changed_when: k8s_core_microk8s_hostpath_removed.rc == 0
 
+  always:
     - name: Clean up files
       ansible.builtin.file:
         path: "{{ k8s_core_temp_storage_dir.path }}"
@@ -235,6 +236,7 @@
       changed_when: k8s_core_rbac_applied.stdout is search('(created|configured|deleted)')
       check_mode: false
 
+  always:
     - name: Clean up rbac resources
       ansible.builtin.file:
         path: "{{ k8s_core_rbac_dir.path }}"

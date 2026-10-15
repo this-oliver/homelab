@@ -40,6 +40,7 @@
       changed_when: k8s_extension_headlamp_rbac_applied.stdout is search('(created|configured|deleted)')
       check_mode: false
 
+  always:
     - name: Clean up rbac resources
       ansible.builtin.file:
         path: "{{ k8s_extension_headlamp_rbac_dir.path }}"
