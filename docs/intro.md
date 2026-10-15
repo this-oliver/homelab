@@ -172,7 +172,7 @@ ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags summ
 Your host now runs MicroK8s. Point `kubectl` at it by exporting the kubeconfig on the host:
 
 ```bash
-export KUBECONFIG=~/homelab/.kube/config.yaml
+export KUBECONFIG=~/homelab/config/kube/config.yaml
 ```
 
 Dashboards:

@@ -22,14 +22,14 @@
   block:
     - name: Ensure .kube directory exists
       ansible.builtin.file:
-        path: "{{ homelab.general.dir }}/.kube"
+        path: "{{ k8s_core_kube_dir }}"
         group: homelab
         state: directory
         mode: '760'
 
     - name: Ensure KubeConfig file exists
       ansible.builtin.file:
-        path: "{{ homelab.general.dir }}/.kube/config.yaml"
+        path: "{{ k8s_core_kube_dir }}/config.yaml"
         group: homelab
         state: touch
         mode: '660'
@@ -39,7 +39,7 @@
       ansible.builtin.lineinfile:
         path: /etc/environment
         regexp: 'KUBECONFIG='
-        line: "KUBECONFIG=\"{{ homelab.general.dir }}/.kube/config.yaml\""
+        line: "KUBECONFIG=\"{{ k8s_core_kube_dir }}/config.yaml\""
         create: true
         mode: '660'
 
@@ -121,7 +121,7 @@
     - name: Update Kubernetes Config file
       ansible.builtin.copy:
         content: "{{ k8s_core_kubeconfig_output.stdout }}"
-        dest: "{{ homelab.general.dir }}/.kube/config.yaml"
+        dest: "{{ k8s_core_kube_dir }}/config.yaml"
         remote_src: true
         group: homelab
         mode: '660'
