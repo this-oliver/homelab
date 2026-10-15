@@ -28,7 +28,7 @@ flowchart TD
     probe[Detect Raspberry Pi + existing microk8s] --> facts[set is_raspi / has_microk8s facts]
     facts --> kubeconfig[Create .kube dir + empty config<br/>export KUBECONFIG via /etc/environment]
     kubeconfig --> exists{has_microk8s?}
-    exists -- yes --> config[extract `microk8s config`<br/>write .kube/config.yaml]
+    exists -- yes --> config[extract `microk8s config`<br/>write config/kube/config.yaml]
     exists -- no --> install[install snapd + microk8s snap]
     install --> start[microk8s start + wait-ready]
     start --> addons[enable addons for this node role]
@@ -76,4 +76,4 @@ ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags kube
 
 ## Uninstall
 
-Removes the `microk8s` snap, the `kubectl` cli, the `helm` cli and deletes the KubeConfig file (`{{ homelab.general.dir }}/.kube/config.yaml`). In the playbook this runs, as art of the default teardown (`--tags uninstall`), before the CLI tooling is removed, so the cluster is always uninstalled cleanly.
+Removes the `microk8s` snap, the `kubectl` cli, the `helm` cli and deletes the KubeConfig file (`{{ homelab.general.dir }}/config/kube/config.yaml`). In the playbook this runs, as art of the default teardown (`--tags uninstall`), before the CLI tooling is removed, so the cluster is always uninstalled cleanly.
