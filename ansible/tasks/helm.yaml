@@ -61,9 +61,7 @@
       when: release_installed is false or release_version_match is true
 
 - name: Uninstall {{ helm_release.name }}
+  ansible.builtin.command: "helm --namespace {{ helm_release.namespace }} uninstall {{ helm_release.name }}"
+  register: k8s_core_uninstalled
+  changed_when: k8s_core_uninstalled.rc != 0
   when: uninstall | bool and release_installed | bool
-  block:
-    - name: Uninstall helm release via Helm - {{ helm_release.name }}
-      ansible.builtin.command: "helm --namespace {{ helm_release.namespace }} uninstall {{ helm_release.name }}"
-      register: k8s_core_uninstalled
-      changed_when: k8s_core_uninstalled.rc != 0

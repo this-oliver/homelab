@@ -2,3 +2,4 @@
   ansible.builtin.include_tasks: ../../../tasks/helm.yaml
   vars:
     helm_release: "{{ k8s_extension_traefik_helm_release }}"
+    uninstall: true
