@@ -83,7 +83,7 @@
         apply:
           tags: [dashboard]
       tags: [dashboard]
-      when: not (uninstall | bool) and homelab.monitor.headlamp_dashboard.enabled
+      when: not (uninstall | bool) and homelab.dashboard.headlamp_dashboard.enabled
 
     - name: Reverse Proxy - HAProxy
       ansible.builtin.include_role:

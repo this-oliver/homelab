@@ -10,8 +10,8 @@ future HTTPS config can be emitted conditionally. #}
 served at <domain>/traefik/dashboard, otherwise it is served at the
 host/node IP address on /traefik/dashboard.#}
 {% set dashboard_rule = 'PathPrefix(`/`)' %}
-{% if homelab.monitor.domain | length > 0 %}
-{% set dashboard_rule = 'Host(`' ~ homelab.monitor.domain ~ '`) && PathPrefix(`/`)' %}
+{% if homelab.dashboard.domain | length > 0 %}
+{% set dashboard_rule = 'Host(`' ~ homelab.dashboard.domain ~ '`) && PathPrefix(`/`)' %}
 {% endif %}
 
 # ── Headlamp Helm Values ───────────────────────────────────────────────────
@@ -29,7 +29,7 @@ volumes:
       emptyDir: {}
 
 initContainers:
-{% if homelab.monitor.headlamp_dashboard.trivy.enabled %}
+{% if homelab.dashboard.headlamp_dashboard.trivy.enabled %}
     - command:
         - /bin/sh
         - '-c'

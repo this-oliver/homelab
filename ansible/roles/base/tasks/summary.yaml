@@ -7,8 +7,8 @@
     base_summary_host: "{{ inventory_hostname }}"
     base_summary_host_type: "{{ group_names[0] }}"
     base_summary_kubeconfig: "{{ homelab.general.dir }}/config/kube/config.yaml"
-    base_summary_tls: "{{ homelab.monitor.domain | length > 0 and homelab.gateway.https.enabled | bool and homelab.gateway.https.email | length > 0 }}"
-    base_summary_origin: "{{ (homelab.monitor.domain | length > 0) | ternary(homelab.monitor.domain, inventory_hostname) }}"
+    base_summary_tls: "{{ homelab.dashboard.domain | length > 0 and homelab.gateway.https.enabled | bool and homelab.gateway.https.email | length > 0 }}"
+    base_summary_origin: "{{ (homelab.dashboard.domain | length > 0) | ternary(homelab.dashboard.domain, inventory_hostname) }}"
     base_summary_scheme: "{{ (base_summary_tls | default(false) | bool) | ternary('https', 'http') }}"
 
 - name: Get live cluster state

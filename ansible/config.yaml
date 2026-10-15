@@ -27,44 +27,44 @@ homelab:
       # [OPTIONAL] Defines the email to use when managing certificates.
       email: "{{ lookup('ansible.builtin.env', 'HOMELAB_NETWORK_HTTPS_EMAIL') | regex_replace('^\"|\"$', '') }}"
 
-  # Monitoring the cluster
-  monitor:
+  # Cluster dashboard
+  dashboard:
     # [OPTIONAL] Defines a domain that the cluster's dashboards will sit behind. If
-    # no domain is set then the monitoring dashboards are configured to sit behind
-    # the host's IP. (Default: null)
-    domain: "{{ lookup('ansible.builtin.env', 'HOMELAB_MONITOR_DOMAIN') | regex_replace('^\"|\"$', '') }}"
+    # no domain is set then the dashboards are configured to sit behind the host's
+    # IP. (Default: null)
+    domain: "{{ lookup('ansible.builtin.env', 'HOMELAB_DASHBOARD_DOMAIN') | regex_replace('^\"|\"$', '') }}"
 
     # Dashboard for cluster management.
     headlamp_dashboard:
       # [OPTIONAL] Enables the headlamp dashboard. (Defualt: true)
-      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_MONITOR_HEADLAMP_DASHBOARD_ENABLED') | default(true, true) | bool }}"
+      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_DASHBOARD_HEADLAMP_DASHBOARD_ENABLED') | default(true, true) | bool }}"
 
       # A plugin that displays the cost of resources like pods.
       opencost:
         # [OPTIONAL] Enables the opencost plugin. (Defualt: false)
-        enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_MONITOR_HEADLAMP_DASHBOARD_OPENCOST_ENABLED') | default('false') | bool }}"
+        enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_DASHBOARD_HEADLAMP_DASHBOARD_OPENCOST_ENABLED') | default('false') | bool }}"
 
       # A plugin that displays compute metrics (i.e. cpu and memory usage).
       prometheus:
         # [OPTIONAL] Enables the prometheus plugin. (Defualt: true)
-        enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_MONITOR_HEADLAMP_DASHBOARD_PROMETHEUS_ENABLED') | default(true, true) | bool }}"
+        enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_DASHBOARD_HEADLAMP_DASHBOARD_PROMETHEUS_ENABLED') | default(true, true) | bool }}"
 
       # A plugin that scans the cluster for security vulnerabilities.
       trivy:
         # [OPTIONAL] Enables the trivy plugin. (Defualt: false)
-        enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_MONITOR_HEADLAMP_DASHBOARD_TRIVY_ENABLED') | default('false') | bool }}"
+        enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_DASHBOARD_HEADLAMP_DASHBOARD_TRIVY_ENABLED') | default('false') | bool }}"
 
     # Dashboard for traefik (networking) services and middlewares.
     traefik_dashboard:
       # [OPTIONAL] Enables the traefik dashboard. (Defualt: false)
-      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_MONITOR_TRAEFIK_DASHBOARD_ENABLED') | default('false') | bool }}"
+      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_DASHBOARD_TRAEFIK_DASHBOARD_ENABLED') | default('false') | bool }}"
 
       # Credentials for admin account for services.
       auth:
         # [REQUIRED] Sets the username for authenticating to the traefik dashboard.
-        username: "{{ lookup('ansible.builtin.env', 'HOMELAB_MONITOR_TRAEFIK_DASHBOARD_AUTH_USERNAME') | regex_replace('^\"|\"$', '') }}"
+        username: "{{ lookup('ansible.builtin.env', 'HOMELAB_DASHBOARD_TRAEFIK_DASHBOARD_AUTH_USERNAME') | regex_replace('^\"|\"$', '') }}"
         # [REQUIRED] Sets the password for authenticating to the traefik dashboard.
-        password: "{{ lookup('ansible.builtin.env', 'HOMELAB_MONITOR_TRAEFIK_DASHBOARD_AUTH_PASSWORD') | regex_replace('^\"|\"$', '') }}"
+        password: "{{ lookup('ansible.builtin.env', 'HOMELAB_DASHBOARD_TRAEFIK_DASHBOARD_AUTH_PASSWORD') | regex_replace('^\"|\"$', '') }}"
 
 # ── MISC ─────────────────────────────────────────────────────────
 

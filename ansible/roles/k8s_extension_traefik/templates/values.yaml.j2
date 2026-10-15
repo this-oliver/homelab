@@ -11,10 +11,10 @@ future HTTPS config can be emitted conditionally. #}
 {#The dashboard can be enabled to view reoutes, services and middlewares.
 When a domain is configured it is served at <domain>/traefik/dashboard,
 otherwise it is served at the host/node IP address on /traefik/dashboard.#}
-{% set dashboard_enabled = homelab.monitor.traefik_dashboard.enabled %}
+{% set dashboard_enabled = homelab.dashboard.traefik_dashboard.enabled %}
 {% set dashboard_rule = 'PathPrefix(`/traefik`)' %}
-{% if homelab.monitor.domain | length > 0 %}
-{% set dashboard_rule = 'Host(`' ~ homelab.monitor.domain ~ '`) && PathPrefix(`/traefik`)' %}
+{% if homelab.dashboard.domain | length > 0 %}
+{% set dashboard_rule = 'Host(`' ~ homelab.dashboard.domain ~ '`) && PathPrefix(`/traefik`)' %}
 {% endif %}
 
 # ── Global ─────────────────────────────────────────────────────────
@@ -105,8 +105,8 @@ extraObjects:
       name: traefik-dashboard-auth-secret
     type: kubernetes.io/basic-auth
     stringData:
-      username: "{{ homelab.monitor.traefik_dashboard.auth.username }}"
-      password: "{{ homelab.monitor.traefik_dashboard.auth.password }}"
+      username: "{{ homelab.dashboard.traefik_dashboard.auth.username }}"
+      password: "{{ homelab.dashboard.traefik_dashboard.auth.password }}"
 
   - apiVersion: traefik.io/v1alpha1
     kind: Middleware

@@ -44,26 +44,26 @@
       ansible.builtin.assert:
         quiet: true
         that:
-          - homelab.monitor.traefik_dashboard.auth.username | length > 0
-          - homelab.monitor.traefik_dashboard.auth.password | length > 0
+          - homelab.dashboard.traefik_dashboard.auth.username | length > 0
+          - homelab.dashboard.traefik_dashboard.auth.password | length > 0
         fail_msg: |-
           Missing credentials in vars/main.yaml:
-            - homelab.monitor.traefik_dashboard.auth.username and homelab.monitor.traefik_dashboard.auth.password must be set via
+            - homelab.dashboard.traefik_dashboard.auth.username and homelab.dashboard.traefik_dashboard.auth.password must be set via
               the HOMELAB_ADMIN_USERNAME and HOMELAB_ADMIN_PASSWORD environment
-              variables. [username: {{ homelab.monitor.traefik_dashboard.auth.username | checksum }},
-              password: {{ homelab.monitor.traefik_dashboard.auth.password | checksum }}]
-      when: homelab.monitor.traefik_dashboard.enabled
+              variables. [username: {{ homelab.dashboard.traefik_dashboard.auth.username | checksum }},
+              password: {{ homelab.dashboard.traefik_dashboard.auth.password | checksum }}]
+      when: homelab.dashboard.traefik_dashboard.enabled
 
     - name: Assert domain URL is a valid hostname when set
       ansible.builtin.assert:
         quiet: true
         that:
-          - homelab.monitor.domain is match('^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$')
+          - homelab.dashboard.domain is match('^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$')
         fail_msg: |-
-          Invalid homelab.monitor.domain: '{{ homelab.monitor.domain }}'
+          Invalid homelab.dashboard.domain: '{{ homelab.dashboard.domain }}'
             - Provide a bare hostname/domain without a scheme or path, e.g.
               'homelab.example.com' (env HOMELAB_DOMAIN_URL).
-      when: homelab.monitor.domain | length > 0
+      when: homelab.dashboard.domain | length > 0
 
     - name: Assert HTTPS email is valid when https is enabled
       ansible.builtin.assert:
@@ -76,7 +76,7 @@
               when HTTPS is enabled (env HOMELAB_DOMAIN_HTTPS_EMAIL).
       when:
         - homelab.gateway.https.enabled | bool
-        - homelab.monitor.domain | length > 0
+        - homelab.dashboard.domain | length > 0
 
     - name: Preflight - record passed homelab check
       ansible.builtin.set_fact:
