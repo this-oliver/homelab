@@ -49,8 +49,7 @@ See [tasks/helm.yaml](../../tasks/helm.yaml) for the shared `helm_release` contr
 
 ## Tags
 
-- `ingress`
-- `traefik`
+- `gateway`
 
 ```bash
 ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags ingress

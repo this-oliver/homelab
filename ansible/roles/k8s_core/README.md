@@ -66,9 +66,8 @@ Environments it handles specially:
 
 ## Tags
 
+- `k8s`
 - `kubernetes`
-- `kubectl`
-- `helm`
 
 ```bash
 ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags kubernetes

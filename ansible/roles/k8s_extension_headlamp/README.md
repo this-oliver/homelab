@@ -57,10 +57,7 @@ Template details from `headlamp-values.yaml.j2`:
 
 ## Tags
 
-- `monitor`
-- `headlamp`
 - `dashboard`
-- `trivy`
 
 ```bash
 ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags monitor
