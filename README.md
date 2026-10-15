@@ -8,19 +8,28 @@ One command provisions the whole stack. Ansible connects to your host and layers
 
 ```mermaid
 flowchart LR
-    Client[Your browser / apps] -->|HTTP and HTTPS<br/>ports 80 / 443| HAProxy[HAProxy<br/>reverse proxy]
+  Client[Browsers or<br/>Apps] -->|HTTP and HTTPS<br/>ports 80 / 443| ReverseProxy[Reverse Proxy<br/>with HAProxy]
 
-    subgraph controller[Ubuntu - Controller Host]
-        HAProxy -->|PROXY protocol| Traefik[Traefik<br/>ingress gateway]
-        Traefik -->|IngressRoute| Headlamp[Headlamp<br/>web dashboard]
-        Traefik -->|IngressRoute| Apps[Your apps]
-        Headlamp --> MicroK8s[Kubernetes Cluster]
-        Apps --> MicroK8s
+  subgraph controller[Ubuntu - Controller Host]
+    ReverseProxy -->|PROXY protocol| Gateway[Gateway<br/>with Traefik]
+
+    subgraph cluster[Kubernetes]
+      Gateway -->|IngressRoute| Dashboard[Dashboard<br/>with Headlamp]
+      Gateway -->|IngressRoute| App1[App 1]
+      Gateway -->|IngressRoute| App2[App 2]
+      Gateway -->|IngressRoute| AppN[App N...]
+      Dashboard --> Cluster[Kubernetes Cluster<br/>with MicroK8s]
+      App1 --> Cluster
+      App2 --> Cluster
+      AppN --> Cluster
     end
-    
-    subgraph worker[Ubuntu - Worker Hosts]
-        MicroK8s --> MicroK8sWorker[Optional Worker Nodes]
-    end
+  end
+  
+  subgraph worker[Ubuntu - Worker Hosts]
+    Cluster --> Worker1[Optional Worker Node 1]
+    Cluster --> Worker2[Optional Worker Node 2]
+    Cluster --> WorkerN[Optional Worker Node N..]
+  end
 ```
 
 Every layer is an [Ansible role](#components). Installs and uninstalls live in two separate playbooks, and each role is targeted with `--tags`. See [docs/architecture.md](docs/architecture.md) for the full breakdown.
@@ -112,8 +121,8 @@ ansible-playbook -i ansible/inventory/main.yaml ansible/homelab_uninstall.yaml -
 That removes the reverse proxy, the cluster and the cluster tooling. The Helm releases (Headlamp, Trivy, Traefik) are opt-in and need a live cluster, so remove them first:
 
 ```bash
-ansible-playbook -i ansible/inventory/main.yaml ansible/homelab_uninstall.yaml --tags monitor
-ansible-playbook -i ansible/inventory/main.yaml ansible/homelab_uninstall.yaml --tags ingress
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab_uninstall.yaml --tags dashboard
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab_uninstall.yaml --tags gateway
 ```
 
 ## Documentation

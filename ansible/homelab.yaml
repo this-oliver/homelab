@@ -6,7 +6,7 @@
   ansible.builtin.import_playbook: homelab_uninstall.yaml
   when: uninstall | bool
 
-- name: Bootstrap nodes
+- name: Provision homelab core
   hosts: all
   vars_files:
     - config.yaml
@@ -17,16 +17,16 @@
       ansible.builtin.include_tasks:
         file: tasks/resolve_path.yaml
         apply:
-          tags: [base, kubernetes, kubectl, helm, worker]
-      tags: [base, kubernetes, kubectl, helm, worker]
+          tags: [base, k8s, kubernetes]
+      tags: [base, k8s, kubernetes]
       when: not (uninstall | bool)
 
     - name: Preflight check
       ansible.builtin.include_tasks:
         file: tasks/preflight.yaml
         apply:
-          tags: [base, kubernetes, kubectl, helm, worker]
-      tags: [base, kubernetes, kubectl, helm, worker]
+          tags: [base, k8s, kubernetes]
+      tags: [base, k8s, kubernetes]
       when: not (uninstall | bool) and not (preflight_passed | default(false) | bool)
   tasks:
     - name: Base setup
@@ -42,8 +42,8 @@
         name: k8s_core
         tasks_from: setup.yaml
         apply:
-          tags: [kubernetes, kubectl, helm]
-      tags: [kubernetes, kubectl, helm]
+          tags: [k8s, kubernetes]
+      tags: [k8s, kubernetes]
       when: not (uninstall | bool)
 
 - name: Provision homelab controller
@@ -55,37 +55,37 @@
       ansible.builtin.include_tasks:
         file: tasks/resolve_path.yaml
         apply:
-          tags: [ingress, traefik, monitor, headlamp, dashboard, trivy, reverse_proxy]
-      tags: [ingress, traefik, monitor, headlamp, dashboard, trivy, reverse_proxy]
+          tags: [reverse_proxy, gateway, dashboard]
+      tags: [reverse_proxy, gateway, dashboard]
       when: not (uninstall | bool)
 
     - name: Preflight check
       ansible.builtin.include_tasks:
         file: tasks/preflight.yaml
         apply:
-          tags: [ingress, traefik, monitor, headlamp, dashboard, trivy, reverse_proxy]
-      tags: [ingress, traefik, monitor, headlamp, dashboard, trivy, reverse_proxy]
+          tags: [reverse_proxy, gateway, dashboard]
+      tags: [reverse_proxy, gateway, dashboard]
       when: not (uninstall | bool) and not (preflight_passed | default(false) | bool)
   tasks:
-    - name: Ingress Gateway - Traefik
+    - name: Gateway - Traefik
       ansible.builtin.include_role:
         name: k8s_extension_traefik
         tasks_from: setup.yaml
         apply:
-          tags: [ingress, traefik]
-      tags: [ingress, traefik]
+          tags: [gateway]
+      tags: [gateway]
       when: not (uninstall | bool)
 
-    - name: Dashboard - Headlamp
+    - name: Dashboard - Headlamp, Prometheus, OpenCost, Trivy
       ansible.builtin.include_role:
         name: k8s_extension_headlamp
         tasks_from: setup.yaml
         apply:
-          tags: [monitor, headlamp, dashboard, trivy]
-      tags: [monitor, headlamp, dashboard, trivy]
+          tags: [dashboard]
+      tags: [dashboard]
       when: not (uninstall | bool) and homelab.monitor.headlamp_dashboard.enabled
 
-    - name: Reverse proxy
+    - name: Reverse Proxy - HAProxy
       ansible.builtin.include_role:
         name: reverse_proxy
         tasks_from: setup.yaml
@@ -115,7 +115,7 @@
       tags: [kubernetes, worker]
       when: not (uninstall | bool)
 
-- name: Publish homelab summary
+- name: Provision homelab summary
   hosts: all
   vars_files:
     - config.yaml

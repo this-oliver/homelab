@@ -7,7 +7,7 @@
 # `uninstall: true` play var is needed here: the variable stays false in
 # config.yaml and only the install body reads it.
 
-- name: Teardown controller
+- name: Teardown homelab controller
   hosts: controller
   vars_files:
     - config.yaml
@@ -18,8 +18,8 @@
       ansible.builtin.include_tasks:
         file: tasks/resolve_path.yaml
         apply:
-          tags: [always]
-      tags: [always]
+          tags: [uninstall, reverse_proxy, gateway, dashboard]
+      tags: [uninstall, reverse_proxy, gateway, dashboard]
   tasks:
     - name: Reverse proxy
       ansible.builtin.include_role:
@@ -29,23 +29,23 @@
           tags: [uninstall, reverse_proxy]
       tags: [uninstall, reverse_proxy]
 
-    - name: Dashboard - Headlamp
+    - name: Dashboard - Headlamp, Prometheus, OpenCost, Trivy
       ansible.builtin.include_role:
         name: k8s_extension_headlamp
         tasks_from: teardown.yaml
         apply:
-          tags: [dashboard, headlamp, trivy]
-      tags: [dashboard, headlamp, trivy]
+          tags: [uninstall, dashboard]
+      tags: [uninstall, dashboard]
 
-    - name: Ingress Gateway - Traefik
+    - name: Gateway - Traefik
       ansible.builtin.include_role:
         name: k8s_extension_traefik
         tasks_from: teardown.yaml
         apply:
-          tags: [ingress, traefik]
-      tags: [ingress, traefik]
+          tags: [uninstall, gateway]
+      tags: [uninstall, gateway]
 
-- name: Teardown homelab
+- name: Teardown homelab core
   hosts: all
   vars_files:
     - config.yaml
@@ -54,16 +54,16 @@
       ansible.builtin.include_tasks:
         file: tasks/resolve_path.yaml
         apply:
-          tags: [always]
-      tags: [always]
+          tags: [uninstall, k8s, kubernetes]
+      tags: [uninstall, k8s, kubernetes]
   tasks:
     - name: Kubernetes
       ansible.builtin.include_role:
         name: k8s_core
         tasks_from: teardown.yaml
         apply:
-          tags: [uninstall, kubernetes, kubectl, helm]
-      tags: [uninstall, kubernetes, kubectl, helm]
+          tags: [uninstall, k8s, kubernetes]
+      tags: [uninstall, k8s, kubernetes]
 
     - name: Homelab summary
       ansible.builtin.include_role:
