@@ -1,17 +1,17 @@
-# Introduction
+# Homelab Administrator
 
-This guide takes you from nothing to a running homelab. The [README](../README.md) gives you the 30-second overview and quickstart; this page is the expanded version with configuration references and troubleshooting notes.
+This guide takes you from nothing to a running homelab. The root [README](../../README.md) gives you the 30-second overview and quickstart; this page is the expanded version with configuration references and troubleshooting notes.
 
 ## What you end up with
 
-- A MicroK8s Kubernetes cluster on a single Ubuntu host
-- Kubectl and Helm installed on the host
-- A Traefik ingress gateway with a password-protected dashboard
-- A Headlamp web dashboard with Trivy vulnerability scanning
-- An HAProxy reverse proxy as the only entry from the internet, locked to loopback ports with iptables
+- A kubernetes cluster on a single Ubuntu host powered by `MicroK8s`
+- Helper tools installed on the host - `Kubectl` and `Helm`
+- A gateway for all your traffic powered by `Traefik`
+- A dashboard UI for kubernetes cluster powered by `Headlamp`, `Prometheus`, `OpenCost` and `Trivy`
+- A reverse proxy as the only entry from the internet, locked to loopback ports with iptables powered by `HAProxy`
 - A generated `~/homelab/README.md` summarising the URLs, versions and topology of what was installed
 
-Everything is declared in Ansible, so the same commands install, update and remove the stack in a repeatable order.
+Everything is declared in Ansible, so the same commands install, update and remove the stack in a consistent manner.
 
 ## Pre-requisites
 
@@ -198,6 +198,6 @@ kubectl apply -f docs/examples/demo.yaml
 
 ## Next steps
 
-- [docs/architecture.md](architecture.md) — how the layers interoperate
-- [CONTRIBUTING.md](../CONTRIBUTING.md) — contributing to the project
-- [docs/README.md](README.md) — full documentation index
+- [developer](user-developer.md) — Deploy application to the homelab
+- [docs/CONTRIBUTING.md](../CONTRIBUTING.md) — contributing to the project
+- [docs/README.md](../README.md) — full documentation index
