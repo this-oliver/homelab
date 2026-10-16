@@ -196,10 +196,13 @@
     - name: Check if homelab namespace exists
       ansible.builtin.command: kubectl get namespaces/homelab -o name
       register: k8s_core_namespace_check
+      changed_when: k8s_core_namespace_check.stdout is search('(created|configured|deleted)')
 
     - name: Create homelab namespace
       when: k8s_core_namespace_check.stdout == ''
       ansible.builtin.command: kubectl create namespace homelab
+      register: k8s_core_namespace_created
+      changed_when: k8s_core_namespace_created.stdout is search('(created|configured|deleted)')
 
 - name: Setup Cluster RBAC
   when: inventory_hostname in (groups['controller'] | default([])) # only on controllers

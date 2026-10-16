@@ -4,9 +4,9 @@ kind: ClusterRoleBinding
 metadata:
   name: homelab-maintainer
 subjects:
-- kind: ServiceAccount
-  name: maintainer
-  namespace: homelab
+  - kind: ServiceAccount
+    name: maintainer
+    namespace: homelab
 roleRef:
   kind: ClusterRole
   name: maintainer
