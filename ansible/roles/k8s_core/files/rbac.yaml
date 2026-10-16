@@ -6,21 +6,33 @@ metadata:
   name: observer
 rules:
   - apiGroups:
-      - '*'
+      - '' # indicates the core API group
     resources:
       - namespaces
-      - deployments
+      - configmaps
       - pods
       - services
+      - persistentvolumeclaims
+    verbs:
+      - get
+      - list
+  - apiGroups:
+      - 'apps'
+    resources:
+      - deployments
+    verbs:
+      - get
+      - list
+  - apiGroups: [traefik.io]
+    resources:
       - ingressroutes
       - ingressroutetcps
       - ingressrouteudps
       - middlewares
       - middlewaretcps
     verbs:
-      - get
       - list
-      - watch
+      - get
 ---
 # Restarts deployments when they fail. Destroys
 # pods when they become stubborn
@@ -30,17 +42,18 @@ metadata:
   name: fixer
 rules:
   - apiGroups:
-      - '*'
+      - '' # indicates the core API group
     resources:
-      - deployments
       - pods
     verbs:
       - get
       - list
   - apiGroups:
-      - '*'
+      - 'apps'
     resources:
       - deployments
     verbs:
+      - get
+      - list
       - patch
       - update
