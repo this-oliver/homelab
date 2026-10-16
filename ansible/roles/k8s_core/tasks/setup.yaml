@@ -224,14 +224,14 @@
         state: directory
       register: k8s_core_rbac_dir
 
-    - name: Copy Custom RBAC Resources
+    - name: Copy Cluster Role Resources
       ansible.builtin.copy:
-        src: files/rbac.yaml
-        dest: "{{ k8s_core_rbac_dir.path }}/rbac.yaml"
+        src: files/cluster-roles.yaml
+        dest: "{{ k8s_core_rbac_dir.path }}/cluster-roles.yaml"
         mode: "440"
 
     - name: Apply cluster RBAC
-      ansible.builtin.command: kubectl apply -f {{ k8s_core_rbac_dir.path }}/rbac.yaml
+      ansible.builtin.command: kubectl apply -f {{ k8s_core_rbac_dir.path }}/cluster-roles.yaml
       register: k8s_core_rbac_applied
       changed_when: k8s_core_rbac_applied.stdout is search('(created|configured|deleted)')
       check_mode: false
