@@ -1,6 +1,6 @@
 k8s_extension_traefik_helm_release:
   name: traefik
-  namespace: traefik
+  namespace: homelab
   chart:
     ref: traefik/traefik
     version: "41.0.2"
