@@ -81,5 +81,7 @@ extraManifests:
       - name: "{{ helm_release.name }}"
         namespace: "{{ helm_release.namespace }}"
         port: 80
+{% if https_enabled %}
     tls:
       certResolver: defaultCertResolver
+{% endif %}
