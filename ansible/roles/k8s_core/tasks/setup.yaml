@@ -18,7 +18,7 @@
     k8s_core_is_raspi: "{{ (k8s_core_pi_model.content | default('') | b64decode) is search('Raspberry Pi') }}"
     k8s_core_has_microk8s: "{{ k8s_core_microk8s_check.rc == 0 }}"
 
-- name: Setup KubeConfig
+- name: Configure KubeConfig
   block:
     - name: Ensure .kube directory exists
       ansible.builtin.file:
@@ -87,7 +87,7 @@
       notify:
         - Reboot to apply Microk8s changes
 
-- name: Install Kubernetes
+- name: Setup Kubernetes
   become: true
   when: not (k8s_core_has_microk8s | bool)
   block:
@@ -126,32 +126,6 @@
         group: homelab
         mode: '660'
       register: k8s_core_kubeconfig_updated
-
-- name: Install Kubectl tool
-  block:
-    - name: Install Kubectl
-      become: true
-      community.general.snap:
-        classic: true
-        channel: "{{ homelab.general.k8s.version }}"
-        name: kubectl
-
-- name: Install Helm tool
-  block:
-    - name: Check if helm is installed
-      ansible.builtin.command: which helm
-      register: k8s_core_helm_installed
-      failed_when: false
-      changed_when: false
-      check_mode: false
-
-    - name: Install Helm
-      become: true
-      community.general.snap:
-        classic: true
-        channel: "{{ k8s_core_helm_version }}"
-        name: helm
-      when: k8s_core_helm_installed.stdout == ''
 
 - name: Setup Microk8s addons
   block:
@@ -264,3 +238,29 @@
       ansible.builtin.file:
         path: "{{ k8s_core_rbac_dir.path }}"
         state: absent
+
+- name: Install Kubectl tool
+  block:
+    - name: Install Kubectl
+      become: true
+      community.general.snap:
+        classic: true
+        channel: "{{ homelab.general.k8s.version }}"
+        name: kubectl
+
+- name: Install Helm tool
+  block:
+    - name: Check if helm is installed
+      ansible.builtin.command: which helm
+      register: k8s_core_helm_installed
+      failed_when: false
+      changed_when: false
+      check_mode: false
+
+    - name: Install Helm
+      become: true
+      community.general.snap:
+        classic: true
+        channel: "{{ k8s_core_helm_version }}"
+        name: helm
+      when: k8s_core_helm_installed.stdout == ''
