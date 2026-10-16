@@ -227,7 +227,7 @@
       when: k8s_core_namespace_check.stdout == ''
       ansible.builtin.command: kubectl create namespace homelab
 
-- name: Setup Observer and Fixer Cluster Roles
+- name: Setup Cluster RBAC
   when: inventory_hostname in (groups['controller'] | default([])) # only on controllers
   block:
     - name: Create a temporary directory

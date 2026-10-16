@@ -1,9 +1,11 @@
 ---
-# Keeps an eye on systems.
+# The maintainer role keeps an eye (read-only) on key resources
+# in the cluster and is able to restart app deployments if they
+# are not responsive.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: observer
+  name: maintainer
 rules:
   - apiGroups:
       - '' # indicates the core API group
@@ -23,6 +25,8 @@ rules:
     verbs:
       - get
       - list
+      - patch
+      - update
   - apiGroups: [traefik.io]
     resources:
       - ingressroutes
@@ -33,27 +37,3 @@ rules:
     verbs:
       - list
       - get
----
-# Restarts deployments when they fail. Destroys
-# pods when they become stubborn
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: fixer
-rules:
-  - apiGroups:
-      - '' # indicates the core API group
-    resources:
-      - pods
-    verbs:
-      - get
-      - list
-  - apiGroups:
-      - 'apps'
-    resources:
-      - deployments
-    verbs:
-      - get
-      - list
-      - patch
-      - update
