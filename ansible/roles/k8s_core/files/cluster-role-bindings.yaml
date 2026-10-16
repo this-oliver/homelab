@@ -1,0 +1,12 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: homelab-observer
+subjects:
+- kind: ServiceAccount
+  name: observer
+  namespace: homelab
+roleRef:
+  kind: ClusterRole
+  name: observer
