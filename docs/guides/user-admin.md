@@ -1,5 +1,8 @@
 # Homelab Administrator
 
+> [!NOTE]
+> This guide assumes that you have experience with command line tools, python, ansible, linux and kubernetes.
+
 This guide takes you from nothing to a running homelab. The root [README](../../README.md) gives you the 30-second overview and quickstart; this page is the expanded version with configuration references and troubleshooting notes.
 
 ## What you end up with
@@ -13,20 +16,22 @@ This guide takes you from nothing to a running homelab. The root [README](../../
 
 Everything is declared in Ansible, so the same commands install, update and remove the stack in a consistent manner.
 
-## Pre-requisites
+## Getting Started
 
-You need two machines involved:
+Pre-requisites:
 
-| Machine | Requirement |
-| --- | --- |
-| **Control machine** (where you run Ansible) | Python 3.12+, this repository checked out |
-| **Target host** (where homelab runs) | Ubuntu 20.04 LTS, 2 CPU, 2 GB RAM, reachable IP/DNS, an SSH user and key |
+- **Ansible host** - where you run Ansible
+  -  Python 3.12+
+- **Target host** - at least 1 host for the homelab to run on
+  - Ubuntu 20.04 LTS, 
+  - 2 CPU, 
+  - 2 GB RAM, 
+  - reachable IP/DNS,
+  - an SSH user and key
 
 Optionally, a public domain pointing at the host lets you serve the dashboards and apps with HTTPS via Let's Encrypt.
 
-## Getting Started
-
-### 1. Install dependencies
+### 1. Install dependencies (*on the **provisioning** host*)
 
 Create a Python virtual environment and install the Ansible collection requirements:
 
@@ -37,74 +42,71 @@ source .venv/bin/activate
 python3 -m pip install -r requirements.txt
 ```
 
-Note: on modern Ubuntu, `python3-venv` may be a separate package. Install it with `sudo apt install python3-venv` if the `venv` step fails.
+### 2. Configure the inventory (*on the **provisioning** host*)
 
-### 2. Configure the inventory
+> [!NOTE]
+> The homelab requires at least 1 target host as a **controller** and 0 or more hosts as **workers**.
 
 ```bash
 cp ansible/inventory/main.example.yaml ansible/inventory/main.yaml
 ```
 
-The inventory defines the `controller` group — the host(s) that get a Kubernetes cluster. Edit `ansible/inventory/main.yaml`:
+The inventory defines the `controller` and `worker` groups — the host(s) that get a Kubernetes cluster. Edit `ansible/inventory/main.yaml`:
 
 ```yaml
 controller:
   hosts:
-    123.123.123.123: # or `homelab.com`
+    111.111.111.111: # or `homelab.example.com`
       ansible_port: 22
       ansible_user: foobar
       ansible_ssh_private_key_file: /path/to/key
+      
+# workers:
+#   hosts:
+#     222.222.222.222: # or `worker1.example.com`
+#       ansible_port: 22
+#       ansible_user: foobar
+#       ansible_ssh_private_key_file: /path/to/key
+#     333.333.333.333: # or `worker2.example.com`
+#       ansible_port: 22
+#       ansible_user: foobar
+#       ansible_ssh_private_key_file: /path/to/key
 ```
 
 - The key can be the IP address **or** a URL that resolves to the host.
-- `ansible_ssh_private_key_file` is the SSH key on your control machine that can log into the host.
+- `ansible_ssh_private_key_file` is the SSH key on your provisioning machine that can log into the host.
 
-### 3. Configure `ansible/config.yaml`
+### 3. Configure `ansible/config.yaml` (*on the **provisioning** host*)
 
-The list of hosts is inventory; everything else about *what* gets installed lives in `ansible/config.yaml`. It has working defaults, so **you can install without touching it**, but every tweakable lever is exposed there and documented below.
+The inventory list defines the hosts at our disposal but [`ansible/config.yaml`](../../ansible/config.yaml) defines *what* gets installed as part of the homelab. 
 
-| Key | Required | Default | Description |
-| --- | --- | --- | --- |
-| `homelab.general.dir` | no | `"~/homelab"` | Directory on the target host for homelab state (`.kube`, HAProxy config, certs). A leading `~` is resolved against the connecting user's home before any role runs. |
-| `homelab.general.k8s.version` | no | `1.36` | Kubernetes version consumed by the kubectl and k8s_core roles (snap channel). |
-| `homelab.dashboard.traefik_dashboard.auth.username` | **yes** | from env | Admin username for dashboards. Read from `HOMELAB_ADMIN_USERNAME`. |
-| `homelab.dashboard.traefik_dashboard.auth.password` | **yes** | from env | Admin password for dashboards. Read from `HOMELAB_ADMIN_PASSWORD`. |
-| `homelab.dashboard.domain` | no | from env | Public domain served by the homelab, e.g. `homelab.example.com`. Without one, dashboards are served on the host IP. |
-| `homelab.gateway.https.enabled` | no | `true` | Whether to serve the domain over HTTPS (requires a valid `https.email`). |
-| `homelab.gateway.https.email` | no | from env | Email used by Let's Encrypt for certificate management. Required if HTTPS is enabled and a domain is set. |
-| `homelab.security.trivy.enabled` | no | `true` | Install the Trivy operator and surface scan results in the Headlamp dashboard. |
-| `uninstall` | no | `false` | Internal. Selects each role's `setup` or `teardown` path. `ansible/homelab_uninstall.yaml` sets it to `true` for you; leave it alone. |
+The config has working defaults, so **you can install the homelab without touching it**, but every tweakable lever is exposed there. You can also tweak the config file via env variables (checkout the [.env.example](../../.env.example)).
 
 ### 4. Configure environmental variables (secrets)
 
-Secrets never live in `ansible/config.yaml` — they are read from the environment so nothing sensitive is committed to version control.
+Secrets never live in [`ansible/config.yaml`](../../ansible/config.yaml) — they are read from the environment so nothing sensitive is committed to version control.
 
 ```bash
 cp .env.example .env
 ```
 
-Fill in the values. The `REQUIRED` ones must be set for the playbook to run at all:
-
-| Variable | Required | Purpose |
-| --- | --- | --- |
-| `HOMELAB_ADMIN_USERNAME` | yes | Admin username for dashboard authentication |
-| `HOMELAB_ADMIN_PASSWORD` | yes | Admin password for dashboard authentication |
-| `HOMELAB_DOMAIN_URL` | no | URL for accessing the homelab remotely |
-| `HOMELAB_DOMAIN_HTTPS_ENABLED` | no | Toggle HTTPS on the domain (`true`/`false`, defaults to `true`) |
-| `HOMELAB_DOMAIN_HTTPS_EMAIL` | no | Email for configuring HTTPS certificates |
-| `HOMELAB_SECURITY_TRIVY_ENABLED` | no | Toggle the Trivy vulnerability scanner (`true`/`false`, defaults to `true`) |
-
-Apply the variables to your terminal session:
+Tweak the values that you'd like to change and apply the variables to your terminal session:
 
 ```bash
 export $(cat .env | tr '\n' ' ')
 ```
 
+You can confirm that the variables are live in your terminal session with:
+
+```bash
+env | grep 'HOMELAB'
+```
+
 ## Usage
 
-Two playbooks do the work: `ansible/homelab.yaml` provisions the stack and `ansible/homelab_uninstall.yaml` tears it down. Neither one gates its own tasks on a flag, so a run only executes the half you asked for.
+Two playbooks do the work: [`ansible/homelab.yaml`](../../ansible/homelab.yaml) provisions the homelab and [`ansible/homelab_uninstall.yaml`](../../ansible/homelab_uninstall.yaml) tears it down.
 
-### Install
+### Install the Homelab
 
 Install (or update) the full stack on the target host:
 
@@ -112,89 +114,115 @@ Install (or update) the full stack on the target host:
 ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml
 ```
 
-The install playbook runs its plays in dependency order, so the reverse proxy is never installed before the ingress gateway it protects.
+Once the play is complete, you should have a Kubernetes instance running on your **controller** and, optionally, **workers**. You can find a summary of the setup in your target hosts by visiting `~/homelab/README.md` - you should be able to gather the dashboard URLs, the versions actually deployed, the cluster's nodes and its ingress routes, and how to reach the kubeconfig.
 
-### Install individual layers
-
-The playbook is tagged per layer:
+You can also install specific components of the homelab using tags:
 
 ```bash
 ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags base
-ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags kubernetes
-ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags ingress
-ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags monitor
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags kubernetes #or 'k8s'
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags gateway
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags dashboard
 ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags reverse_proxy
 ```
 
-The full run also writes the summary readme; to regenerate just that, use `--tags summary`.
+> [!TIP]
+> You can find available tags with `ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --list-tags`
 
-### Uninstall
+#### Accessing the Homelab cluster
 
-Uninstall the reverse proxy, the cluster and the cluster tooling:
+##### Locally
 
-```bash
-ansible-playbook -i ansible/inventory/main.yaml ansible/homelab_uninstall.yaml --tags uninstall
-```
-
-Or uninstall a single layer:
+Once you setup your homelab cluster, you can play around with it simply by ssh'ing into the **controller host** and using the `kubectl` cli.
 
 ```bash
-make uninstall-kubernetes   # short for --tags kubernetes
-make uninstall-helm         # short for --tags helm
+# acces the controller node
+ssh foobar@111.111.111.111 -i /path/to/key
+
+# inspect pods across all namespaces
+kubectl get pods -A
 ```
 
-The Helm-managed releases are **not** part of the default teardown — removing them is opt-in, one layer at a time:
+##### Remotely
 
-The underlying commands are `ansible/homelab_uninstall.yaml` with the layer tag, e.g. `--tags monitor`, `--tags ingress`, `--tags helm`.
+To access your kubernetes cluster remotely, you need to the following access information from your cluster:
 
-> [!IMPORTANT]
-> Run those two **before** `make uninstall`. Removing a release shells out to `helm ... uninstall` against a running cluster, and the default teardown deletes that cluster.
+- ip address or hostname
+- `maintainer` service account's token
 
-The `base` role's teardown removes only the generated summary readme. The `homelab` group and directory are the foundation everything else assumes, so they are never removed.
-
-> [!NOTE]
-> The two playbooks are independent: `homelab.yaml` installs, `homelab_uninstall.yaml` tears down, and tags pick the layer within each. There is no flag that switches direction — an old script that still passes `-e uninstall=true` to `homelab.yaml` fails immediately and points here.
-
-### After install
-
-The last play writes a summary of what it just built to `~/homelab/README.md` on the controller: the dashboard URLs, the versions actually deployed, the cluster's nodes and its ingress routes, and how to reach the kubeconfig. Open it on the host:
+The ip address can be gather from your inventory file. The service account needs to be extracted from within the **controller** node.
 
 ```bash
-cat ~/homelab/README.md
+# acces the controller node
+ssh foobar@111.111.111.111 -i /path/to/key
+
+# create a short-lived token
+kubectl create token maintainer -n homelab
+
+# create a token that lives for 24 hours
+# kubectl create token maintainer -n homelab --duration=24h
 ```
 
-Everything above the notes section at the bottom is regenerated on every run; anything you write between the two `notes` markers survives. Regenerate it on its own without touching the rest of the stack:
+After you have gather the access information, you need to setup your machine so that it can reach the remote homelab cluster:
 
 ```bash
-ansible-playbook -i ansible/inventory/main.yaml ansible/homelab.yaml --tags summary
+# create the cluster
+kubectl config set-cluster homelab-cluster --server=https://111.111.111.111 --insecure-skip-tls-verify=true
+
+# create the cluster credentials
+kubectl config set-credentials homelab-user --token='<TOKEN>'
+
+# create the cluster context
+kubectl config set-context homelab --user=homelab-user --cluster=homelab-cluster
+
+# set the cluster context
+kubectl config use-context homelab
 ```
 
-Your host now runs MicroK8s. Point `kubectl` at it by exporting the kubeconfig on the host:
+> [!WARNING]
+> When setting the *cluster*, the example above uses `--insecure-skip-tls-verify=true` which is insecure because it exposes you to man-in-the-middle attacks since you never verify the connection between your machine and the homelab host!!! Will investigate a better method for setting the cluster.
+
+Once you have set your `kubectl` context, you can interact with the homelab cluster like it's running directly on your machine.
+
+### Uninstalling the homelab
+
+Uninstall the full stack on the target host:
 
 ```bash
-export KUBECONFIG=~/homelab/config/kube/config.yaml
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab_uninstall.yaml
 ```
 
-Dashboards:
-
-- **Traefik** — `http://<host>/traefik/dashboard/` (or `https://<domain>/traefik/`)
-- **Headlamp** — `http://<host>/dashboard/` (or `https://<domain>/dashboard/`)
-
-The Traefik dashboard is behind the basic auth built from `homelab.dashboard.traefik_dashboard.auth.*`. Headlamp has its own login and asks for cluster credentials on first visit.
-
-Try deploying the bundled example app to confirm the ingress path works end to end:
+Similar to the install process, you can also uninstall specific components:
 
 ```bash
-kubectl apply -f docs/examples/demo.yaml
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab_uninstall.yaml --tags kubernetes #or 'k8s'
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab_uninstall.yaml --tags gateway
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab_uninstall.yaml --tags dashboard
+ansible-playbook -i ansible/inventory/main.yaml ansible/homelab_uninstall.yaml --tags reverse_proxy
 ```
 
-## Troubleshooting
+### Provisioning a namespace
 
-- **`Missing credentials in vars/main.yaml`** — the `HOMELAB_ADMIN_USERNAME`/`HOMELAB_ADMIN_PASSWORD` env vars are not set, or the `export $(cat .env ...)` did not run in this shell.
-- **`Unsupported operating system`** — the playbook only supports Ubuntu. Check the host's distribution and version.
-- **HTTPS fail without an email** — setting `homelab.dashboard.domain` with HTTPS enabled requires `HOMELAB_DOMAIN_HTTPS_EMAIL`. Disable HTTPS or provide the email.
-- **Changes appear not to apply** — MicroK8s roles skip install when the snap already exists (`has_microk8s`). To re-provision, uninstall that layer first, then install again.
-- **`ansible/homelab.yaml` fails with "`uninstall` is not a switch on this playbook"** — expected: you (or an old script) passed `-e uninstall=true`. Teardown is `ansible/homelab_uninstall.yaml --tags uninstall`; drop the flag.
+> Requires that you have a shell on the homelab host OR you have configured remote access for your machine (see [Accessing Homelab Cluster](#accessing-the-homelab-cluster)).
+
+Once the homelab is up and running, you can start provisioning namespaces for applications.
+
+```bash
+kubectl create namespace foobar
+```
+
+You can also provision access for a developer:
+
+```bash
+# create service account
+kubectl create serviceaccount developer -n foobar
+
+# bind the service account with a admin role
+kubectl create rolebinding developer-binding --clusterrole==admin --serviceaccount=foobar:developer
+
+# generate a token for the service account
+kubectl create token developer -n foobar
+```
 
 ## Next steps
 
