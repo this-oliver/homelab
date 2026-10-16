@@ -16,16 +16,16 @@ homelab:
   gateway:
     http:
       # [OPTIONAL] Enables HTTP. (Defualt: true)
-      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_NETWORK_HTTP_ENABLED') | default(true, true) | bool }}"
+      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_GATEWAY_HTTP_ENABLED') | default(true, true) | bool }}"
       # [OPTIONAL] Defines the port to listen to for HTTP requests. (Defualt: 80)
-      port: "{{ lookup('ansible.builtin.env', 'HOMELAB_NETWORK_HTTP_PORT') | int | default(80, true) }}"
+      port: "{{ lookup('ansible.builtin.env', 'HOMELAB_GATEWAY_HTTP_PORT') | int | default(80, true) }}"
     https:
       # [OPTIONAL] Enables HTTPS. (Defualt: true)
-      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_NETWORK_HTTPS_ENABLED') | default(true, true) | bool }}"
+      enabled: "{{ lookup('ansible.builtin.env', 'HOMELAB_GATEWAY_HTTPS_ENABLED') | default(true, true) | bool }}"
       # [OPTIONAL] Defines the port to listen to for HTTPS requests. (Defualt: 443)
-      port: "{{ lookup('ansible.builtin.env', 'HOMELAB_NETWORK_HTTPS_PORT') | int | default(443, true) }}"
+      port: "{{ lookup('ansible.builtin.env', 'HOMELAB_GATEWAY_HTTPS_PORT') | int | default(443, true) }}"
       # [OPTIONAL] Defines the email to use when managing certificates.
-      email: "{{ lookup('ansible.builtin.env', 'HOMELAB_NETWORK_HTTPS_EMAIL') | regex_replace('^\"|\"$', '') }}"
+      email: "{{ lookup('ansible.builtin.env', 'HOMELAB_GATEWAY_HTTPS_EMAIL') | regex_replace('^\"|\"$', '') }}"
 
   # Cluster dashboard
   dashboard:
