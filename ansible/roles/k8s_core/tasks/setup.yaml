@@ -18,7 +18,7 @@
     k8s_core_is_raspi: "{{ (k8s_core_pi_model.content | default('') | b64decode) is search('Raspberry Pi') }}"
     k8s_core_has_microk8s: "{{ k8s_core_microk8s_check.rc == 0 }}"
 
-- name: Setup KubeConfig
+- name: Configure KubeConfig
   block:
     - name: Ensure .kube directory exists
       ansible.builtin.file:
@@ -87,7 +87,7 @@
       notify:
         - Reboot to apply Microk8s changes
 
-- name: Install Kubernetes
+- name: Setup Kubernetes
   become: true
   when: not (k8s_core_has_microk8s | bool)
   block:
@@ -126,32 +126,6 @@
         group: homelab
         mode: '660'
       register: k8s_core_kubeconfig_updated
-
-- name: Install Kubectl tool
-  block:
-    - name: Install Kubectl
-      become: true
-      community.general.snap:
-        classic: true
-        channel: "{{ homelab.general.k8s.version }}"
-        name: kubectl
-
-- name: Install Helm tool
-  block:
-    - name: Check if helm is installed
-      ansible.builtin.command: which helm
-      register: k8s_core_helm_installed
-      failed_when: false
-      changed_when: false
-      check_mode: false
-
-    - name: Install Helm
-      become: true
-      community.general.snap:
-        classic: true
-        channel: "{{ k8s_core_helm_version }}"
-        name: helm
-      when: k8s_core_helm_installed.stdout == ''
 
 - name: Setup Microk8s addons
   block:
@@ -216,7 +190,21 @@
         path: "{{ k8s_core_temp_storage_dir.path }}"
         state: absent
 
-- name: Install Observer and Fixer Cluster Roles
+- name: Setup homelab namespace
+  when: inventory_hostname in (groups['controller'] | default([])) # only on controllers
+  block:
+    - name: Check if homelab namespace exists
+      ansible.builtin.command: kubectl get namespaces/homelab -o name
+      register: k8s_core_namespace_check
+      changed_when: k8s_core_namespace_check.stdout is search('(created|configured|deleted)')
+
+    - name: Create homelab namespace
+      when: k8s_core_namespace_check.stdout == ''
+      ansible.builtin.command: kubectl create namespace homelab
+      register: k8s_core_namespace_created
+      changed_when: k8s_core_namespace_created.stdout is search('(created|configured|deleted)')
+
+- name: Setup Cluster RBAC
   when: inventory_hostname in (groups['controller'] | default([])) # only on controllers
   block:
     - name: Create a temporary directory
@@ -224,16 +212,28 @@
         state: directory
       register: k8s_core_rbac_dir
 
-    - name: Copy Custom RBAC Resources
+    - name: Copy RBAC Resources
       ansible.builtin.copy:
-        src: files/rbac.yaml
-        dest: "{{ k8s_core_rbac_dir.path }}/rbac.yaml"
+        src: files/
+        dest: "{{ k8s_core_rbac_dir.path }}/"
         mode: "440"
 
-    - name: Apply cluster RBAC
-      ansible.builtin.command: kubectl apply -f {{ k8s_core_rbac_dir.path }}/rbac.yaml
-      register: k8s_core_rbac_applied
-      changed_when: k8s_core_rbac_applied.stdout is search('(created|configured|deleted)')
+    - name: Apply Cluster Role Resources
+      ansible.builtin.command: kubectl apply -f {{ k8s_core_rbac_dir.path }}/cluster-roles.yaml
+      register: k8s_core_cluster_roles_applied
+      changed_when: k8s_core_cluster_roles_applied.stdout is search('(created|configured|deleted)')
+      check_mode: false
+
+    - name: Apply Service Account Resources
+      ansible.builtin.command: kubectl apply -f {{ k8s_core_rbac_dir.path }}/service-accounts.yaml
+      register: k8s_core_service_account_applied
+      changed_when: k8s_core_service_account_applied.stdout is search('(created|configured|deleted)')
+      check_mode: false
+
+    - name: Apply Cluster Role Bidning Resources
+      ansible.builtin.command: kubectl apply -f {{ k8s_core_rbac_dir.path }}/cluster-role-bindings.yaml
+      register: k8s_core_cluster_role_binding_applied
+      changed_when: k8s_core_cluster_role_binding_applied.stdout is search('(created|configured|deleted)')
       check_mode: false
 
   always:
@@ -241,3 +241,29 @@
       ansible.builtin.file:
         path: "{{ k8s_core_rbac_dir.path }}"
         state: absent
+
+- name: Install Kubectl tool
+  block:
+    - name: Install Kubectl
+      become: true
+      community.general.snap:
+        classic: true
+        channel: "{{ homelab.general.k8s.version }}"
+        name: kubectl
+
+- name: Install Helm tool
+  block:
+    - name: Check if helm is installed
+      ansible.builtin.command: which helm
+      register: k8s_core_helm_installed
+      failed_when: false
+      changed_when: false
+      check_mode: false
+
+    - name: Install Helm
+      become: true
+      community.general.snap:
+        classic: true
+        channel: "{{ k8s_core_helm_version }}"
+        name: helm
+      when: k8s_core_helm_installed.stdout == ''

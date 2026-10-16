@@ -1,0 +1,39 @@
+---
+# The maintainer role keeps an eye (read-only) on key resources
+# in the cluster and is able to restart app deployments if they
+# are not responsive.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: maintainer
+rules:
+  - apiGroups:
+      - '' # indicates the core API group
+    resources:
+      - namespaces
+      - configmaps
+      - pods
+      - services
+      - persistentvolumeclaims
+    verbs:
+      - get
+      - list
+  - apiGroups:
+      - 'apps'
+    resources:
+      - deployments
+    verbs:
+      - get
+      - list
+      - patch
+      - update
+  - apiGroups: [traefik.io]
+    resources:
+      - ingressroutes
+      - ingressroutetcps
+      - ingressrouteudps
+      - middlewares
+      - middlewaretcps
+    verbs:
+      - list
+      - get
