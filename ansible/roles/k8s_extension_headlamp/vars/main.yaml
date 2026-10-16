@@ -1,6 +1,6 @@
 k8s_extension_headlamp_helm_release:
   name: headlamp
-  namespace: kube-system
+  namespace: homelab
   chart:
     ref: headlamp/headlamp
     version: "0.45.0"
