@@ -4,14 +4,14 @@
 
 - name: Teardown homelab cluster
   ansible.builtin.import_playbook: homelab_uninstall.yaml
-  when: uninstall | bool
+  tags: [uninstall]
+  when: uninstall | default(false) | bool or "'uninstall' in ansible_run_tags | default([])"
 
 - name: Provision homelab core
   hosts: all
   vars_files:
     - config.yaml
-  vars:
-    uninstall: false
+  when: "'uninstall' not in ansible_run_tags | default([]) and not uninstall | default(false) | bool"
   pre_tasks:
     - name: Resolve homelab directory to an absolute path
       ansible.builtin.include_tasks:
@@ -19,7 +19,6 @@
         apply:
           tags: [base, k8s, kubernetes]
       tags: [base, k8s, kubernetes]
-      when: not (uninstall | bool)
 
     - name: Preflight check
       ansible.builtin.include_tasks:
@@ -27,7 +26,6 @@
         apply:
           tags: [base, k8s, kubernetes]
       tags: [base, k8s, kubernetes]
-      when: not (uninstall | bool) and not (preflight_passed | default(false) | bool)
   tasks:
     - name: Base setup
       ansible.builtin.include_role:
@@ -35,7 +33,6 @@
         apply:
           tags: [base]
       tags: [base]
-      when: not (uninstall | bool)
 
     - name: Kubernetes
       ansible.builtin.include_role:
@@ -44,12 +41,12 @@
         apply:
           tags: [k8s, kubernetes]
       tags: [k8s, kubernetes]
-      when: not (uninstall | bool)
 
 - name: Provision homelab controller
   hosts: controller
   vars_files:
     - config.yaml
+  when: "'uninstall' not in ansible_run_tags | default([]) and not uninstall | default(false) | bool"
   pre_tasks:
     - name: Resolve homelab directory to an absolute path
       ansible.builtin.include_tasks:
@@ -57,7 +54,6 @@
         apply:
           tags: [reverse_proxy, gateway, dashboard]
       tags: [reverse_proxy, gateway, dashboard]
-      when: not (uninstall | bool)
 
     - name: Preflight check
       ansible.builtin.include_tasks:
@@ -65,7 +61,6 @@
         apply:
           tags: [reverse_proxy, gateway, dashboard]
       tags: [reverse_proxy, gateway, dashboard]
-      when: not (uninstall | bool) and not (preflight_passed | default(false) | bool)
   tasks:
     - name: Gateway - Traefik
       ansible.builtin.include_role:
@@ -74,7 +69,6 @@
         apply:
           tags: [gateway]
       tags: [gateway]
-      when: not (uninstall | bool)
 
     - name: Dashboard - Headlamp, Prometheus, OpenCost, Trivy
       ansible.builtin.include_role:
@@ -83,7 +77,6 @@
         apply:
           tags: [dashboard]
       tags: [dashboard]
-      when: not (uninstall | bool) and homelab.dashboard.headlamp_dashboard.enabled
 
     - name: Reverse Proxy - HAProxy
       ansible.builtin.include_role:
@@ -98,6 +91,7 @@
   hosts: workers
   vars_files:
     - config.yaml
+  when: "'uninstall' not in ansible_run_tags | default([]) and not uninstall | default(false) | bool"
   pre_tasks:
     - name: Preflight check
       ansible.builtin.include_tasks:
@@ -105,7 +99,6 @@
         apply:
           tags: [kubernetes, worker]
       tags: [kubernetes, worker]
-      when: not (uninstall | bool) and not (preflight_passed | default(false) | bool)
   tasks:
     - name: Join worker node to the cluster
       ansible.builtin.include_tasks:
@@ -113,12 +106,12 @@
         apply:
           tags: [kubernetes, worker]
       tags: [kubernetes, worker]
-      when: not (uninstall | bool)
 
 - name: Provision homelab summary
   hosts: all
   vars_files:
     - config.yaml
+  when: "'uninstall' not in ansible_run_tags | default([]) and not uninstall | default(false) | bool"
   pre_tasks:
     - name: Resolve homelab directory to an absolute path
       ansible.builtin.include_tasks:
@@ -126,14 +119,12 @@
         apply:
           tags: [always]
       tags: [always]
-      when: not (uninstall | bool)
     - name: Preflight check
       ansible.builtin.include_tasks:
         file: tasks/preflight.yaml
         apply:
           tags: [always]
       tags: [always]
-      when: not (uninstall | bool) and not (preflight_passed | default(false) | bool)
   tasks:
     - name: Homelab summary
       ansible.builtin.include_role:
@@ -142,4 +133,3 @@
         apply:
           tags: [always]
       tags: [always]
-      when: not (uninstall | bool)
