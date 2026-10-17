@@ -1,3 +1,39 @@
+# Homelab Developer
+
+> [!NOTE]
+> This guide assumes that you have experience with command line tools, kubernetes and linux.
+
+This guide shows you how to deploy an application to the homelab.
+
+## What you end up with
+
+- A dedicated namespace.
+- An application deployed in the dedicated namespace
+- Persistent storage for your application
+- Reaching your application remotely via a hostname
+- Accessing the dedicated namespace via the Homelab dashboard UI
+
+## Getting Started
+
+Pre-requisites:
+
+- `kubectl` installed
+- IP address to a provisioned Homelab Kubernetes instance (see the [admin guide](user-admin.md#getting-started))
+- A provisioned `namespace` and token (see [Provisioning a namespace](user-admin.md#provisioning-a-namespace))
+
+
+## Deploying an application
+
+This section assumes that you have:
+
+- configured your `kubectl` cli to reach your Homelab cluster using your (see [Accessing the Homelab cluster](user-admin.md#accessing-the-homelab-cluster))
+- been provisioned a namespace (for the purpose of this guide, the `namespace` is called *demo*)
+
+### Step 1. Creating a resource file
+
+Create a `app.yaml` file with the following content:
+
+```yaml
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -91,7 +127,7 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-  - host: demo.oliverr.net
+  - host: demo.example.com
     http:
       paths:
       - path: /
@@ -101,3 +137,41 @@ spec:
             name: demo-app
             port:
               number: 80
+```
+
+The `app.yaml` file defines several resources:
+
+- Persistent Volume Claim (`demo-app-pvc`) - stores persistent data
+- Deployment (`demo-app`) - deploys your application
+- Service (`demo-app`) - exposes your application within the cluster
+- Secret (`demo-basic-auth`) and Middleware (`demo-middleware-auth`) - adds an authentication middleware to your application
+- Ingress (`demo-app`) - exposes your application externally via `demo.example.com` and sends all requests to the Service
+
+### Step 2. Depploy the resources
+
+Once you have defined the resources in the `app.yaml` file, you can actually create the resources with:
+
+```bash
+kubectl apply -f app.yaml -n demo
+```
+
+### Step 3. Verify deployment
+
+There are several way to verify that the app is deployed.
+
+```bash
+# try to reach the ingress
+curl demo.example.com
+
+# inspect the application's pods on the homelab cluster
+kubectl get pods -n demo
+
+# inspect the application's deployments on the homelab cluster
+kubectl get deployments -n demo
+```
+
+## Next steps
+
+- [admin](user-admin.md) — Setup Homelab cluster
+- [docs/CONTRIBUTING.md](../CONTRIBUTING.md) — contributing to the project
+- [docs/README.md](../README.md) — full documentation index
