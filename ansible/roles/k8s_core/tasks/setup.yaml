@@ -209,7 +209,7 @@
   when: inventory_hostname in (groups['controller'] | default([])) # only on controllers
   block:
     - name: Check if homelab namespace exists
-      ansible.builtin.command: kubectl get namespaces/homelab -o name
+      ansible.builtin.command: kubectl get namespaces/homelab --ignore-not-found=true --output=name
       register: k8s_core_namespace_check
       changed_when: k8s_core_namespace_check.stdout is search('(created|configured|deleted)')
 
