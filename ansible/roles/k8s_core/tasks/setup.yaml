@@ -127,6 +127,30 @@
         mode: '660'
       register: k8s_core_kubeconfig_updated
 
+- name: Setup Kubernetes cli tools
+  block:
+    - name: Install Kubectl
+      become: true
+      community.general.snap:
+        classic: true
+        channel: "{{ homelab.general.k8s.version }}"
+        name: kubectl
+
+    - name: Check if helm is installed
+      ansible.builtin.command: which helm
+      register: k8s_core_helm_installed
+      failed_when: false
+      changed_when: false
+      check_mode: false
+
+    - name: Install Helm
+      become: true
+      community.general.snap:
+        classic: true
+        channel: "{{ k8s_core_helm_version }}"
+        name: helm
+      when: k8s_core_helm_installed.stdout == ''
+
 - name: Setup Microk8s addons
   block:
     - name: Set the node role of this host
@@ -148,7 +172,7 @@
       loop_control:
         loop_var: addon
 
-- name: Setup persistent volume storage class
+- name: Setup Persistent Volume Storage Class
   when: inventory_hostname in (groups['controller'] | default([])) # only on controllers
   block:
     - name: Ensure storage directory exists
@@ -190,7 +214,7 @@
         path: "{{ k8s_core_temp_storage_dir.path }}"
         state: absent
 
-- name: Setup homelab namespace
+- name: Setup Homelab namespace
   when: inventory_hostname in (groups['controller'] | default([])) # only on controllers
   block:
     - name: Check if homelab namespace exists
@@ -241,29 +265,3 @@
       ansible.builtin.file:
         path: "{{ k8s_core_rbac_dir.path }}"
         state: absent
-
-- name: Install Kubectl tool
-  block:
-    - name: Install Kubectl
-      become: true
-      community.general.snap:
-        classic: true
-        channel: "{{ homelab.general.k8s.version }}"
-        name: kubectl
-
-- name: Install Helm tool
-  block:
-    - name: Check if helm is installed
-      ansible.builtin.command: which helm
-      register: k8s_core_helm_installed
-      failed_when: false
-      changed_when: false
-      check_mode: false
-
-    - name: Install Helm
-      become: true
-      community.general.snap:
-        classic: true
-        channel: "{{ k8s_core_helm_version }}"
-        name: helm
-      when: k8s_core_helm_installed.stdout == ''
