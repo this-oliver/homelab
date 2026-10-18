@@ -152,23 +152,14 @@
       when: k8s_core_helm_installed.stdout == ''
 
 - name: Setup Microk8s addons
+  when: inventory_hostname in (groups['controller'] | default([])) # only on controllers
   block:
-    - name: Set the node role of this host
-      ansible.builtin.set_fact:
-        k8s_core_node_role: >-
-          {{ 'controller' if inventory_hostname in (groups.controller | default([])) else 'workers' }}
-
-    - name: Set list of addons to enable for this host
-      ansible.builtin.set_fact:
-        k8s_core_addons_to_enable: >-
-          {{ k8s_core_addons | selectattr(k8s_core_node_role, 'equalto', true) | map(attribute='name') | list }}
-
     - name: Enable microk8s common modules
       become: true
-      ansible.builtin.command: "microk8s enable {{ addon }}"
+      ansible.builtin.command: "microk8s enable {{ addon.name }}"
       register: k8s_core_addon_enabled
       changed_when: k8s_core_addon_enabled.rc != 0
-      loop: "{{ k8s_core_addons_to_enable }}"
+      loop: "{{ k8s_core_addons }}"
       loop_control:
         loop_var: addon
 

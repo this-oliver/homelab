@@ -1,16 +1,8 @@
 k8s_core_addons:
   - name: cis-hardening
-    controller: true
-    workers: true
   - name: dns
-    controller: true
-    workers: true
   - name: hostpath-storage
-    controller: true
-    workers: false
   - name: rbac
-    controller: true
-    workers: true
 
 # see: https://snapcraft.io/helm
 k8s_core_helm_version: latest/stable # 4.2.4
